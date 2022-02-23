@@ -12,8 +12,7 @@
     <link name="${name}_base_link">
       <inertial>
 <!--        <mass value="0.83"/>-->
-<!--        <mass value="0.083"/>-->
-        <mass value="0.0"/>
+        <mass value="0.083"/>
         <origin xyz="0 0 0.03585"/>
         <inertia ixx="${(0.83 * (3.0*0.0516*0.0516 + 0.0717*0.0717)) / 12.0}" ixy="0" ixz="0"
           iyy="${(0.83 * (3.0*0.0516*0.0516 + 0.0717*0.0717)) / 12.0}" iyz="0"
@@ -63,7 +62,7 @@
       <xacro:if value="${gpu}">
         <sensor type="gpu_ray" name="${name}-VLP16">
           <pose>0 0 0 0 0 0</pose>
-          <visualize>true</visualize>
+          <visualize>false</visualize>
           <update_rate>${hz}</update_rate>
           <ray>
             <scan>

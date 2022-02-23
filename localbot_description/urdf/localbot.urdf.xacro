@@ -1,21 +1,28 @@
 <?xml version="1.0" ?>
 <robot name="localbot" xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:include filename="$(find localbot_description)/urdf/common_properties.xacro"/>
+  <!--  Xacro description of turtlebot robot waffle pi used to play team hunt.-->
+  <!--  Miguel Riem Oliveira-->
+  <!--  PARI, November 2020-->
 
+  <!--Args are local, properties are global, so we copy the values of the arguments to the properties-->
+  <xacro:arg name="name" default="localbot" />
+  <xacro:arg name="color" default="Orange" /> <!-- e.g. Red, Orange. Must exist in Gazebo/Colors and be defined in properties.xacro.-->
+
+  <!--Properties are global so they can be viewed from inside the included xacros-->
+  <!--  args are used with $(arg arg_name), properties are used as ${property_name}-->
   <xacro:property name="name" value="$(arg name)"/>
   <xacro:property name="color" value="$(arg color)"/>
-
 
   <!-- Include other files-->
   <xacro:include filename="$(find localbot_description)/urdf/properties.xacro"/>
   <xacro:include filename="$(find localbot_description)/urdf/VLP-16.urdf.xacro"/>
   <xacro:include filename="$(find localbot_description)/urdf/astra.urdf.xacro" />
 
-  <xacro:include filename="$(find velodyne_description)/urdf/VLP-16.urdf.xacro"/>
-
 
   <xacro:include filename="$(find localbot_description)/urdf/localbot.gazebo.macro.xacro"/>
+  <xacro:gazebo_macro color="$(arg color)" laser_visual="false" camera_visual="false" imu_visual="true"/>
 
+  <!-- Links and joints-->
   <link name="base_footprint"/>
 
   <joint name="base_joint" type="fixed">
@@ -30,13 +37,14 @@
       <geometry>
         <mesh filename="package://turtlebot3_description/meshes/bases/waffle_pi_base.stl" scale="0.001 0.001 0.001"/>
       </geometry>
-      <material name="Grey"/>
+      <material name="light_black"/>
     </visual>
 
-    <collision>
-      <origin xyz="-0.064 0 0.047" rpy="0 0 0.5"/>
+    <collision name="base_link_collision">
+      <origin xyz="-0.064 0 0.047" rpy="0 0 0"/>
       <geometry>
-        <box size="0.266 0.266 0.094"/>
+        <!--        <box size="0.266 0.266 0.094"/>-->
+        <box size="0.3 0.3 0.094"/>
       </geometry>
     </collision>
 
@@ -62,7 +70,7 @@
       <geometry>
         <mesh filename="package://turtlebot3_description/meshes/wheels/left_tire.stl" scale="0.001 0.001 0.001"/>
       </geometry>
-      <material name="Grey"/>
+      <material name="black"/>
     </visual>
 
     <collision>
@@ -78,7 +86,7 @@
       <inertia ixx="1.1175580e-05" ixy="-4.2369783e-11" ixz="-5.9381719e-09"
                iyy="1.1192413e-05" iyz="-1.4400107e-11"
                izz="2.0712558e-05" />
-      </inertial>
+    </inertial>
   </link>
 
   <joint name="wheel_right_joint" type="continuous">
@@ -94,8 +102,7 @@
       <geometry>
         <mesh filename="package://turtlebot3_description/meshes/wheels/right_tire.stl" scale="0.001 0.001 0.001"/>
       </geometry>
-<!--      <material name="Grey"/>-->
-      <material name="Grey"/>
+      <material name="black"/>
     </visual>
 
     <collision>
@@ -111,7 +118,7 @@
       <inertia ixx="1.1175580e-05" ixy="-4.2369783e-11" ixz="-5.9381719e-09"
                iyy="1.1192413e-05" iyz="-1.4400107e-11"
                izz="2.0712558e-05" />
-      </inertial>
+    </inertial>
   </link>
 
   <joint name="caster_back_right_joint" type="fixed">
@@ -168,24 +175,127 @@
 
   <link name="imu_link"/>
 
-  </robot> 
-
-  <!-- <link name="camera_support_link">
+  <link name="platform_support_leg1_link">
+    <visual>
+      <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.2" radius="0.004"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
   </link>
 
-  <joint name="platform_support_camera_link" type="fixed">
-    <origin xyz="0.02 0 1.5" rpy="0.01 -0.35 0.2"/>
+  <joint name="base_link_to_platform_support_leg1_link" type="fixed">
     <parent link="base_link"/>
-    <child link="camera_support_link"/>
+    <child link="platform_support_leg1_link"/>
+    <origin xyz="-0.114 0.05 0.222" rpy="0 0 0"/>
   </joint>
 
-  <xacro:sensor_astra prefix="camera" parent="camera_support_link">
+  <link name="platform_support_leg2_link">
+    <visual>
+      <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.2" radius="0.004"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+  </link>
+
+  <joint name="base_link_to_platform_support_leg2_link" type="fixed">
+    <parent link="base_link"/>
+    <child link="platform_support_leg2_link"/>
+    <origin xyz="-0.114 -0.05 0.222" rpy="0 0 0"/>
+  </joint>
+
+  <link name="platform_support_leg3_link">
+    <visual>
+      <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.2" radius="0.004"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+  </link>
+
+  <joint name="base_link_to_platform_support_leg3_link" type="fixed">
+    <parent link="base_link"/>
+    <child link="platform_support_leg3_link"/>
+    <origin xyz="-0.014 0.05 0.222" rpy="0 0 0"/>
+  </joint>
+
+  <link name="platform_support_leg4_link">
+    <visual>
+      <origin xyz="0 0 -0.1" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.2" radius="0.004"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+  </link>
+
+  <joint name="base_link_to_platform_support_leg4_link" type="fixed">
+    <parent link="base_link"/>
+    <child link="platform_support_leg4_link"/>
+    <origin xyz="-0.014 -0.05 0.222" rpy="0 0 0"/>
+  </joint>
+
+  <link name="lidar3d_plate_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.14 0.14 0.005"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+  </link>
+
+  <joint name="platform_support_leg1_link_to_lidar3d_plate_link" type="fixed">
+    <parent link="platform_support_leg1_link"/>
+    <child link="lidar3d_plate_link"/>
+    <origin xyz="0.05 -0.05 0" rpy="0 0 0"/>
+  </joint>
+
+
+  <xacro:VLP-16 name="lidar3d" parent="lidar3d_plate_link" topic="/lidar3d/points">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:VLP-16>
+
+  <link name="front_left_camera_support_link">
+  </link>
+
+  <joint name="platform_support_leg3_link_to_front_left_camera_support_link" type="fixed">
+    <origin xyz="0.02 0 -0.09" rpy="0.01 -0.35 0.2"/>
+    <parent link="platform_support_leg3_link"/>
+    <child link="front_left_camera_support_link"/>
+  </joint>
+
+  <xacro:sensor_astra prefix="front_left_camera" parent="front_left_camera_support_link">
     <origin xyz="0.02 0.07 0.015" rpy="0 0.0 0" />
   </xacro:sensor_astra>
 
+  <link name="front_right_camera_support_link">
+  </link>
 
-    3d lidar
-  <xacro:VLP-16 name="lidar3d" parent="base_link" topic="/lidar3d/points">
-        <origin xyz="0 0 0.7" rpy="0 0 0" />
-  </xacro:VLP-16> -->
+  <joint name="platform_support_leg4_link_to_front_right_camera_support_link" type="fixed">
+    <origin xyz="0.02 0 -0.05" rpy="0.01 -0.35 -0.22"/>
+    <parent link="platform_support_leg4_link"/>
+    <child link="front_right_camera_support_link"/>
+  </joint>
 
+  <xacro:sensor_astra prefix="front_right_camera" parent="front_right_camera_support_link">
+    <origin xyz="0.02 0.07 0.015" rpy="0 0.0 0" />
+  </xacro:sensor_astra>
+
+  <link name="back_camera_support_link">
+  </link>
+
+  <joint name="platform_support_leg1_link_to_back_camera_support_link" type="fixed">
+    <origin xyz="-0.02 -0.05 -0.10" rpy="0.01 -0.35 3.14"/>
+    <parent link="platform_support_leg1_link"/>
+    <child link="back_camera_support_link"/>
+  </joint>
+
+  <xacro:sensor_astra prefix="back_camera" parent="back_camera_support_link">
+    <origin xyz="0.02 0.07 0.015" rpy="0 0.0 0" />
+  </xacro:sensor_astra>
+</robot>

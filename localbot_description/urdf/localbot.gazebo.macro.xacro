@@ -1,22 +1,21 @@
 <?xml version="1.0"?>
-<robot name="localbot" xmlns:xacro="http://ros.org/wiki/xacro">
-
-  <xacro:include filename="$(find localbot_description)/urdf/ros_diff_drive.gazebo.xacro"/>
-  <!--<xacro:include filename="$(find localbot_description)/urdf/ros_control.gazebo.xacro"/>-->
-
-
-  <xacro:arg name="laser_visual"  default="false"/>
-  <xacro:arg name="camera_visual" default="false"/>
-  <xacro:arg name="imu_visual"    default="false"/>
+<robot name="gazebo_macro" xmlns:xacro="http://ros.org/wiki/xacro">
+<xacro:macro name="gazebo_macro" params="color laser_visual camera_visual imu_visual">
+<!--  <xacro:arg name="laser_visual"  default="false"/>-->
+<!--  <xacro:arg name="camera_visual" default="false"/>-->
+<!--  <xacro:arg name="imu_visual"    default="false"/>-->
 
   <gazebo reference="base_link">
+<!--    <material>Gazebo/DarkGrey</material>-->
     <material>Gazebo/${color}</material>
+  </gazebo>
 
-        <sensor name="base_link" type="contact">
+  <gazebo reference="base_link">
+    <sensor name="base_link" type="contact">
       <update_rate>1000.0</update_rate>
       <always_on>true</always_on>
       <contact>
-        <collision>base_footprint_fixed_joint_lump__base_link_collision</collision>
+        <collision>base_footprint_fixed_joint_lump__base_link_collision_collision</collision>
       </contact>
       <plugin name="base_link_contact_sensor_plugin" filename="libgazebo_ros_bumper.so">
         <bumperTopicName>contact</bumperTopicName>
@@ -33,6 +32,7 @@
     <minDepth>0.001</minDepth>
     <maxVel>0.1</maxVel>
     <fdir1>1 0 0</fdir1>
+    <!--    Gazebo properties are global: https://answers.ros.org/question/216975/loading-variables-with-xacroinclude/ -->
     <material>Gazebo/${color}</material>
   </gazebo>
 
@@ -42,9 +42,10 @@
     <kp>500000.0</kp>
     <kd>10.0</kd>
     <minDepth>0.001</minDepth>
-    <maxVel>0.1</maxVel>
+    <maxVel>0.01</maxVel>
     <fdir1>1 0 0</fdir1>
-   <material>Gazebo/${color}</material>
+    <!--    Gazebo properties are global: https://answers.ros.org/question/216975/loading-variables-with-xacroinclude/ -->
+    <material>Gazebo/${color}</material>
   </gazebo>
 
   <gazebo reference="caster_back_right_link">
@@ -70,15 +71,13 @@
   <gazebo reference="imu_link">
     <sensor type="imu" name="imu">
       <always_on>true</always_on>
-      <visualize>$(arg imu_visual)</visualize>
+      <visualize>${imu_visual}</visualize>
     </sensor>
     <material>Gazebo/Grey</material>
-
   </gazebo>
 
   <!--Using gazebo or ROS native controller for differential drives.-->
-  <!-- <xacro:include filename="$(find localbot_description)/urdf/ros_diff_drive.gazebo.xacro"/> -->
-
+  <xacro:include filename="$(find localbot_description)/urdf/ros_diff_drive.gazebo.xacro"/>
 
   <gazebo>
     <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
@@ -109,6 +108,41 @@
     </plugin>
   </gazebo>
 
+  <gazebo reference="base_scan">
+    <material>Gazebo/FlatBlack</material>
+    <sensor type="ray" name="lds_lfcd_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>${laser_visual}</visualize>
+<!--      <visualize>true</visualize>-->
+      <update_rate>5</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>0.0</min_angle>
+            <max_angle>6.28319</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.120</min>
+          <max>3.5</max>
+          <resolution>0.015</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_lds_lfcd_controller" filename="libgazebo_ros_laser.so">
+        <topicName>scan</topicName>
+        <frameName>base_scan</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
 
 
+
+</xacro:macro>
 </robot>

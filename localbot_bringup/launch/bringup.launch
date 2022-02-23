@@ -2,12 +2,12 @@
     <arg name="name" default="localbot"/>
     <arg name="color" default="Grey"/>
     <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
-    <arg name="x_pos" default="0.0"/>
+    <arg name="x_pos" default="-0.3"/>
     <arg name="y_pos" default="0.0"/>
     <arg name="z_pos" default="0.0"/>
 
     <!--Load robot xacro into robot_description ros parameter.-->
-   <param name="robot_description" command="$(find xacro)/xacro '$(find localbot_description)/urdf/localbot.urdf.xacro'
+    <param name="robot_description" command="$(find xacro)/xacro '$(find localbot_description)/urdf/localbot.urdf.xacro'
                                                  name:=$(arg name) color:=$(arg color)"/>
 
 
@@ -28,5 +28,6 @@
     <include file="$(find localbot_bringup)/launch/visualize.launch">
     </include>
 
+    <node name="interactive_pattern" pkg="localbot_gazebo" type="interactive_pattern"/>
 
 </launch>

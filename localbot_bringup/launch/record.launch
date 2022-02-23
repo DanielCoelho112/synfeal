@@ -11,6 +11,10 @@
         /joint_states
         /front_left_camera/rgb/image_raw/compressed
         /front_left_camera/rgb/camera_info
+        /front_right_camera/rgb/image_raw/compressed
+        /front_right_camera/rgb/camera_info
+        /back_camera/rgb/image_raw/compressed
+        /back_camera/rgb/camera_info
         /lidar3d/points
         -o $(arg bag)">
         </node>

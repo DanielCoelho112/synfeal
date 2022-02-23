@@ -12,9 +12,9 @@
 <!--       </include>-->
 
       <!-- turtlebot3_teleop_key already has its own built in velocity smoother -->
-      <node pkg="localbot_bringup" type="myteleop.py" name="teleop"  output="screen">
+      <node pkg="localbot_core" type="teleop.py" name="teleop"  output="screen">
         <param name="model" value="$(arg model)"/>
-        <remap from="cmd_vel" to="/$(arg name)/cmd_vel"/>
+        <remap from="cmd_vel" to="differential_drive_controller/cmd_vel"/>
       </node>
 <!--      <node pkg="turtlebot3_teleop" type="turtlebot3_teleop_key" name="turtlebot3_teleop_keyboard"  output="screen">-->
 <!--        <remap from="cmd_vel" to="differential_drive_controller/cmd_vel"/>-->
