@@ -1,0 +1,24 @@
+<launch>
+    <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+    <arg name="name" default="localbot"/>
+
+    <!-- Use a name namespace to get unique topic names, services, parameters, etc.-->
+    <group ns="$(arg name)">
+
+<!--        Could not remap topic using the original launch file in https://github.com/ROBOTIS-GIT/turtlebot3/blob/master/turtlebot3_teleop/launch/turtlebot3_teleop_key.launch-->
+<!--       <include file="$(find turtlebot3_teleop)/launch/turtlebot3_teleop_key.launch">-->
+<!--&lt;!&ndash;           <remap from="localbot/cmd_vel" to="mobile_base_controller/cmd_vel"/>&ndash;&gt;-->
+<!--&lt;!&ndash;           <remap from="/$(arg name)/cmd_vel" to="/$(arg name)/differential_drive_controller/cmd_vel"/>&ndash;&gt;-->
+<!--       </include>-->
+
+      <!-- turtlebot3_teleop_key already has its own built in velocity smoother -->
+      <node pkg="localbot_bringup" type="myteleop.py" name="teleop"  output="screen">
+        <param name="model" value="$(arg model)"/>
+        <remap from="cmd_vel" to="/$(arg name)/cmd_vel"/>
+      </node>
+<!--      <node pkg="turtlebot3_teleop" type="turtlebot3_teleop_key" name="turtlebot3_teleop_keyboard"  output="screen">-->
+<!--        <remap from="cmd_vel" to="differential_drive_controller/cmd_vel"/>-->
+<!--      </node>-->
+    </group>
+
+</launch>
