@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+  <model name="boiler">
+    <static>1</static>
+    <link name="boiler_link">
+      <pose>0 0 0 0 0 0</pose>
+      <visual name="boiler_visual">
+        <geometry>
+          <mesh>
+            <uri>model://boiler/boiler.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="boiler_collision">
+        <geometry>
+          <mesh>
+            <uri>model://boiler/boiler.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>
