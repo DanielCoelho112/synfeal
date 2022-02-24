@@ -2,7 +2,7 @@
   <world name='my_room_024'>
     <scene>
       <ambient>1 1 1 1</ambient>
-      <background>0.7 0.7 0.7 1</background>
+      <background>1 1 1 1</background>
       <shadows>1</shadows>
     </scene>
     <light name='sun' type='directional'>
