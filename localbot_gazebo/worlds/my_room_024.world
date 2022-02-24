@@ -1,7 +1,7 @@
 <sdf version='1.7'>
   <world name='my_room_024'>
     <scene>
-      <ambient>0.4 0.4 0.4 1</ambient>
+      <ambient>1 1 1 1</ambient>
       <background>0.7 0.7 0.7 1</background>
       <shadows>1</shadows>
     </scene>
@@ -180,6 +180,5 @@
           </link>
           <pose>0 0 0 0 0 0 0</pose>
         </model>
-
   </world>
 </sdf>
