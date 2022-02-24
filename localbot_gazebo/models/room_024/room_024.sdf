@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+  <model name="room_024">
+    <static>1</static>
+    <link name="room_024_link">
+      <pose>0 0 0 0 0 0</pose>
+      <visual name="room_024_visual">
+        <geometry>
+          <mesh>
+            <uri>model://room_024/room_024.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="room_024_collision">
+        <geometry>
+          <mesh>
+            <uri>model://room_024/room_024.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>
