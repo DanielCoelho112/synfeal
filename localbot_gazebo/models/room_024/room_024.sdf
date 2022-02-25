@@ -11,13 +11,13 @@
           </mesh>
         </geometry>
       </visual>
-      <collision name="room_024_collision">
+      <!-- <collision name="room_024_collision">
         <geometry>
           <mesh>
             <uri>model://room_024/room_024.dae</uri>
           </mesh>
         </geometry>
-      </collision>
+      </collision> -->
     </link>
   </model>
 </sdf>

@@ -30,7 +30,7 @@ pub = rospy.Publisher('~pattern', MarkerArray, queue_size=0, latch=True)
 
 # local packages
 
-model_name = 'charuco_800x600'
+model_name = 'localbot'
 server = None
 menu_handler = MenuHandler()
 
@@ -38,12 +38,12 @@ def makeBox( msg, pose):
 
     marker = Marker(header=Header(frame_id="world", stamp=rospy.Time.now()),
                    ns=model_name, id=0, frame_locked=False,
-                   type=Marker.MESH_RESOURCE, action=Marker.ADD, lifetime=rospy.Duration(0),
+                   type=Marker.SPHERE, action=Marker.ADD, lifetime=rospy.Duration(0),
                    pose=pose,
-                   scale=Vector3(x=1.0, y=1.0, z=1.0),
-                   color=ColorRGBA(r=1, g=1, b=1, a=1))
-    marker.mesh_resource = 'package://localbot_gazebo/models/charuco_800x600/charuco_800x600.dae'
-    marker.mesh_use_embedded_materials = True
+                   scale=Vector3(x=0.05, y=0.05, z=0.05),
+                   color=ColorRGBA(r=0.8, g=0.1, b=0.1, a=1))
+    #marker.mesh_resource = 'package://localbot_gazebo/models/charuco_800x600/charuco_800x600.dae'
+    #marker.mesh_use_embedded_materials = True
     return marker
 
 def makeBoxControl( msg, pose ):
@@ -265,7 +265,7 @@ if __name__ == "__main__":
     # create a timer to update the published transforms
     # rospy.Timer(rospy.Duration(0.01), frameCallback)
 
-    server = InteractiveMarkerServer("interactive_pattern")
+    server = InteractiveMarkerServer("interactive_camera")
     rospy.wait_for_service('/gazebo/set_model_state')
 
     # Get current charuco gazebo model pose at set the marker's pose accordingly

@@ -152,7 +152,7 @@
                 </mesh>
               </geometry>
             </visual>
-            <collision name='room_024_collision'>
+            <!-- <collision name='room_024_collision'>
               <geometry>
                 <mesh>
                   <uri>model://room_024/room_024.dae</uri>
@@ -173,7 +173,7 @@
                   </torsional>
                 </friction>
               </surface>
-            </collision>
+            </collision> -->
             <self_collide>0</self_collide>
             <enable_wind>0</enable_wind>
             <kinematic>0</kinematic>
