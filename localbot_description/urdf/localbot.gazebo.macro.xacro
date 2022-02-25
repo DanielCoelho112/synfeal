@@ -5,7 +5,7 @@
 <!--  <xacro:arg name="camera_visual" default="false"/>-->
 <!--  <xacro:arg name="imu_visual"    default="false"/>-->
 
-  <gazebo reference="base_footprint">
+  <gazebo reference="base_link">
 <!--    <material>Gazebo/DarkGrey</material>-->
     <material>Gazebo/${color}</material>
   </gazebo>

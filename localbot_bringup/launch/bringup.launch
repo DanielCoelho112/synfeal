@@ -29,6 +29,7 @@
     </include>
 
     <!-- <node name="interactive_pattern" pkg="localbot_gazebo" type="interactive_pattern"/> -->
+    <node name="model_states_to_tf" pkg="localbot_gazebo" type="model_states_to_tf.py"/>
 
 
 </launch>
