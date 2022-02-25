@@ -23,10 +23,18 @@
   <xacro:gazebo_macro color="$(arg color)" laser_visual="false" camera_visual="false" imu_visual="true"/>
 
 
-  <link name="camera_support_link">
+  <link name="base_footprint"/>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="base_link">
   </link>
 
-  <xacro:sensor_astra prefix="camera" parent="camera_support_link">
+  <xacro:sensor_astra prefix="camera" parent="base_link">
     <origin xyz="0.00 0.00 1.00" rpy="0 0.0 0" />
   </xacro:sensor_astra>
 

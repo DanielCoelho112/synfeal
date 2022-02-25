@@ -1,8 +1,6 @@
 <launch>
     <arg name="name" default="localbot"/>
-
         <!-- Launch rviz, loading configuration file -->
         <node name="rviz" pkg="rviz" type="rviz" args="--display-config $(find localbot_bringup)/config/visualize.rviz" required="false">
-            <remap from="/move_base_simple/goal" to="$(arg name)/move_base_simple/goal"/>
         </node>
 </launch>

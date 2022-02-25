@@ -21,12 +21,14 @@
         <arg name="z_pos" default="$(arg z_pos)"/>
     </include>
 
-    <include file="$(find localbot_bringup)/launch/teleop_rqt.launch">
+    <!-- <include file="$(find localbot_bringup)/launch/teleop_rqt.launch">
         <arg name="name" value="$(arg name)"/>
+    </include> -->
+
+    <include file="$(find localbot_bringup)/launch/visualize.launch">
     </include>
 
-    <!-- <include file="$(find localbot_bringup)/launch/visualize.launch">
-    </include> -->
+    <!-- <node name="interactive_pattern" pkg="localbot_gazebo" type="interactive_pattern"/> -->
 
 
 </launch>
