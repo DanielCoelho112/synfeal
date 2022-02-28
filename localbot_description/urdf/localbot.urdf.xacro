@@ -14,9 +14,12 @@
   <xacro:property name="color" value="$(arg color)"/>
 
   <!-- Include other files-->
-  <xacro:include filename="$(find localbot_description)/urdf/properties.xacro"/>
-  <xacro:include filename="$(find localbot_description)/urdf/VLP-16.urdf.xacro"/>
+  <xacro:include filename="$(find hector_xacro_tools)/urdf/inertia_tensors.urdf.xacro" />
+  <xacro:include filename="$(find hector_xacro_tools)/urdf/joint_macros.urdf.xacro" />
+  <xacro:include filename="$(find hector_sensors_description)/urdf/kinect_camera.urdf.xacro" />
   <xacro:include filename="$(find localbot_description)/urdf/astra.urdf.xacro" />
+  <xacro:property name="M_PI" value="3.14159265359"/>
+
 
 
   <xacro:include filename="$(find localbot_description)/urdf/localbot.gazebo.macro.xacro"/>
@@ -34,8 +37,12 @@
   <link name="base_link">
   </link>
 
-  <xacro:sensor_astra prefix="camera" parent="base_link">
+  <xacro:kinect_camera name='kinect' parent="base_link">
     <origin xyz="0.00 0.00 0.00" rpy="0 0.0 0" />
-  </xacro:sensor_astra>
+  </xacro:kinect_camera>
+
+  <!-- <xacro:sensor_astra prefix="back_camera" parent="base_link">
+    <origin xyz="0.0 0.00 0.00" rpy="0 0.0 0" />
+  </xacro:sensor_astra> -->
 
 </robot>
