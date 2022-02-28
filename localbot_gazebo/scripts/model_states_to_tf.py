@@ -15,19 +15,13 @@ from gazebo_msgs.msg import ModelState, ModelStates
 
 def callbackModelStatesReceived(msg, tf_broadcaster):
     # print('received data ' + str(msg))
-    
-
-    
-    
     childs = msg.name
     pose = msg.pose
     world = rospy.remap_name('world') 
     
     if 'localbot' in childs:
         now = rospy.Time.now()
-        
         idx = childs.index('localbot')
-        
         transform = geometry_msgs.msg.TransformStamped()
         transform.header.frame_id = world
         transform.child_frame_id = '/base_footprint'
