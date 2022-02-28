@@ -16,8 +16,8 @@
   <!-- Include other files-->
   <xacro:include filename="$(find hector_xacro_tools)/urdf/inertia_tensors.urdf.xacro" />
   <xacro:include filename="$(find hector_xacro_tools)/urdf/joint_macros.urdf.xacro" />
-  <xacro:include filename="$(find hector_sensors_description)/urdf/kinect_camera.urdf.xacro" />
-  <xacro:include filename="$(find localbot_description)/urdf/astra.urdf.xacro" />
+  <xacro:include filename="$(find localbot_description)/urdf/localbot_kinect_camera.urdf.xacro" />
+  <!-- <xacro:include filename="$(find localbot_description)/urdf/atom_astra.urdf.xacro" /> -->
   <xacro:property name="M_PI" value="3.14159265359"/>
 
 
@@ -41,7 +41,7 @@
     <origin xyz="0.00 0.00 0.00" rpy="0 0.0 0" />
   </xacro:kinect_camera>
 
-  <!-- <xacro:sensor_astra prefix="back_camera" parent="base_link">
+  <!-- <xacro:sensor_astra prefix="camera" parent="base_link">
     <origin xyz="0.0 0.00 0.00" rpy="0 0.0 0" />
   </xacro:sensor_astra> -->
 
