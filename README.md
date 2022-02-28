@@ -4,6 +4,10 @@
 
 - **hand_camera** - A RGB-D camera
 
+![localbot_gazebo](docs/img/gazebo.png)
+
+![localbot_gazebo](docs/img/rviz.png)
+
 
 ### Add to .bashrc:
 
@@ -20,3 +24,5 @@ To open the gazebo with the room_024.world run:
 To spawn the robotic system into the gazebo run:
 
     roslaunch localbot_bringup bringup.launch
+
+
