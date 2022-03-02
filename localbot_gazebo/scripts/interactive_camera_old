@@ -7,7 +7,6 @@ import argparse
 # 3rd-party
 import rospkg
 import rospy
-
 from colorama import Fore, Style
 from std_msgs.msg import Header, ColorRGBA
 from geometry_msgs.msg import Point
@@ -17,42 +16,31 @@ from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 from atom_core.ros_utils import filterLaunchArguments
-
 from gazebo_msgs.srv import SetModelState, GetModelState, GetModelStateRequest, SetModelStateRequest
 from tf2_ros import TransformBroadcaster
-br = TransformBroadcaster()
-current_pose = Pose()
-current_pose.orientation.w = 1
 
-rospy.init_node("interactive_pattern")
+rospy.init_node("interactive_camera")
 set_state_service = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
-pub = rospy.Publisher('~pattern', MarkerArray, queue_size=0, latch=True)
-
-# local packages
 
 model_name = 'localbot'
 server = None
 menu_handler = MenuHandler()
 
-def makeBox( msg, pose):
-
+def makeBox(msg, pose):
     marker = Marker(header=Header(frame_id="world", stamp=rospy.Time.now()),
                    ns=model_name, id=0, frame_locked=False,
                    type=Marker.SPHERE, action=Marker.ADD, lifetime=rospy.Duration(0),
                    pose=pose,
                    scale=Vector3(x=0.05, y=0.05, z=0.05),
                    color=ColorRGBA(r=0.8, g=0.1, b=0.1, a=1))
-    #marker.mesh_resource = 'package://localbot_gazebo/models/charuco_800x600/charuco_800x600.dae'
-    #marker.mesh_use_embedded_materials = True
     return marker
 
-def makeBoxControl( msg, pose ):
+def makeBoxControl(msg, pose):
     control =  InteractiveMarkerControl()
     control.always_visible = True
-    control.markers.append( makeBox(msg, pose) )
-    msg.controls.append( control )
+    control.markers.append(makeBox(msg, pose))
+    msg.controls.append(control)
     return control
-
 
 def make6DofMarker(fixed, interaction_mode, pose, show_6dof=False):
     int_marker = InteractiveMarker()
@@ -63,7 +51,6 @@ def make6DofMarker(fixed, interaction_mode, pose, show_6dof=False):
     int_marker.name = "simple_6dof"
     int_marker.description = "Simple 6-DOF Control"
 
-    # insert a box
     makeBoxControl(int_marker, pose)
     int_marker.controls[0].interaction_mode = interaction_mode
 
@@ -152,14 +139,13 @@ def make6DofMarker(fixed, interaction_mode, pose, show_6dof=False):
     server.insert(int_marker, processFeedback)
     menu_handler.apply(server, int_marker.name)
 
-def processFeedback( feedback ):
+def processFeedback(feedback):
     s = "feedback from marker '" + feedback.marker_name
     s += "' / control '" + feedback.control_name + "'"
 
     if feedback.event_type == InteractiveMarkerFeedback.POSE_UPDATE:
         rospy.loginfo( s + ": pose changed")
         print('new pose = ' + str(feedback.pose))
-
         print('feedback = \n' + str(feedback))
         global pose
         pose.position.x = feedback.pose.position.x
@@ -171,7 +157,6 @@ def processFeedback( feedback ):
         pose.orientation.w = feedback.pose.orientation.w
 
         req = SetModelStateRequest()  # Create an object of type SetModelStateRequest
-
 
         req.model_state.model_name = model_name
         req.model_state.pose.position.x = pose.position.x
@@ -185,66 +170,7 @@ def processFeedback( feedback ):
 
         global set_state_service
         result = set_state_service(req.model_state)
-
         print(result)
-        # state_msg = ModelState()
-        # state_msg.model_name = model_name
-        # state_msg.pose.position.x = pose.position.x
-        # state_msg.pose.position.y = pose.position.y
-        # state_msg.pose.position.z = pose.position.z
-        # state_msg.pose.orientation.x = pose.orientation.x
-        # state_msg.pose.orientation.y = pose.orientation.y
-        # state_msg.pose.orientation.z = pose.orientation.z
-        # state_msg.pose.orientation.w = pose.orientation.w
-        # state_msg.reference_frame = 'world'
-
-        # print('set_model_state to:\n' + str(state_msg))
-        # try:
-        #     resp = set_state(state_msg)
-        #     print(resp)
-        # except rospy.ServiceException:
-        #     print("Service call failed: ")
-
-        # markers = MarkerArray()
-        # m = Marker(header=Header(frame_id="world", stamp=rospy.Time.now()),
-        #            ns=model_name, id=0, frame_locked=False,
-        #            type=Marker.MESH_RESOURCE, action=Marker.ADD, lifetime=rospy.Duration(0),
-        #            pose=Pose(position=Point(x=pose.position.x, y=pose.position.y, z=pose.position.z),
-        #                      orientation=Quaternion(x=pose.orientation.x, y=pose.orientation.y, z=pose.orientation.z,
-        #                                             w=pose.orientation.w)),
-        #            scale=Vector3(x=1.0, y=1.0, z=1.0),
-        #            color=ColorRGBA(r=1, g=1, b=1, a=0.5))
-        #
-        # m.mesh_resource = 'package://mmtbot_gazebo/models/charuco_800x600/charuco_800x600.dae'
-        # m.mesh_use_embedded_materials = True
-        # markers.markers.append(m)
-        # pub.publish(markers)
-        #
-        #
-        # from tf.transformations import euler_from_quaternion, quaternion_from_euler
-        #
-        # quat_list = [pose.orientation.x,
-        #              pose.orientation.y,
-        #              pose.orientation.z,
-        #              pose.orientation.w]
-        # (roll, pitch, yaw) = euler_from_quaternion(quat_list)
-        # print('rpy= ' + str(roll) + ' ; ' + str(pitch) + ' ; ' + str(yaw))
-        #
-        # t = geometry_msgs.msg.TransformStamped()
-        # t.header.stamp = rospy.Time.now()
-        # t.header.frame_id = "world"
-        # t.child_frame_id = frame_id
-        #
-        # t.transform.translation.x = pose.position.x
-        # t.transform.translation.y = pose.position.y
-        # t.transform.translation.z = pose.position.z
-        # t.transform.rotation.x = pose.orientation.x
-        # t.transform.rotation.y = pose.orientation.y
-        # t.transform.rotation.z = pose.orientation.z
-        # t.transform.rotation.w = pose.orientation.w
-        #
-        # br.sendTransform(t)
-
         server.applyChanges()
 
 
@@ -252,28 +178,21 @@ def callbackTimer(event):
     print('Timer called at ' + str(event.current_real))
     global pose
 
-
-
 if __name__ == "__main__":
 
     # Parse command line arguments
-    ap = argparse.ArgumentParser(description='Interactive manipulation of pattern pattern in rviz.')
+    ap = argparse.ArgumentParser(description='Interactive manipulation of camera in rviz.')
     # ap.add_argument("-c", "--calibration_file", type=str, required=True, help='full path to calibration file.')
     args = vars(ap.parse_args(args=filterLaunchArguments(sys.argv)))
-
-
-    # create a timer to update the published transforms
-    # rospy.Timer(rospy.Duration(0.01), frameCallback)
 
     server = InteractiveMarkerServer("interactive_camera")
     rospy.wait_for_service('/gazebo/set_model_state')
 
-    # Get current charuco gazebo model pose at set the marker's pose accordingly
+    # Get current camera gazebo model pose at set the marker's pose accordingly
     rospy.wait_for_service('/gazebo/get_model_state')
     get_model_state_service = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
     pose_gazebo = get_model_state_service(model_name, 'world')
 
-    # pose = Pose(position=Point(x=2, y=2, z=1), orientation=Quaternion(x=0, y=0, z=0, w=1))
     import copy
     pose = copy.deepcopy(pose_gazebo.pose)
     make6DofMarker(True, InteractiveMarkerControl.MOVE_3D, pose_gazebo.pose, True)

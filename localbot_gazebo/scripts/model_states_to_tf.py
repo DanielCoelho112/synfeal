@@ -14,13 +14,20 @@ import geometry_msgs.msg
 from gazebo_msgs.msg import ModelState, ModelStates
 
 def callbackModelStatesReceived(msg, tf_broadcaster):
-    # print('received data ' + str(msg))
     childs = msg.name
     pose = msg.pose
-    world = rospy.remap_name('world') 
+    world = 'world'
+    now = rospy.Time.now()
     
-    if 'localbot' in childs:
-        now = rospy.Time.now()
+    # needed, otherwise there are redundant tf messages...
+    
+    
+    
+    # the gazebo has several models, so we have to pick the one we want
+    if 'localbot' in childs: 
+        
+        print(childs)
+        
         idx = childs.index('localbot')
         transform = geometry_msgs.msg.TransformStamped()
         transform.header.frame_id = world
@@ -34,16 +41,16 @@ def callbackModelStatesReceived(msg, tf_broadcaster):
         transform.transform.rotation.y = pose[idx].orientation.y
         transform.transform.rotation.z = pose[idx].orientation.z
         transform.transform.rotation.w = pose[idx].orientation.w
+        print(transform)
+        
         tf_broadcaster.sendTransform(transform)
 
 
 def main():
     rospy.init_node('model_states_to_tf')  # initialize the ros node
-    rospy.Subscriber("/gazebo/model_states", ModelStates,
+    rospy.Subscriber("/gazebo/model_states_throttle", ModelStates,
                      partial(callbackModelStatesReceived, tf_broadcaster=tf2_ros.TransformBroadcaster()))
-
     rospy.spin()
-
 
 if __name__ == '__main__':
     main()

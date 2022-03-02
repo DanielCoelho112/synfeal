@@ -28,8 +28,11 @@
     <include file="$(find localbot_bringup)/launch/visualize.launch">
     </include>
 
-    <!-- <node name="interactive_pattern" pkg="localbot_gazebo" type="interactive_pattern"/> -->
-    <node name="model_states_to_tf" pkg="localbot_gazebo" type="model_states_to_tf.py"/>
-    <node name="interactive_camera" pkg="localbot_gazebo" type="interactive_camera"/>
+    
+    <!-- Sleep 1 is to give time for the spawn to be finished-->
+    <node name="throttle" pkg="topic_tools" type="throttle" args= "messages /gazebo/model_states 10 /gazebo/model_states_throttle" />
+    <node name="model_states_to_tf" pkg="localbot_gazebo" type="model_states_to_tf.py" launch-prefix="bash -c 'sleep 1; $0 $@' " /> 
+    
+    <!-- <node name="interactive_camera" pkg="localbot_gazebo" type="interactive_camera"/> -->
 
 </launch>
