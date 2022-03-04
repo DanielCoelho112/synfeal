@@ -48,7 +48,7 @@ class SaveDataset():
         self.rgb_frame = 'kinect_rgb_optical_frame'
         
         
-        self.trans = None # 1x3 translation
+        self.transformation = None # 4x4 matrix
         self.rot = None # 1x4 quaternion
         self.image = None # rgb image
         self.pc_msg = None # point cloud w.r.t rgb_frame
@@ -80,7 +80,7 @@ class SaveDataset():
         
         print('saving files to disk...')
         filename = f'frame-{self.frame_idx:05d}'
-        write_trans_rot(f'{self.output_folder}/{filename}.pose.txt', self.trans, self.rot)
+        write_transformation(f'{self.output_folder}/{filename}.pose.txt', self.transformation)
         write_pcd(f'{self.output_folder}/{filename}.pcd', self.pc_msg)
         write_img(f'{self.output_folder}/{filename}.rgb.png', self.image)
         
@@ -96,8 +96,7 @@ class SaveDataset():
         self.listener.waitForTransform(self.world_link, self.rgb_frame , now, rospy.Duration(5))
         print('... received!')
         (trans,rot) = self.listener.lookupTransform(self.world_link, self.rgb_frame, now)
-        self.trans = trans
-        self.rot = rot
+        self.transformation = self.listener.fromTranslationRotation(trans, rot)
         
     def getImage(self):
         
