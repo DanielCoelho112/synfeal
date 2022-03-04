@@ -1,0 +1,7 @@
+<launch>
+    <arg name="mode" default="interactive"/>
+
+
+    <node name="data_collector" pkg="localbot_core" type="data_collector"> 
+    
+</launch>

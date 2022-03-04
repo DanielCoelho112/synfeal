@@ -29,9 +29,15 @@ def main():
     
     ### BIG IF ###
     
+    # get argument from launch file
+    
     rospy.init_node("interactive_data_collection")
+    
     InteractiveDataCollection(model_name='localbot')
-    rospy.spin()
+    
+    
+    rospy.spin() # in interactive
+    # rate.sleep() # in automatic
 
 
 if __name__ == "__main__":
