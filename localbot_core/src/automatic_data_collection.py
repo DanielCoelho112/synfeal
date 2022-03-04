@@ -52,7 +52,7 @@ class AutomaticDataCollection():
         
         rx = random.uniform(0, math.pi/4)
         ry = random.uniform(0, math.pi/4)
-        rz = random.uniform(0, math.pi/4)
+        rz = random.uniform(0, 2*math.pi)
         
         quaternion = tf.transformations.quaternion_from_euler(rx, ry, rz)
         
