@@ -6,46 +6,39 @@ import argparse
 import copy
 
 # 3rd-party
-import rospkg
 import rospy
 from colorama import Fore, Style
 from std_msgs.msg import Header, ColorRGBA
 from geometry_msgs.msg import Point
-from gazebo_msgs.msg import ModelState, ModelStates
 from geometry_msgs.msg import Point, Pose, Vector3, Quaternion
 from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
-from atom_core.ros_utils import filterLaunchArguments
 from gazebo_msgs.srv import SetModelState, GetModelState, GetModelStateRequest, SetModelStateRequest
-from tf2_ros import TransformBroadcaster
 from localbot_core.src.save_dataset import SaveDataset
 
-# not needed here I guess
-#rospy.init_node("interactive_camera")
 
-class InteractiveCamera():
+class InteractiveDataCollection():
     
     def __init__(self, model_name):
         self.set_state_service = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState) 
         self.menu_handler = MenuHandler()
         self.model_name = model_name # model_name = 'localbot'
-        
         self.server = InteractiveMarkerServer("interactive_camera")
-        
         rospy.wait_for_service('/gazebo/get_model_state')
         self.get_model_state_service = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
         pose_gazebo = self.get_model_state_service(self.model_name, 'world')
         self.pose = copy.deepcopy(pose_gazebo.pose)
         self.make6DofMarker(True, InteractiveMarkerControl.MOVE_3D, pose_gazebo.pose, True)
         
-        
+        # add interactive marker to save datasets
         self.original_pose = Pose(position=Point(x=0, y=0, z=1), orientation=Quaternion(x=0, y=0, z=0, w=1))
         self.makeClickMarker(self.original_pose)
 
         self.server.applyChanges()
         
-        self.save_dataset = SaveDataset()
+        # create instance to save dataset
+        self.save_dataset = SaveDataset('seq05', mode='interactive')
         
     
     def makeBox(self, msg, pose, color):
@@ -206,8 +199,6 @@ class InteractiveCamera():
             self.set_state_service(req.model_state)
             self.server.applyChanges()
 
-            
-        
     def processFeedbackMenu(self, feedback):
         s = "feedback from marker '" + feedback.marker_name
         s += "' / control '" + feedback.control_name + "'"
@@ -215,8 +206,6 @@ class InteractiveCamera():
         if feedback.event_type == InteractiveMarkerFeedback.BUTTON_CLICK:
             self.save_dataset.saveFrame()
             
-
-
     def callbackTimer(self,event):
         print('Timer called at ' + str(event.current_real))
         

@@ -19,24 +19,15 @@ import imageio
 import atom_core.pypcd as pypcd
 
 def write_pcd(filename, msg, mode='binary'):
-    """
-    This is meant to replace the old read_pcd from Andre which broke when migrating to python3.
-    :param filename:
-    :param cloud_header:
-    :return:
-    """
-
-    #print('Reading point cloud from ' + Fore.BLUE + filename + Style.RESET_ALL)
-    pc = pypcd.PointCloud.from_msg(msg)
-    pc.save_pcd(filename, compression=mode)  #binary
     
-
+    pc = pypcd.PointCloud.from_msg(msg)
+    pc.save_pcd(filename, compression=mode)
+    
 def write_trans_rot(filename, trans, rot):
     with open(filename, 'w') as f:
-        f.write(f'{trans[0]} {trans[1]} {trans[2]}')
+        f.write(f't {trans[0]} {trans[1]} {trans[2]}')
         f.write('\n')
-        f.write(f'{rot[0]} {rot[1]} {rot[2]} {rot[3]}')
-
+        f.write(f'r {rot[0]} {rot[1]} {rot[2]} {rot[3]}')
 
 def write_img(filename, img):
     cv2.imwrite(filename, img)

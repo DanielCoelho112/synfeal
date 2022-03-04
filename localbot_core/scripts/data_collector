@@ -18,7 +18,7 @@ from visualization_msgs.msg import *
 from atom_core.ros_utils import filterLaunchArguments
 from gazebo_msgs.srv import SetModelState, GetModelState, GetModelStateRequest, SetModelStateRequest
 from tf2_ros import TransformBroadcaster
-from localbot_core.scripts.interactive_camera import InteractiveCamera
+from localbot_core.src.interactive_data_collection import InteractiveDataCollection
 
 # not needed here I guess
 #rospy.init_node("interactive_camera")
@@ -27,8 +27,10 @@ from localbot_core.scripts.interactive_camera import InteractiveCamera
 
 def main():
     
-    rospy.init_node("interactive_camera")
-    InteractiveCamera(model_name='localbot')
+    ### BIG IF ###
+    
+    rospy.init_node("interactive_data_collection")
+    InteractiveDataCollection(model_name='localbot')
     rospy.spin()
 
 
