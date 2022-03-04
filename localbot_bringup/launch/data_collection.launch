@@ -1,7 +1,8 @@
 <launch>
-    <arg name="mode" default="interactive"/>
+    <arg name="mode" default="interactive"/> 
+    <arg name="seq" default= "10"/> 
+    <!-- interactive or automatic -->
 
-
-    <node name="data_collector" pkg="localbot_core" type="data_collector"> 
+    <node name="data_collector" pkg="localbot_core" type="data_collector" args="--mode $(arg mode) --seq $(arg seq)" output='screen'/>
     
 </launch>

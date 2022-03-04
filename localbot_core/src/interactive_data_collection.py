@@ -9,7 +9,6 @@ import copy
 import rospy
 from colorama import Fore, Style
 from std_msgs.msg import Header, ColorRGBA
-from geometry_msgs.msg import Point
 from geometry_msgs.msg import Point, Pose, Vector3, Quaternion
 from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
@@ -20,7 +19,7 @@ from localbot_core.src.save_dataset import SaveDataset
 
 class InteractiveDataCollection():
     
-    def __init__(self, model_name):
+    def __init__(self, model_name, seq):
         self.set_state_service = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState) 
         self.menu_handler = MenuHandler()
         self.model_name = model_name # model_name = 'localbot'
@@ -38,7 +37,7 @@ class InteractiveDataCollection():
         self.server.applyChanges()
         
         # create instance to save dataset
-        self.save_dataset = SaveDataset('seq07', mode='interactive')
+        self.save_dataset = SaveDataset(f'seq{seq}', mode='interactive')
         
     
     def makeBox(self, msg, pose, color):

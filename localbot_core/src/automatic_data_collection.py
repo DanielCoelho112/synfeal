@@ -4,23 +4,24 @@
 import sys
 import argparse
 import copy
+import random
+import math
 
 # 3rd-party
 import rospy
-from colorama import Fore, Style
-from std_msgs.msg import Header, ColorRGBA
-from geometry_msgs.msg import Point
-from geometry_msgs.msg import Point, Pose, Vector3, Quaternion
+from geometry_msgs.msg import Point, Pose, Quaternion
 from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 from gazebo_msgs.srv import SetModelState, GetModelState, GetModelStateRequest, SetModelStateRequest
 from localbot_core.src.save_dataset import SaveDataset
+import tf
+
 
 
 class AutomaticDataCollection():
     
-    def __init__(self, model_name):
+    def __init__(self, model_name, seq):
         self.set_state_service = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState) 
         self.menu_handler = MenuHandler()
         self.model_name = model_name # model_name = 'localbot'
@@ -29,68 +30,72 @@ class AutomaticDataCollection():
         self.get_model_state_service = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
         pose_gazebo = self.get_model_state_service(self.model_name, 'world')
         
-        self.pose = copy.deepcopy(pose_gazebo.pose)
+        #self.pose = copy.deepcopy(pose_gazebo.pose)
 
         # create instance to save dataset
-        self.save_dataset = SaveDataset('seq05', mode='interactive')
+        self.save_dataset = SaveDataset(f'seq{seq}', mode='automatic')
+        
+        # define minimum and maximum boundaries
+        self.x_min = 1
+        self.x_max = 4
+        self.y_min = 1
+        self.y_max = 5
+        self.z_min = -1
+        self.z_max = 1
+        
         
     def generateRandomPose(self):
-        pass
-        # x, y, z, rx, ry, rz
-        # x,y,z with constrains
-        # convert rx, ry, rz to quaternion
-    
+        
+        x = random.uniform(self.x_min, self.x_max)
+        y = random.uniform(self.y_min, self.y_max)
+        z = random.uniform(self.z_min, self.z_max)
+        
+        rx = random.uniform(0, math.pi/4)
+        ry = random.uniform(0, math.pi/4)
+        rz = random.uniform(0, math.pi/4)
+        
+        quaternion = tf.transformations.quaternion_from_euler(rx, ry, rz)
+        
+        p = Pose()
+        p.position.x = x
+        p.position.y = y
+        p.position.z = z
+        # Make sure the quaternion is valid and normalized
+        
+        p.orientation.x = quaternion[0]
+        p.orientation.y = quaternion[1]
+        p.orientation.z = quaternion[2]
+        p.orientation.w = quaternion[3]
+        
+        return p
+            
     def generatePath(self):
         pass
     
     def getPose(self):
         pass
     
-    def setPose(self):
-        pass
+    def setPose(self, pose):
+        
+        req = SetModelStateRequest()  # Create an object of type SetModelStateRequest
+        req.model_state.model_name = self.model_name
+                
+        req.model_state.pose.position.x = pose.position.x
+        req.model_state.pose.position.y = pose.position.y
+        req.model_state.pose.position.z = pose.position.z
+        req.model_state.pose.orientation.x = pose.orientation.x
+        req.model_state.pose.orientation.y = pose.orientation.y
+        req.model_state.pose.orientation.z = pose.orientation.z
+        req.model_state.pose.orientation.w = pose.orientation.w
+        req.model_state.reference_frame = 'world'
+
+        self.set_state_service(req.model_state)
+        # self.server.applyChanges()    # needed???
 
     def saveFrame(self):
-        pass
-        
-        
+        self.save_dataset.saveFrame()
 
-    def processFeedback(self, feedback):
-        s = "feedback from marker '" + feedback.marker_name
-        s += "' / control '" + feedback.control_name + "'"
 
-        if feedback.event_type == InteractiveMarkerFeedback.POSE_UPDATE:
-            rospy.loginfo( s + ": pose changed")
-            print('feedback = \n' + str(feedback))
-            
-            self.pose.position.x = feedback.pose.position.x
-            self.pose.position.y = feedback.pose.position.y
-            self.pose.position.z = feedback.pose.position.z
-            self.pose.orientation.x = feedback.pose.orientation.x
-            self.pose.orientation.y = feedback.pose.orientation.y
-            self.pose.orientation.z = feedback.pose.orientation.z
-            self.pose.orientation.w = feedback.pose.orientation.w
-
-            req = SetModelStateRequest()  # Create an object of type SetModelStateRequest
-
-            req.model_state.model_name = self.model_name
-            req.model_state.pose.position.x = self.pose.position.x
-            req.model_state.pose.position.y = self.pose.position.y
-            req.model_state.pose.position.z = self.pose.position.z
-            req.model_state.pose.orientation.x = self.pose.orientation.x
-            req.model_state.pose.orientation.y = self.pose.orientation.y
-            req.model_state.pose.orientation.z = self.pose.orientation.z
-            req.model_state.pose.orientation.w = self.pose.orientation.w
-            req.model_state.reference_frame = 'world'
-
-            self.set_state_service(req.model_state)
-            self.server.applyChanges()
-
-    def processFeedbackMenu(self, feedback):
-        s = "feedback from marker '" + feedback.marker_name
-        s += "' / control '" + feedback.control_name + "'"
-    
-        if feedback.event_type == InteractiveMarkerFeedback.BUTTON_CLICK:
-            self.save_dataset.saveFrame()
             
 
         

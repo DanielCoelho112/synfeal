@@ -28,36 +28,18 @@ from localbot_core.src.automatic_data_collection import AutomaticDataCollection
 
 def main():
     
-    parser = argparse.ArgumentParser(description='Data Collector')
-    parser.add_argument('-m', '--mode', type=str, default='interactive', help='interactive/automatic')
-    parser.add_argument('-s', '--seq', type=int, default=10, help='sequence number')
-    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
-    args = vars(parser.parse_args(args=arglist))
-    
-    mode = args['mode']
-    seq = args['seq']
-    
     ### BIG IF ###
     
     # get argument from launch file
-    rospy.init_node(f"{mode}_data_collection")
     
-    if mode == 'interactive':
-        InteractiveDataCollection(model_name='localbot', seq = seq)
-        rospy.spin() 
-    elif mode == 'automatic':
-        rate = rospy.Rate(0.2) 
-        data_collector = AutomaticDataCollection(model_name='localbot', seq = seq)
-        while not rospy.is_shutdown():    
-            pose = data_collector.generateRandomPose()
-            data_collector.setPose(pose)
-            rospy.sleep(1)
-            data_collector.saveFrame()
+    rospy.init_node("interactive_data_collection")
     
-            rate.sleep() 
-    else:
-        print('invalid mode')
-
+    # InteractiveDataCollection(model_name='localbot')
+    InteractiveDataCollection(model_name='localbot')
+    
+    
+    rospy.spin() # in interactive
+    # rate.sleep() # in automatic
 
 
 if __name__ == "__main__":

@@ -49,7 +49,6 @@ class SaveDataset():
         
         
         self.transformation = None # 4x4 matrix
-        self.rot = None # 1x4 quaternion
         self.image = None # rgb image
         self.pc_msg = None # point cloud w.r.t rgb_frame
         
@@ -87,6 +86,10 @@ class SaveDataset():
         print(f'frame-{self.frame_idx:05d} saved successfully')
         
         self.frame_idx+=1
+        
+        self.transformation = None # 4x4 matrix
+        self.image = None # rgb image
+        self.pc_msg = None # point cloud w.r.t rgb_frame
         
         
     def getTransformation(self):
