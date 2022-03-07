@@ -68,16 +68,16 @@ class SaveDataset():
         
     def saveFrame(self):
         
-        print('getting trasformation...')
+        #print('getting trasformation...')
         self.getTransformation()
         
-        print('getting image...')
+        #print('getting image...')
         self.getImage()
         
-        print('getting pointcloud')
+        #print('getting pointcloud')
         self.getPointCloud()
         
-        print('saving files to disk...')
+        #print('saving files to disk...')
         filename = f'frame-{self.frame_idx:05d}'
         write_transformation(f'{self.output_folder}/{filename}.pose.txt', self.transformation)
         write_pcd(f'{self.output_folder}/{filename}.pcd', self.pc_msg)

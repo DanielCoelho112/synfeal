@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
 # stdlib
+
 import sys
 import argparse
 import copy
 import random
 import math
+
+
 
 # 3rd-party
 import rospy
@@ -16,6 +19,8 @@ from visualization_msgs.msg import *
 from gazebo_msgs.srv import SetModelState, GetModelState, GetModelStateRequest, SetModelStateRequest
 from localbot_core.src.save_dataset import SaveDataset
 import tf
+import numpy as np
+from localbot_core.src.utilities import *
 
 
 
@@ -28,7 +33,7 @@ class AutomaticDataCollection():
         
         rospy.wait_for_service('/gazebo/get_model_state')
         self.get_model_state_service = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-        pose_gazebo = self.get_model_state_service(self.model_name, 'world')
+        
         
         #self.pose = copy.deepcopy(pose_gazebo.pose)
 
@@ -69,11 +74,63 @@ class AutomaticDataCollection():
         
         return p
             
-    def generatePath(self):
-        pass
-    
+    def generatePath(self, n_steps,  final_pose = None):
+        
+        initial_pose = self.getPose().pose
+        
+        if final_pose == None:
+            final_pose = self.generateRandomPose()
+        
+        while True:
+            xyz_initial = np.array([initial_pose.position.x, initial_pose.position.y, initial_pose.position.z])
+            xyz_final = np.array([final_pose.position.x, final_pose.position.y, final_pose.position.z])
+            l2_dst = np.linalg.norm(xyz_final - xyz_initial)
+            
+            # if final pose is close to the initial choose another final pose
+            if l2_dst < 2:
+                final_pose = self.generateRandomPose()
+            else:
+                break
+        
+        step_poses = [] # list of tuples
+        rx, ry, rz = tf.transformations.euler_from_quaternion([initial_pose.orientation.x, initial_pose.orientation.y, initial_pose.orientation.z, initial_pose.orientation.w])
+        pose_initial_dct = {'x'  : initial_pose.position.x, 
+                            'y'  : initial_pose.position.y, 
+                            'z'  : initial_pose.position.z, 
+                            'rx' : rx,
+                            'ry' : ry, 
+                            'rz' : rz}
+        
+        rx, ry, rz = tf.transformations.euler_from_quaternion([final_pose.orientation.x, final_pose.orientation.y, final_pose.orientation.z, final_pose.orientation.w])
+        pose_final_dct =  {'x'  : final_pose.position.x, 
+                           'y'  : final_pose.position.y, 
+                           'z'  : final_pose.position.z, 
+                           'rx' : rx,
+                           'ry' : ry, 
+                           'rz' : rz}
+            
+        x_step_var = (pose_final_dct['x'] - pose_initial_dct['x']) / n_steps
+        y_step_var = (pose_final_dct['y'] - pose_initial_dct['y']) / n_steps
+        z_step_var = (pose_final_dct['z'] - pose_initial_dct['z']) / n_steps
+        rx_step_var = (pose_final_dct['rx'] - pose_initial_dct['rx']) / n_steps
+        ry_step_var = (pose_final_dct['ry'] - pose_initial_dct['ry']) / n_steps
+        rz_step_var = (pose_final_dct['rz'] - pose_initial_dct['rz']) / n_steps
+        
+        for i in range(n_steps):
+            dct = {'x'  : pose_initial_dct['x'] + (i + 1) * x_step_var, 
+                   'y'  : pose_initial_dct['y'] + (i + 1) * y_step_var, 
+                   'z'  : pose_initial_dct['z'] + (i + 1) * z_step_var,
+                   'rx' : pose_initial_dct['rx'] + (i + 1) * rx_step_var,
+                   'ry' : pose_initial_dct['ry'] + (i + 1) * ry_step_var, 
+                   'rz' : pose_initial_dct['rz'] + (i + 1) * rz_step_var}
+            pose = dict2pose(dct)
+            step_poses.append(pose)
+        
+        return step_poses
+            
+
     def getPose(self):
-        pass
+        return self.get_model_state_service(self.model_name, 'world')
     
     def setPose(self, pose):
         

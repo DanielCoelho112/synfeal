@@ -17,6 +17,7 @@ import tf
 from sensor_msgs.msg import PointCloud2
 import imageio
 import atom_core.pypcd as pypcd
+from geometry_msgs.msg import Point, Pose, Quaternion
 
 def write_pcd(filename, msg, mode='binary'):
     
@@ -30,3 +31,18 @@ def write_transformation(filename, transformation):
 def write_img(filename, img):
     cv2.imwrite(filename, img)
     
+def dict2pose(dct):
+    
+    quaternion = tf.transformations.quaternion_from_euler(dct['rx'], dct['ry'], dct['rz'])
+
+    p = Pose()
+    p.position.x = dct['x']
+    p.position.y = dct['y']
+    p.position.z = dct['z']
+    
+    p.orientation.x = quaternion[0]
+    p.orientation.y = quaternion[1]
+    p.orientation.z = quaternion[2]
+    p.orientation.w = quaternion[3]
+    
+    return p

@@ -29,13 +29,16 @@ from localbot_core.src.automatic_data_collection import AutomaticDataCollection
 def main():
     
     parser = argparse.ArgumentParser(description='Data Collector')
-    parser.add_argument('-m', '--mode', type=str, default='interactive', help='interactive/automatic')
+    parser.add_argument('-m', '--mode', type=str, default='interactive', help='interactive/automatic_random_path/automatic_path')
     parser.add_argument('-s', '--seq', type=int, default=10, help='sequence number')
+    parser.add_argument('-ns', '--n_steps', type=int, default=20, help='number of steps')
+    parser.add_argument('-dp', '--destination_pose', type=str, default='0,0,0,0,0,0', help='destination pose')
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     
     mode = args['mode']
     seq = args['seq']
+    n_steps = args['n_steps']
     
     ### BIG IF ###
     
@@ -45,16 +48,28 @@ def main():
     if mode == 'interactive':
         InteractiveDataCollection(model_name='localbot', seq = seq)
         rospy.spin() 
-    elif mode == 'automatic':
-        rate = rospy.Rate(0.2) 
+    elif mode == 'automatic_random':
+        rate = rospy.Rate(0.4) 
         data_collector = AutomaticDataCollection(model_name='localbot', seq = seq)
         while not rospy.is_shutdown():    
             pose = data_collector.generateRandomPose()
             data_collector.setPose(pose)
             rospy.sleep(1)
             data_collector.saveFrame()
-    
             rate.sleep() 
+    elif mode == 'automatic_random_path':
+        rate = rospy.Rate(0.4) 
+        data_collector = AutomaticDataCollection(model_name='localbot', seq = seq)
+        while not rospy.is_shutdown():
+            step_poses = data_collector.generatePath(n_steps)
+            for pose in step_poses:
+                data_collector.setPose(pose)
+                rospy.sleep(1)
+                data_collector.saveFrame()
+                rate.sleep() 
+            print('final destination arrived')
+    elif mode == 'automatic_path':
+        print('future...')
     else:
         print('invalid mode')
 
