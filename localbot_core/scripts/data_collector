@@ -3,9 +3,11 @@
 # stdlib
 import sys
 import argparse
+from typing_extensions import final
 
 # 3rd-party
 import rospkg
+from localbot_core.src.utilities import data2pose
 import rospy
 from colorama import Fore, Style
 from std_msgs.msg import Header, ColorRGBA
@@ -32,13 +34,14 @@ def main():
     parser.add_argument('-m', '--mode', type=str, default='interactive', help='interactive/automatic_random_path/automatic_path')
     parser.add_argument('-s', '--seq', type=int, default=10, help='sequence number')
     parser.add_argument('-ns', '--n_steps', type=int, default=20, help='number of steps')
-    parser.add_argument('-dp', '--destination_pose', type=str, default='0,0,0,0,0,0', help='destination pose')
+    parser.add_argument('-dp', '--destination_pose', type=str, default='x,y,z,rx,ry,rz', help='destination pose')
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     
     mode = args['mode']
     seq = args['seq']
     n_steps = args['n_steps']
+    destination_pose = args['destination_pose']
     
     ### BIG IF ###
     
@@ -57,19 +60,32 @@ def main():
             rospy.sleep(1)
             data_collector.saveFrame()
             rate.sleep() 
-    elif mode == 'automatic_random_path':
+    elif mode == 'automatic_path':
         rate = rospy.Rate(0.4) 
         data_collector = AutomaticDataCollection(model_name='localbot', seq = seq)
-        while not rospy.is_shutdown():
-            step_poses = data_collector.generatePath(n_steps)
-            for pose in step_poses:
-                data_collector.setPose(pose)
-                rospy.sleep(1)
-                data_collector.saveFrame()
-                rate.sleep() 
-            print('final destination arrived')
-    elif mode == 'automatic_path':
-        print('future...')
+        
+        if destination_pose == 'x,y,z,rx,ry,rz':
+        
+            while not rospy.is_shutdown():
+                step_poses = data_collector.generatePath(n_steps)
+                for pose in step_poses:
+                    data_collector.setPose(pose)
+                    rospy.sleep(1)
+                    data_collector.saveFrame()
+                    rate.sleep() 
+                print('final destination arrived')
+        else:
+            final_pose = data2pose(destination_pose)
+            while not rospy.is_shutdown():
+                step_poses = data_collector.generatePath(n_steps,final_pose=final_pose)
+                for pose in step_poses:
+                    data_collector.setPose(pose)
+                    rospy.sleep(1)
+                    data_collector.saveFrame()
+                    rate.sleep() 
+                print('final destination arrived')
+                break
+            
     else:
         print('invalid mode')
 

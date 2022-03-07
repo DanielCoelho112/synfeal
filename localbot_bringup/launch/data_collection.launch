@@ -1,11 +1,11 @@
 <launch>
     <arg name="mode" default="interactive"/> 
     <arg name="seq" default= "10"/> 
-    <arg name="steps" default= "20"/>
-    <arg name="destination_pose" default= "0,0,0,0,0,0"/>
+    <arg name="n_steps" default= "20"/>
+    <arg name="destination_pose" default= "x,y,z,rx,ry,rz"/>
 
-    <!-- interactive, automatic_random, automatic_random_path, automatic_path -->
+    <!-- interactive, automatic_random, automatic_path -->
 
-    <node name="data_collector" pkg="localbot_core" type="data_collector" args="--mode $(arg mode) --seq $(arg seq) --steps $(arg steps) --destination_pose $(arg destination_pose)" output='screen'/>
+    <node name="data_collector" pkg="localbot_core" type="data_collector" args="--mode $(arg mode) --seq $(arg seq) --n_steps $(arg n_steps) --destination_pose $(arg destination_pose)" output='screen'/>
     
 </launch>

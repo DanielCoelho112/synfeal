@@ -21,6 +21,7 @@ from localbot_core.src.save_dataset import SaveDataset
 import tf
 import numpy as np
 from localbot_core.src.utilities import *
+from colorama import Fore
 
 
 
@@ -81,16 +82,16 @@ class AutomaticDataCollection():
         if final_pose == None:
             final_pose = self.generateRandomPose()
         
-        while True:
-            xyz_initial = np.array([initial_pose.position.x, initial_pose.position.y, initial_pose.position.z])
-            xyz_final = np.array([final_pose.position.x, final_pose.position.y, final_pose.position.z])
-            l2_dst = np.linalg.norm(xyz_final - xyz_initial)
-            
-            # if final pose is close to the initial choose another final pose
-            if l2_dst < 2:
-                final_pose = self.generateRandomPose()
-            else:
-                break
+            while True:
+                xyz_initial = np.array([initial_pose.position.x, initial_pose.position.y, initial_pose.position.z])
+                xyz_final = np.array([final_pose.position.x, final_pose.position.y, final_pose.position.z])
+                l2_dst = np.linalg.norm(xyz_final - xyz_initial)
+                
+                # if final pose is close to the initial choose another final pose
+                if l2_dst < 2:
+                    final_pose = self.generateRandomPose()
+                else:
+                    break
         
         step_poses = [] # list of tuples
         rx, ry, rz = tf.transformations.euler_from_quaternion([initial_pose.orientation.x, initial_pose.orientation.y, initial_pose.orientation.z, initial_pose.orientation.w])
@@ -123,7 +124,7 @@ class AutomaticDataCollection():
                    'rx' : pose_initial_dct['rx'] + (i + 1) * rx_step_var,
                    'ry' : pose_initial_dct['ry'] + (i + 1) * ry_step_var, 
                    'rz' : pose_initial_dct['rz'] + (i + 1) * rz_step_var}
-            pose = dict2pose(dct)
+            pose = data2pose(dct)
             step_poses.append(pose)
         
         return step_poses
