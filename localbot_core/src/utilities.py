@@ -24,9 +24,24 @@ def write_pcd(filename, msg, mode='binary'):
     pc = pypcd.PointCloud.from_msg(msg)
     pc.save_pcd(filename, compression=mode)
     
+def read_pcd(filename):
+    """
+    This is meant to replace the old read_pcd from Andre which broke when migrating to python3.
+    :param filename:
+    :param cloud_header:
+    :return:
+    """
+    if not os.path.isfile(filename):
+        raise Exception("[read_pcd] File does not exist.")
+
+    pc = pypcd.PointCloud.from_path(filename)
+
+    return pc
+    
 def write_transformation(filename, transformation):
-    with open(filename, 'w') as f:
-        f.write(str(transformation))
+    # with open(filename, 'w') as f:
+    #     f.write(str(transformation))
+    np.savetxt(filename, transformation, delimiter=',')
 
 def write_img(filename, img):
     cv2.imwrite(filename, img)
@@ -55,3 +70,19 @@ def data2pose(data):
     p.orientation.w = quaternion[3]
         
     return p
+
+
+def matrixToRodrigues(matrix):
+    rods, _ = cv2.Rodrigues(matrix[0:3, 0:3])
+    rods = rods.transpose()
+    rodrigues = rods[0]
+    return rodrigues
+
+def matrixToXYZ(matrix):
+    return matrix[0:3,3]
+
+def rodriguesToMatrix(r):
+    rod = np.array(r, dtype=np.float)
+    matrix = cv2.Rodrigues(rod)
+    return matrix[0]
+
