@@ -68,3 +68,5 @@ https://uapt33090-my.sharepoint.com/:v:/g/personal/danielsilveiracoelho_ua_pt/Ef
 
 In this case, we have to define where we want the model to go, and then a path is generated towards that pose. 
 
+
+
