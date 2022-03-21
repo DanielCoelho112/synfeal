@@ -16,7 +16,7 @@ import sensor_msgs.point_cloud2 as pc2
 import tf
 from sensor_msgs.msg import PointCloud2
 import imageio
-import atom_core.pypcd as pypcd
+import localbot_core.src.pypcd as pypcd
 from geometry_msgs.msg import Point, Pose, Quaternion
 
 def write_pcd(filename, msg, mode='binary'):
