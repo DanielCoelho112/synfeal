@@ -141,8 +141,10 @@ class PointNet(nn.Module):
         self.feature_transform = feature_transform
         self.feat = PointNetfeat(feature_transform=feature_transform)
         self.fc1 = nn.Linear(1024, 512)
-        self.fc2 = nn.Linear(512, 256)
-        self.fc3 = nn.Linear(256, 6)
+        self.fc2 = nn.Linear(512, 256)   
+        self.fc3_trans = nn.Linear(256, 3)
+        self.fc3_rot = nn.Linear(256, 4)
+        
         self.dropout = nn.Dropout(p=0.3)
         self.bn1 = nn.BatchNorm1d(512)
         self.bn2 = nn.BatchNorm1d(256)
@@ -150,10 +152,12 @@ class PointNet(nn.Module):
 
     def forward(self, x):
         x, trans, trans_feat = self.feat(x)  # the output x is the global feature (1024x1)
-        x = F.relu(self.bn1(self.fc1(x)))
+        x = F.relu(self.bn1(self.fc1(x)))   
         x = F.relu(self.bn2(self.dropout(self.fc2(x))))
-        x = self.fc3(x)
-        return x, trans, trans_feat  ### softmax removed!!!
+        x_trans = self.fc3_trans(x)   # Joint Learning!
+        x_rot = self.fc3_rot(x)       # Joint Learning!
+        x_pose = torch.cat((x_trans, x_rot), dim=1)
+        return x_pose, trans, trans_feat  # softmax removed!
 
 
 if __name__ == '__main__':
@@ -181,7 +185,7 @@ if __name__ == '__main__':
     
     cls = PointNet()
     out, _, _ = cls(sim_data)
-    print(out[:,:])
+    #print(out[:,:])
     
     print('output size: ', out.shape)
     

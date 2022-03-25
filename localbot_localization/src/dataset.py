@@ -1,5 +1,5 @@
 import torch.utils.data as data
-from localbot_core.src.utilities import read_pcd, matrixToRodrigues, matrixToXYZ
+from localbot_core.src.utilities import read_pcd, matrixToXYZ, matrixToQuaternion
 import numpy as np
 import torch
 import os
@@ -38,9 +38,9 @@ class LocalBotDataset(data.Dataset):
         
         # load pose
         matrix = np.loadtxt(f'{self.path_seq}/frame-{index:05d}.pose.txt', delimiter=',')
-        rodrigues = matrixToRodrigues(matrix)
+        quaternion = matrixToQuaternion(matrix)
         xyz = matrixToXYZ(matrix)
-        pose = np.append(xyz, rodrigues)
+        pose = np.append(xyz, quaternion)
         
         point_set = torch.from_numpy(point_set.astype(np.float32))
         pose = torch.from_numpy(pose.astype(np.float32))
@@ -54,6 +54,6 @@ class LocalBotDataset(data.Dataset):
 
 
 dataset = LocalBotDataset(110, 100000)
-print(dataset[78][0])
+print(dataset[78][1])
 #print(sum(torch.isnan(dataset[78][0])))
 
