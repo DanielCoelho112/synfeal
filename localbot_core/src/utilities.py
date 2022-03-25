@@ -5,6 +5,7 @@ import json
 # 3rd-party
 import numpy as np
 import os
+from scipy.spatial.transform import Rotation as R
 
 # 3rd-party
 # import pypcd
@@ -87,3 +88,7 @@ def rodriguesToMatrix(r):
     matrix = cv2.Rodrigues(rod)
     return matrix[0]
 
+def matrixToQuaternion(matrix):
+    rot_matrix = matrix[0:3, 0:3]
+    r = R.from_matrix(rot_matrix)
+    return r.as_quat()
