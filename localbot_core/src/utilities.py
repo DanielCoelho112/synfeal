@@ -80,6 +80,11 @@ def matrixToRodrigues(matrix):
     rodrigues = rods[0]
     return rodrigues
 
+def matrixToQuaternion(matrix):
+    rot_matrix = matrix[0:3, 0:3]
+    r = R.from_matrix(rot_matrix)
+    return r.as_quat()
+
 def matrixToXYZ(matrix):
     return matrix[0:3,3]
 
@@ -88,7 +93,6 @@ def rodriguesToMatrix(r):
     matrix = cv2.Rodrigues(rod)
     return matrix[0]
 
-def matrixToQuaternion(matrix):
-    rot_matrix = matrix[0:3, 0:3]
-    r = R.from_matrix(rot_matrix)
-    return r.as_quat()
+def quaternionToMatrix(quat):
+    return R.from_quat(quat).as_matrix()
+
