@@ -181,12 +181,12 @@ if __name__ == '__main__':
     # out, _, _ = pointfeat(sim_data)
     # print('point feat', out.size())
 
-    print('simulated input size:', sim_data.shape)
+    # print('simulated input size:', sim_data.shape)
     
-    cls = PointNet()
-    out, _, _ = cls(sim_data)
-    #print(out[:,:])
+    # cls = PointNet()
+    # out, _, _ = cls(sim_data)
+    # #print(out[:,:])
     
-    print('output size: ', out.shape)
+    # print('output size: ', out.shape)
     
 
