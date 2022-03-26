@@ -61,14 +61,14 @@ def quaternion_multiply(Q0,Q1): # https://automaticaddison.com/how-to-multiply-t
 
 
 def compute_position_error(pred, targ):
-    pred = pred[0][:3]
-    targ = targ[0][:3]
+    pred = pred[:3]
+    targ = targ[:3]
     
     return mean_squared_error(pred, targ, squared=False) # RMSE
 
 def compute_rotation_error(pred, targ): # https://math.stackexchange.com/questions/3572459/how-to-compute-the-orientation-error-between-two-3d-coordinate-frames
-    pred = pred[0][3:]
-    targ = targ[0][3:]
+    pred = pred[3:]
+    targ = targ[3:]
     
     pred = Quaternion(pred)
     targ = Quaternion(targ)

@@ -43,7 +43,7 @@ def read_pcd(filename):
 def write_transformation(filename, transformation):
     # with open(filename, 'w') as f:
     #     f.write(str(transformation))
-    np.savetxt(filename, transformation, delimiter=',')
+    np.savetxt(filename, transformation, delimiter=',',fmt='%.5f')
 
 def write_img(filename, img):
     cv2.imwrite(filename, img)
@@ -95,4 +95,17 @@ def rodriguesToMatrix(r):
 
 def quaternionToMatrix(quat):
     return R.from_quat(quat).as_matrix()
+
+def poseToMatrix(pose):
+    matrix = np.zeros((4,4))
+    rot_mat = quaternionToMatrix(pose[3:])
+    trans = pose[:3]
+    matrix[0:3,0:3] = rot_mat
+    matrix[0:3,3] = trans
+    matrix[3,3] = 1
+    
+    return matrix
+    
+    
+    
 
