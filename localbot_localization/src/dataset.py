@@ -1,5 +1,6 @@
 import torch.utils.data as data
 from localbot_core.src.utilities import read_pcd, matrixToXYZ, matrixToQuaternion
+from localbot_localization.src.utilities import normalize_quat
 import numpy as np
 import torch
 import os
@@ -39,6 +40,7 @@ class LocalBotDataset(data.Dataset):
         # load pose
         matrix = np.loadtxt(f'{self.path_seq}/frame-{index:05d}.pose.txt', delimiter=',')
         quaternion = matrixToQuaternion(matrix)
+        quaternion = normalize_quat(quaternion)
         xyz = matrixToXYZ(matrix)
         pose = np.append(xyz, quaternion)
         

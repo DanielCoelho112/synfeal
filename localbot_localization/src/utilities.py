@@ -14,9 +14,16 @@ def normalize_quat(x, p=2, dim=1):
     :param dim: Dimension to normalize along
     :return: 
     """
-    # x.shape = (N,4)
-    xn = x.norm(p=p, dim=dim) # computes the norm: 1xN
-    x = x / xn.unsqueeze(dim=dim)
+    
+    if torch.is_tensor(x):
+        # x.shape = (N,4)
+        xn = x.norm(p=p, dim=dim) # computes the norm: 1xN
+        x = x / xn.unsqueeze(dim=dim)
+    
+    else: # numpy
+        xn = np.linalg.norm(x)
+        x = x/xn
+        
     return x
 
 def process_pose(pose):

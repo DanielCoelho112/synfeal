@@ -46,7 +46,7 @@ class SaveResults():
             yaml.dump(config, file)
         
         self.frame_idx = 0 # make sure to save as 00000
-        self.csv = pd.DataFrame(columns=('frame', 'position_error', 'rotation_error'))
+        self.csv = pd.DataFrame(columns=('frame', 'position_error (m)', 'rotation_error (rads)'))
         
 
         print('SaveResults initialized properly')
