@@ -1,32 +1,23 @@
 #!/usr/bin/env python3
 
 # --------------------------------------------------
-# Miguel Riem Oliveira.
-# August 2021.
 # Adapted from http://wiki.ros.org/tf2/Tutorials/Writing%20a%20tf2%20broadcaster%20%28Python%29
 # -------------------------------------------------
-import math
+
 from functools import partial
 import rospy
-import tf_conversions  # Because of transformations
 import tf2_ros
 import geometry_msgs.msg
-from gazebo_msgs.msg import ModelState, ModelStates
+from gazebo_msgs.msg import ModelStates
 
 def callbackModelStatesReceived(msg, tf_broadcaster):
     childs = msg.name
     pose = msg.pose
     world = 'world'
     now = rospy.Time.now()
-    
-    # needed, otherwise there are redundant tf messages...
-    
-    
-    
+
     # the gazebo has several models, so we have to pick the one we want
     if 'localbot' in childs: 
-        
-        print(childs)
         
         idx = childs.index('localbot')
         transform = geometry_msgs.msg.TransformStamped()
@@ -41,13 +32,12 @@ def callbackModelStatesReceived(msg, tf_broadcaster):
         transform.transform.rotation.y = pose[idx].orientation.y
         transform.transform.rotation.z = pose[idx].orientation.z
         transform.transform.rotation.w = pose[idx].orientation.w
-        print(transform)
         
         tf_broadcaster.sendTransform(transform)
 
 
 def main():
-    rospy.init_node('model_states_to_tf')  # initialize the ros node
+    rospy.init_node('model_states_to_tf')
     rospy.Subscriber("/gazebo/model_states_throttle", ModelStates,
                      partial(callbackModelStatesReceived, tf_broadcaster=tf2_ros.TransformBroadcaster()))
     rospy.spin()

@@ -3,7 +3,6 @@
 # stdlib
 import sys
 import argparse
-from typing_extensions import final
 
 # 3rd-party
 import rospkg
@@ -14,25 +13,16 @@ from std_msgs.msg import Header, ColorRGBA
 from geometry_msgs.msg import Point
 from gazebo_msgs.msg import ModelState, ModelStates
 from geometry_msgs.msg import Point, Pose, Vector3, Quaternion
-from interactive_markers.interactive_marker_server import *
-from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
-from atom_core.ros_utils import filterLaunchArguments
-from gazebo_msgs.srv import SetModelState, GetModelState, GetModelStateRequest, SetModelStateRequest
-from tf2_ros import TransformBroadcaster
 from localbot_core.src.interactive_data_collection import InteractiveDataCollection
 from localbot_core.src.automatic_data_collection import AutomaticDataCollection
-
-# not needed here I guess
-#rospy.init_node("interactive_camera")
-
 
 
 def main():
     
     parser = argparse.ArgumentParser(description='Data Collector')
     parser.add_argument('-m', '--mode', type=str, default='interactive', help='interactive/automatic_random_path/automatic_path')
-    parser.add_argument('-s', '--seq', type=int, default=10, help='sequence number')
+    parser.add_argument('-s', '--seq', type=str, required=True, help='sequence number')
     parser.add_argument('-ns', '--n_steps', type=int, default=20, help='number of steps')
     parser.add_argument('-dp', '--destination_pose', type=str, default='x,y,z,rx,ry,rz', help='destination pose')
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
@@ -43,10 +33,8 @@ def main():
     n_steps = args['n_steps']
     destination_pose = args['destination_pose']
     
-    ### BIG IF ###
-    
-    # get argument from launch file
     rospy.init_node(f"{mode}_data_collection")
+    
     
     if mode == 'interactive':
         InteractiveDataCollection(model_name='localbot', seq = seq)
@@ -63,9 +51,7 @@ def main():
     elif mode == 'automatic_path':
         rate = rospy.Rate(0.4) 
         data_collector = AutomaticDataCollection(model_name='localbot', seq = seq)
-        
-        if destination_pose == 'x,y,z,rx,ry,rz':
-        
+        if destination_pose == 'x,y,z,rx,ry,rz': # use random poses
             while not rospy.is_shutdown():
                 step_poses = data_collector.generatePath(n_steps)
                 for pose in step_poses:

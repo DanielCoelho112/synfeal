@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-# 3rd-party
-
 import rospy
 import os
 from visualization_msgs.msg import *
@@ -12,6 +10,8 @@ from sensor_msgs.msg import PointCloud2, Image, PointField
 from colorama import Fore
 from datetime import datetime
 import yaml
+import sensor_msgs.point_cloud2 as pc2
+
 
 class SaveDataset():
     """
@@ -21,7 +21,6 @@ class SaveDataset():
     
     def __init__(self, output, mode):
         
-        # attribute initializer
         self.output_folder = f'{os.environ["HOME"]}/datasets/localbot/{output}'
         
         if not os.path.exists(self.output_folder):
@@ -32,25 +31,19 @@ class SaveDataset():
             print(f'{Fore.RED} {self.output_folder} already exists... Aborting SaveDataset initialization! {Fore.RESET}')
             exit(0)
         
-        
         dt_now = datetime.now() # current date and time
-        config = {'user' : os.environ["USER"],
-                  'date' : dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
-                  'mode' : mode}
+        config = {'user'     : os.environ["USER"],
+                  'date'     : dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
+                  'mode'     : mode,
+                  'is_valid' : False}
         
-        with open(f'{self.output_folder}/log.yaml', 'w') as file:
+        with open(f'{self.output_folder}/config.yaml', 'w') as file:
             yaml.dump(config, file)
         
-        
-        self.frame_idx = 0 # make sure to save as 00000
+        self.frame_idx = 0 
         self.world_link = 'world'
         self.depth_frame = 'kinect_depth_optical_frame'
         self.rgb_frame = 'kinect_rgb_optical_frame'
-        
-        
-        self.transformation = None # 4x4 matrix
-        self.image = None # rgb image
-        self.pc_msg = None # point cloud w.r.t rgb_frame
         
         self.listener = TransformListener()
         self.bridge = CvBridge()
@@ -68,30 +61,19 @@ class SaveDataset():
         
     def saveFrame(self):
         
-        #print('getting trasformation...')
-        self.getTransformation()
+        transformation = self.getTransformation()
+        image = self.getImage()
+        pc_msg = self.getPointCloud()
         
-        #print('getting image...')
-        self.getImage()
-        
-        #print('getting pointcloud')
-        self.getPointCloud()
-        
-        #print('saving files to disk...')
         filename = f'frame-{self.frame_idx:05d}'
-        write_transformation(f'{self.output_folder}/{filename}.pose.txt', self.transformation)
-        write_pcd(f'{self.output_folder}/{filename}.pcd', self.pc_msg)
-        write_img(f'{self.output_folder}/{filename}.rgb.png', self.image)
+        write_transformation(f'{self.output_folder}/{filename}.pose.txt', transformation)
+        write_pcd(f'{self.output_folder}/{filename}.pcd', pc_msg)
+        write_img(f'{self.output_folder}/{filename}.rgb.png', image)
         
         print(f'frame-{self.frame_idx:05d} saved successfully')
         
-        self.frame_idx+=1
-        
-        self.transformation = None # 4x4 matrix
-        self.image = None # rgb image
-        self.pc_msg = None # point cloud w.r.t rgb_frame
-        
-        
+        self.step()
+                
     def getTransformation(self):
         
         now = rospy.Time()
@@ -99,12 +81,12 @@ class SaveDataset():
         self.listener.waitForTransform(self.world_link, self.rgb_frame , now, rospy.Duration(5))
         print('... received!')
         (trans,rot) = self.listener.lookupTransform(self.world_link, self.rgb_frame, now)
-        self.transformation = self.listener.fromTranslationRotation(trans, rot)
+        return self.listener.fromTranslationRotation(trans, rot)
         
     def getImage(self):
         
         rgb_msg = rospy.wait_for_message('/kinect/rgb/image_raw', Image)
-        self.image = self.bridge.imgmsg_to_cv2(rgb_msg, "bgr8") # convert to opencv image
+        return self.bridge.imgmsg_to_cv2(rgb_msg, "bgr8") # convert to opencv image
 
     def getPointCloud(self):
         
@@ -118,7 +100,7 @@ class SaveDataset():
         np_points = np.array(lst_points)
         
         # convert to rgb_frame
-        np_points = np.dot(np_points, self.matrix_depth_rgb)
+        np_points = np.dot(self.matrix_depth_rgb, np_points.T).T
         
         fields = [PointField('x', 0, PointField.FLOAT32, 1),
             PointField('y', 4, PointField.FLOAT32, 1),
@@ -126,7 +108,10 @@ class SaveDataset():
             PointField('intensity', 12, PointField.FLOAT32, 1)]
         
         pc_msg.header.frame_id = self.rgb_frame
-        self.pc_msg = pc2.create_cloud(pc_msg.header, fields, np_points)
+        return pc2.create_cloud(pc_msg.header, fields, np_points)
+    
+    def step(self):
+        self.frame_idx+=1
             
         
         

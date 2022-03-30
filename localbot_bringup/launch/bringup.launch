@@ -1,7 +1,6 @@
 <launch>
     <arg name="name" default="localbot"/>
     <arg name="color" default="Grey"/>
-    <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
     <arg name="x_pos" default="2.0"/>
     <arg name="y_pos" default="2.0"/>
     <arg name="z_pos" default="0.5"/>
@@ -16,25 +15,18 @@
 
     <include file="$(find localbot_bringup)/launch/spawn.launch">
         <arg name="name" value="$(arg name)"/>
-        <arg name="model" value="$(arg model)"/>
         <arg name="x_pos" default="$(arg x_pos)"/>
         <arg name="y_pos" default="$(arg y_pos)"/>
         <arg name="z_pos" default="$(arg z_pos)"/>
     </include>
 
-    <!-- <include file="$(find localbot_bringup)/launch/teleop_rqt.launch">
-        <arg name="name" value="$(arg name)"/>
-    </include> -->
-
-
     <group if="$(eval arg('rviz') == true)">
         <include file="$(find localbot_bringup)/launch/visualize.launch"/>
     </group>
 
-    
-
-    <!-- Sleep 1 is to give time for the spawn to be finished-->
+    <!-- throttle because otherwise there are redundant tfs-->
     <node name="throttle" pkg="topic_tools" type="throttle" args= "messages /gazebo/model_states 10 /gazebo/model_states_throttle" />
+    <!-- Sleep 1 is to give time for the spawn to be finished-->
     <node name="model_states_to_tf" pkg="localbot_gazebo" type="model_states_to_tf.py" launch-prefix="bash -c 'sleep 1; $0 $@' " /> 
     
     

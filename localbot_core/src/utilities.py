@@ -1,25 +1,18 @@
 import copy
-# stdlib
 import functools
 import json
-# 3rd-party
 import numpy as np
 import os
 from scipy.spatial.transform import Rotation as R
-
-# 3rd-party
-# import pypcd
 from colorama import Fore, Style
-
 import cv2
 import rospy
-import sensor_msgs.point_cloud2 as pc2
 import tf
-from sensor_msgs.msg import PointCloud2
-import imageio
+
+from geometry_msgs.msg import Pose
+
 import localbot_core.src.pypcd as pypcd
 
-from geometry_msgs.msg import Point, Pose, Quaternion
 
 def write_pcd(filename, msg, mode='binary'):
     
@@ -27,22 +20,14 @@ def write_pcd(filename, msg, mode='binary'):
     pc.save_pcd(filename, compression=mode)
     
 def read_pcd(filename):
-    """
-    This is meant to replace the old read_pcd from Andre which broke when migrating to python3.
-    :param filename:
-    :param cloud_header:
-    :return:
-    """
+
     if not os.path.isfile(filename):
         raise Exception("[read_pcd] File does not exist.")
-
     pc = pypcd.PointCloud.from_path(filename)
 
     return pc
     
 def write_transformation(filename, transformation):
-    # with open(filename, 'w') as f:
-    #     f.write(str(transformation))
     np.savetxt(filename, transformation, delimiter=',',fmt='%.5f')
 
 def write_img(filename, img):
@@ -73,7 +58,6 @@ def data2pose(data):
         
     return p
 
-
 def matrixToRodrigues(matrix):
     rods, _ = cv2.Rodrigues(matrix[0:3, 0:3])
     rods = rods.transpose()
@@ -103,7 +87,6 @@ def poseToMatrix(pose):
     matrix[0:3,0:3] = rot_mat
     matrix[0:3,3] = trans
     matrix[3,3] = 1
-    
     return matrix
     
     

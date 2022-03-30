@@ -37,13 +37,13 @@ For collecting each frame, we have four options:
 
 1.  **interactive**
 
-        roslaunch localbot_bringup data_collection.launch seq:=10 mode:= interactive
+        rosrun localbot_core data_collector --mode interactive --seq 1 
 
 Here we have to manually drag the interactive marker and click on another marker to save each frame of the dataset.
 
 2.  **automatic_random**
 
-        roslaunch localbot_bringup data_collection.launch seq:=10 mode:= automatic_random 
+        rosrun localbot_core data_collector --mode automatic_random --seq 1 -ns 20 
 
 In this case, in each frame, it is generated a random pose. Here we do not have any movement between poses.
 
@@ -53,7 +53,7 @@ https://uapt33090-my.sharepoint.com/:v:/g/personal/danielsilveiracoelho_ua_pt/ER
 
 3.  **automatic_path** with random poses 
 
-        roslaunch localbot_bringup data_collection.launch seq:=10 mode:= automatic_path n_steps:=20
+        rosrun localbot_core data_collector --mode automatic_path --seq 1 -ns 20 
 
 In this case, it is generated a random pose, and then the camera moves towards that pose in a continuous movement. As soon as the pose is reached, another pose is generated, and so on... One hyperparameter that must be defined is the number of steps (n_steps). Basically, it is the number of iterations between the initial pose and the final pose. 
 
@@ -64,7 +64,7 @@ https://uapt33090-my.sharepoint.com/:v:/g/personal/danielsilveiracoelho_ua_pt/Ef
 
 4.  **automatic_path** with the desired pose 
 
-        roslaunch localbot_bringup data_collection.launch seq:=10 mode:= automatic_path n_steps:=20 destination_pose:='1,4,0,0.5,0.2,1.5'
+        rosrun localbot_core data_collector --mode automatic_path --seq 1 --ns 20 --destination_pose '1,4,0,0.5,0.2,1.5'
 
 In this case, we have to define where we want the model to go, and then a path is generated towards that pose. 
 

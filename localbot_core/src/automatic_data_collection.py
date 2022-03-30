@@ -35,9 +35,6 @@ class AutomaticDataCollection():
         rospy.wait_for_service('/gazebo/get_model_state')
         self.get_model_state_service = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
         
-        
-        #self.pose = copy.deepcopy(pose_gazebo.pose)
-
         # create instance to save dataset
         self.save_dataset = SaveDataset(f'seq{seq}', mode='automatic')
         
@@ -66,7 +63,6 @@ class AutomaticDataCollection():
         p.position.x = x
         p.position.y = y
         p.position.z = z
-        # Make sure the quaternion is valid and normalized
         
         p.orientation.x = quaternion[0]
         p.orientation.y = quaternion[1]
@@ -149,9 +145,6 @@ class AutomaticDataCollection():
 
         self.set_state_service(req.model_state)
        
-            
-            
-
     def saveFrame(self):
         self.save_dataset.saveFrame()
 
