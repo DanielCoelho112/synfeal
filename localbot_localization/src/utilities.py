@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 from sklearn.metrics import mean_squared_error
-from torch import atan
 from pyrr import Quaternion
 from pyrr.quaternion import cross as q_cross, inverse as q_inv
 from math import atan2
@@ -73,7 +72,7 @@ def compute_position_error(pred, targ):
     
     return mean_squared_error(pred, targ, squared=False) # RMSE
 
-def compute_rotation_error(pred, targ): # https://math.stackexchange.com/questions/3572459/how-to-compute-the-orientation-error-between-two-3d-coordinate-frames
+def compute_rotation_error(pred, targ): # https://math.stackexchange.com/questions/3572459/how-to-compute-the-orientation-error-between-two-3d-coordinate-frames and https://stackoverflow.com/questions/23260939/distance-or-angular-magnitude-between-two-quaternions and https://stackoverflow.com/questions/20798056/magnitude-of-rotation-between-two-quaternions
     pred = pred[3:]
     targ = targ[3:]
     
@@ -82,7 +81,7 @@ def compute_rotation_error(pred, targ): # https://math.stackexchange.com/questio
     
     deltaq = q_cross(pred, q_inv(targ))
     
-    return atan2(np.linalg.norm(deltaq[:3]), deltaq[3]) # angle in rads
+    return 2 * atan2(np.linalg.norm(deltaq[:3]), deltaq[3]) # angle in rads
         
     
     

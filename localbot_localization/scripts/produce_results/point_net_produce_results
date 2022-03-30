@@ -15,6 +15,8 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 
 
+
+
 def main():
     # load the model
     feature_transform = False 
@@ -28,7 +30,7 @@ def main():
     test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False,  num_workers=2)
 
     # save results class
-    results = SaveResults('test1','../training/pointnet.pth', 111 )
+    results = SaveResults('test001','../training/pointnet.pth', 111 )
 
 
     for i, data in enumerate(test_dataloader):
@@ -42,7 +44,7 @@ def main():
         
         pos_error = compute_position_error(pred[0], target[0])  # RMSE
         rot_error = compute_rotation_error(pred[0], target[0])
-        
+                
         transformation_pred = poseToMatrix(pred[0])
         transformation_target = poseToMatrix(target[0])
         

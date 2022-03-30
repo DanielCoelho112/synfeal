@@ -61,16 +61,16 @@ class SaveResults():
 
     def updateCSV(self, position_error, rotation_error):
         row = {'frame' : f'{self.frame_idx:05d}', 
-                           'position_error' : position_error,
-                           'rotation_error' : rotation_error}
+                           'position_error (m)' : position_error,
+                           'rotation_error (rads)' : rotation_error}
         
         self.csv = self.csv.append(row, ignore_index=True)  
         
     def saveCSV(self):
         # save averages values in the last row
         row = {'frame' : 'average_values', 
-                         'position_error' : self.csv.mean(axis=0).loc["position_error"],
-                         'rotation_error' : self.csv.mean(axis=0).loc["rotation_error"]}
+               'position_error (m)' : self.csv.mean(axis=0).loc["position_error (m)"],
+               'rotation_error (rads)' : self.csv.mean(axis=0).loc["rotation_error (rads)"]}
         self.csv = self.csv.append(row, ignore_index=True)  
         print(self.csv)
         self.csv.to_csv(f'{self.output_folder}/errors.csv', index=False, float_format='%.5f')
