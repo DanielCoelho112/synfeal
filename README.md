@@ -69,4 +69,12 @@ https://uapt33090-my.sharepoint.com/:v:/g/personal/danielsilveiracoelho_ua_pt/Ef
 In this case, we have to define where we want the model to go, and then a path is generated towards that pose. 
 
 
+# Training the models
 
+At the moment, the only available model is a modified version of PointNet.
+
+Run:
+
+    rosrun localbot_localization point_net_training -fn test1 -mn pointnetv0 -train_set seq110 -test_set seq111 -n_epochs 5 -batch_size 2 -loss 'DynamicLoss()'
+
+# Producing the results

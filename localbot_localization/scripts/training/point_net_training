@@ -2,6 +2,7 @@
 
 import sys
 import argparse
+import yaml
 import torch
 import torch.nn.parallel
 import torch.optim as optim
@@ -87,8 +88,8 @@ def main():
 
     for epoch in range(n_epochs):
         t0 = datetime.now()
-        scheduler.step() # here we are telling the scheduler that: n_epochs += 1
         train_loss = []
+        scheduler.step() # here we are telling the scheduler that: n_epochs += 1
         for data in train_dataloader:
             points, target = data
 
@@ -115,6 +116,8 @@ def main():
             
             train_loss.append(loss.item())
         train_loss = np.mean(train_loss)
+        
+        
         
         test_loss=[]
         for data in train_dataloader:
@@ -144,11 +147,27 @@ def main():
     plt.plot(train_losses, label='train loss')
     plt.plot(test_losses, label='test loss')
     plt.legend()
-    plt.show()
-
+    #plt.show()
+    
+    
+    plt.savefig(f'{folder_name}/losses.png')
     torch.save(model.state_dict(), model_name)
     
-    # save image, and config file (save initialization of the model: PointNet() in this case
+    dt_now = datetime.now() # current date and time
+    config = {'user'          : os.environ["USER"],
+              'date'          : dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
+              'train_set'     : args['training_set'],
+              'test_set'      : args['testing_set'],
+              'n_epochs'      : args['n_epochs'],
+              'batch_size'    : args['batch_size'],
+              'loss'          : args['loss_function'],
+              'learning_rate' : args['learning_rate'],
+              'lr_step_size'  : args['lr_step_size'],
+              'lr_gamma'      : args['lr_gamma'],
+              'init_model'    : 'PointNet()'}
+    
+    with open(f'{folder_name}/config.yaml', 'w') as file:
+        yaml.dump(config, file)
     
 if __name__ == "__main__":
     main()
