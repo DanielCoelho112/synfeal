@@ -13,7 +13,6 @@ class BetaLoss(nn.Module):
         :param targ: N x 7
         :return: 
         """
-        
         # Translation loss
         loss = self.loss_fn(pred[:, :3], targ[:, :3])
         # Rotation loss

@@ -8,11 +8,11 @@ import os
 # pytorch datasets: https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
 
 class LocalBotDataset(data.Dataset):
-    def __init__(self, seq, npoints, scaling = False):
-        self.path_seq = f'/home/danc/datasets/localbot/seq{seq}'
-        self.npoints = npoints # lets use 100 000 for now!
-        self.scaling = scaling
-        self.nframes = sum(f.endswith('.txt') for f in os.listdir(f'/home/danc/datasets/localbot/seq{seq}'))
+    def __init__(self, path_seq, npoints, scaling = False):
+        self.path_seq = f'{os.environ["HOME"]}/datasets/localbot/{path_seq}'
+        self.npoints = npoints # TODO: remove this because in this phase all point clouds should be downsampled.
+        self.scaling = scaling  # TODO: remove this because this was done in the dataset validation!
+        self.nframes = sum(f.endswith('.txt') for f in os.listdir(self.path_seq))
         
 
     def __getitem__(self, index):
@@ -23,16 +23,16 @@ class LocalBotDataset(data.Dataset):
         pts = np.vstack([pc_raw.pc_data['x'], pc_raw.pc_data['y'], pc_raw.pc_data['z']]).T  # stays NX3
         
         # remove nan points
-        pts = pts[~np.isnan(pts).any(axis=1)]
+        pts = pts[~np.isnan(pts).any(axis=1)]  # TODO: remove this
         
 
-        choice = np.random.choice(len(pts), self.npoints, replace=True) # list with the indexes
-        point_set = pts[choice, :] # downsampling
+        choice = np.random.choice(len(pts), self.npoints, replace=True) # list with the indexes  # TODO remove this
+        point_set = pts[choice, :] # downsampling # TODO: remove this
         
         
         # TODO: should we scale our point cloud? Usually, this is good for neural networks, however, in our case I think we are losing valuable information...
         #       try both with and without
-        if self.scaling:  
+        if self.scaling:  # TODO: remove this!!
             point_set = point_set - np.expand_dims(np.mean(point_set, axis=0), 0)  # center
             dist = np.max(np.sqrt(np.sum(point_set ** 2, axis=1)), 0)
             point_set = point_set / dist
@@ -55,7 +55,7 @@ class LocalBotDataset(data.Dataset):
 
 
 
-# dataset = LocalBotDataset(110, 100000)
-# print(dataset[78][1])
+dataset = LocalBotDataset('seq110', 100000)
+print(dataset[78][1])
 # #print(sum(torch.isnan(dataset[78][0])))
 
