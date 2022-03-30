@@ -5,6 +5,7 @@
     <arg name="x_pos" default="2.0"/>
     <arg name="y_pos" default="2.0"/>
     <arg name="z_pos" default="0.5"/>
+    <arg name="rviz" default="true"/>
 
     <!--Load robot xacro into robot_description ros parameter.-->
     <param name="robot_description" command="$(find xacro)/xacro '$(find localbot_description)/urdf/localbot.urdf.xacro'
@@ -25,8 +26,12 @@
         <arg name="name" value="$(arg name)"/>
     </include> -->
 
-    <include file="$(find localbot_bringup)/launch/visualize.launch">
-    </include>
+
+    <group if="$(eval arg('rviz') == true)">
+        <include file="$(find localbot_bringup)/launch/visualize.launch"/>
+    </group>
+
+    
 
     <!-- Sleep 1 is to give time for the spawn to be finished-->
     <node name="throttle" pkg="topic_tools" type="throttle" args= "messages /gazebo/model_states 10 /gazebo/model_states_throttle" />
