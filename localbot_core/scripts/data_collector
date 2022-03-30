@@ -57,7 +57,7 @@ def main():
         while not rospy.is_shutdown():    
             pose = data_collector.generateRandomPose()
             data_collector.setPose(pose)
-            rospy.sleep(1)
+            rospy.sleep(0.4)
             data_collector.saveFrame()
             rate.sleep() 
     elif mode == 'automatic_path':
@@ -70,7 +70,7 @@ def main():
                 step_poses = data_collector.generatePath(n_steps)
                 for pose in step_poses:
                     data_collector.setPose(pose)
-                    rospy.sleep(1)
+                    rospy.sleep(0.4)
                     data_collector.saveFrame()
                     rate.sleep() 
                 print('final destination arrived')
@@ -80,7 +80,7 @@ def main():
                 step_poses = data_collector.generatePath(n_steps,final_pose=final_pose)
                 for pose in step_poses:
                     data_collector.setPose(pose)
-                    rospy.sleep(1)
+                    rospy.sleep(0.4)
                     data_collector.saveFrame()
                     rate.sleep() 
                 print('final destination arrived')

@@ -148,7 +148,9 @@ class AutomaticDataCollection():
         req.model_state.reference_frame = 'world'
 
         self.set_state_service(req.model_state)
-        # self.server.applyChanges()    # needed???
+       
+            
+            
 
     def saveFrame(self):
         self.save_dataset.saveFrame()
