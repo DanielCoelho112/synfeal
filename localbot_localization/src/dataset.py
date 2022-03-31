@@ -8,7 +8,7 @@ import os
 # pytorch datasets: https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
 
 class LocalBotDataset(data.Dataset):
-    def __init__(self, path_seq, npoints, scaling = False):
+    def __init__(self, path_seq, npoints=2000, scaling = False):
         self.path_seq = f'{os.environ["HOME"]}/datasets/localbot/{path_seq}'
         self.npoints = npoints # TODO: remove this because in this phase all point clouds should be downsampled.
         self.scaling = scaling  # TODO: remove this because this was done in the dataset validation!

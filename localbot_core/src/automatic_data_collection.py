@@ -42,7 +42,7 @@ class AutomaticDataCollection():
         self.x_min = 1
         self.x_max = 4
         self.y_min = 1
-        self.y_max = 5
+        self.y_max = 5.5
         self.z_min = -1
         self.z_max = 1
         
@@ -53,8 +53,8 @@ class AutomaticDataCollection():
         y = random.uniform(self.y_min, self.y_max)
         z = random.uniform(self.z_min, self.z_max)
         
-        rx = random.uniform(0, math.pi/4)
-        ry = random.uniform(0, math.pi/4)
+        rx = random.uniform(0, math.pi/5)
+        ry = random.uniform(0, math.pi/5)
         rz = random.uniform(0, 2*math.pi)
         
         quaternion = tf.transformations.quaternion_from_euler(rx, ry, rz)
