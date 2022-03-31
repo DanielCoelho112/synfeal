@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+
+# 3rd-party
+import rospy
+from colorama import Fore, Style
+from std_msgs.msg import Header
+from geometry_msgs.msg import Point, Pose, Vector3, Quaternion, TransformStamped, Transform
+from visualization_msgs.msg import *
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.validate_dataset import ValidateDataset
+import numpy as np
+
+
+
+
+def main():
+    
+    parser = argparse.ArgumentParser(description='Validate dataset')
+    parser.add_argument('-dataset', '--dataset', type=str, required=True, help='Name of the dataset')
+    parser.add_argument('-suffix', '--suffix', type=str, required=True, help='Suffix to append to the name of the validated dataset')
+    
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+    
+    dataset = LocalBotDataset(path_seq=args['dataset'])
+    
+    validate = ValidateDataset()
+    
+    validated_dataset = validate.duplicateDataset(dataset, args['suffix'])
+    
+    idxs = validate.invalidFrames(validated_dataset)
+    
+    validate.removeFrames(validated_dataset, idxs)
+    
+    validate.reorganizeDataset(validated_dataset)
+    
+    validate.removeNansPointCloud(validated_dataset)
+    
+    validate.downsamplePointCloud(validated_dataset, 20000)
+    
+    validate.scalePointCloud(validated_dataset)
+    
+    print(validate.validateDataset(validated_dataset))
+    
+
+    
+    
+if __name__ == "__main__":
+    main()
+
+
+

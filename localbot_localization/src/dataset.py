@@ -4,11 +4,14 @@ from localbot_localization.src.utilities import normalize_quat
 import numpy as np
 import torch
 import os
+import yaml
+from yaml.loader import SafeLoader
 
 # pytorch datasets: https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
 
 class LocalBotDataset(data.Dataset):
     def __init__(self, path_seq, npoints=2000, scaling = False):
+        self.seq = path_seq
         self.path_seq = f'{os.environ["HOME"]}/datasets/localbot/{path_seq}'
         self.npoints = npoints # TODO: remove this because in this phase all point clouds should be downsampled.
         self.scaling = scaling  # TODO: remove this because this was done in the dataset validation!
@@ -51,7 +54,12 @@ class LocalBotDataset(data.Dataset):
                 
 
     def __len__(self):
-        return self.nframes
+        return sum(f.endswith('.txt') for f in os.listdir(self.path_seq))
+    
+    def getConfig(self):
+        with open(f'{self.path_seq}/config.yaml') as f:
+            config = yaml.load(f, Loader=SafeLoader)
+        return config
 
 
 

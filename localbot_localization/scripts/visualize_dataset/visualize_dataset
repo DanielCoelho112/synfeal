@@ -23,15 +23,15 @@ from matplotlib import cm
 
 def main():
     
-    parser = argparse.ArgumentParser(description='Visualizing train set')
-    parser.add_argument('-train_set', '--training_set', type=str, required=True, help='Name of the training set')
+    parser = argparse.ArgumentParser(description='Visualizing dataset')
+    parser.add_argument('-dataset', '--dataset', type=str, required=True, help='Name of the training set')
     
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     
-    train_dataset = LocalBotDataset(path_seq=args['training_set'])
+    train_dataset = LocalBotDataset(path_seq=args['dataset'])
     
-    rospy.init_node('visualize_train_set')
+    rospy.init_node('visualize_dataset')
     rate = rospy.Rate(10) 
     
     marker_pub = rospy.Publisher("/marker_array", MarkerArray, queue_size=10)

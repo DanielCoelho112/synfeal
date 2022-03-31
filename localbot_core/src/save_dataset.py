@@ -35,7 +35,9 @@ class SaveDataset():
         config = {'user'     : os.environ["USER"],
                   'date'     : dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
                   'mode'     : mode,
-                  'is_valid' : False}
+                  'is_valid' : False,
+                  'n_points' : None,
+                  'scaled'   : False}
         
         with open(f'{self.output_folder}/config.yaml', 'w') as file:
             yaml.dump(config, file)
