@@ -8,15 +8,15 @@ from localbot_localization.src.dataset import LocalBotDataset
 import localbot_core.src.pypcd as pypcd
 from sensor_msgs.msg import PointCloud2, PointField
 import sensor_msgs.point_cloud2 as pc2
-from std_msgs.msg import Header
 from localbot_core.src.utilities import *
 import random
 from os.path import exists
 import yaml
+from colorama import Fore
 
 class ValidateDataset():
     def __init__(self):
-        self.config = {}
+        self.files = ['.pcd', '.rgb.png', '.pose.txt']
         
     def resetConfig(self, config={}):
         self.config = config
@@ -135,11 +135,11 @@ class ValidateDataset():
         with open(f'{dataset.path_seq}/config.yaml', 'w') as file:
             yaml.dump(config, file)
     
-    def invalidFrames(self, dataset, files = ['.pcd', '.rgb.png', '.pose.txt']):
+    def invalidFrames(self, dataset):
         # return a list with invalid frames
         idxs = []
         for index in range(len(dataset)):
-            for file in files:
+            for file in self.files:
                 if not exists(f'{dataset.path_seq}/frame-{index:05d}{file}'):
                     idxs.append(index)
                     break
@@ -152,11 +152,11 @@ class ValidateDataset():
                     os.remove(f'{dataset.path_seq}/{file}')
             
                     
-    def reorganizeDataset(self, dataset, files = ['.pcd', '.rgb.png', '.pose.txt']):
+    def reorganizeDataset(self, dataset):
         # here I assume the invalidFrames and removeFrames were called before.
         for idx in range(len(dataset)):
             if not exists(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt'):
-                for file in files:
+                for file in self.files:
                     os.rename(f'{dataset.path_seq}/frame-{idx+1:05d}{file}', f'{dataset.path_seq}/frame-{idx:05d}{file}')
                 
     
@@ -166,6 +166,7 @@ class ValidateDataset():
         # check for invalid frames
         idxs = self.invalidFrames(dataset)
         if idxs != []:
+            print(f'{Fore.RED} There are invalid frames in the dataset! {Fore.RESET}')
             return False
 
         # check for missing data
@@ -174,6 +175,7 @@ class ValidateDataset():
         for count in dct.values():
             n_nans += count
         if n_nans != 0:
+            print(f'{Fore.RED} There are Nans in the dataset! {Fore.RESET}')
             return False 
         
         #check for point clouds of different size
@@ -181,6 +183,7 @@ class ValidateDataset():
         number_of_points = list(dct.values())
         result = all(element == number_of_points[0] for element in number_of_points)
         if not result:
+            print(f'{Fore.RED} Not all pointclouds have the same number of points! {Fore.RESET}')
             return False
         
         config = dataset.getConfig()
@@ -190,6 +193,43 @@ class ValidateDataset():
         
         return True
 
-    def mergeDatasets(self, dataset1, dataset2):
-        pass
+    def mergeDatasets(self, dataset1, dataset2, dataset3_name):
+        # both datasets must be valids
+        # they should share the same number of points
+        
+        if not (dataset1.getConfig()['is_valid'] and dataset2.getConfig()['is_valid']):
+            print(f'{Fore.RED} The datasets are not valid! Validate before merge. {Fore.RESET}')
+            return False
+        
+        if not (dataset1.getConfig()['npoints'] == dataset2.getConfig()['npoints']):
+            print(f'{Fore.RED} The datasets dont have the same number of points! {Fore.RESET}')
+            return False
+
+        if not (dataset1.getConfig()['scaled'] == dataset2.getConfig()['scaled']):
+            print(f'{Fore.RED} Property scaled is different! {Fore.RESET}')
+            return False
+        
+        size_dataset1 = len(dataset1)
+        
+        shutil.copytree(dataset1.path_seq, f'{dataset1.root}/{dataset3_name}')
+        shutil.copytree(dataset2.path_seq, f'{dataset2.path_seq}_tmp')
+        
+        dataset3 = LocalBotDataset(path_seq=f'{dataset3_name}')
+        dataset2_tmp = LocalBotDataset(path_seq=f'{dataset2.seq}_tmp')
+        
+        for idx in range(len(dataset2_tmp)):
+            for file in self.files:
+                os.rename(f'{dataset2_tmp.path_seq}/frame-{idx:05d}{file}', f'{dataset3.path_seq}/frame-{idx+size_dataset1:05d}{file}')
+                
+        shutil.rmtree(dataset2_tmp.path_seq)
+        
+        
+        
+            
+            
+        
+        
+        
+        
+        
     

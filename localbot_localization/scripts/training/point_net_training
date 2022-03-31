@@ -50,8 +50,22 @@ def main():
         exit(0)
 
     ## Load the dataset
-    train_dataset = LocalBotDataset(path_seq=args['training_set'], npoints=2000)
-    test_dataset = LocalBotDataset(path_seq=args['testing_set'], npoints=2000)
+    train_dataset = LocalBotDataset(path_seq=args['training_set'])
+    test_dataset = LocalBotDataset(path_seq=args['testing_set'])
+    
+    # check if the datasets are validated
+    
+    config_train = train_dataset.getConfig()
+    config_test = test_dataset.getConfig()
+    if not config_train['is_valid']:
+        print(f'{Fore.RED} {train_dataset.seq} is not valid!')
+        exit(0)
+    if not config_test['is_valid']:
+        print(f'{Fore.RED} {test_dataset.seq} is not valid!')
+        exit(0)
+    
+    
+    
     
     ## Pytorch data loader
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=args['batch_size'], shuffle=True,  num_workers=2)

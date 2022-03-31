@@ -69,6 +69,26 @@ https://uapt33090-my.sharepoint.com/:v:/g/personal/danielsilveiracoelho_ua_pt/Ef
 In this case, we have to define where we want the model to go, and then a path is generated towards that pose. 
 
 
+# Validating the datasets
+
+Every collected dataset MUST be validated.
+
+Run:
+
+    rosrun localbot_localization validate_dataset -dataset seq1 -suffix '_v' -pts 20000
+
+# Merging different datasets
+
+It is possible to merge different datasets. All datasets should be considered valid before merging...
+
+Run:
+
+    rosrun localbot_localization merge_dataset -dataset1 'seq1_v' -dataset2 'seq1_v' -merged_dataset 'merged_dataset'
+
+
+
+
+
 
 # Visualizing the training set
 

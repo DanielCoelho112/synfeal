@@ -15,14 +15,11 @@ from localbot_localization.src.dataset import LocalBotDataset
 from localbot_localization.src.validate_dataset import ValidateDataset
 import numpy as np
 
-
-
-
-def main():
-    
+def main():    
     parser = argparse.ArgumentParser(description='Validate dataset')
     parser.add_argument('-dataset', '--dataset', type=str, required=True, help='Name of the dataset')
     parser.add_argument('-suffix', '--suffix', type=str, required=True, help='Suffix to append to the name of the validated dataset')
+    parser.add_argument('-pts', '--points', type=int, default=20000, help='Number of points to downsample')
     
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
@@ -41,15 +38,15 @@ def main():
     
     validate.removeNansPointCloud(validated_dataset)
     
-    validate.downsamplePointCloud(validated_dataset, 20000)
+    validate.downsamplePointCloud(validated_dataset, args['points'])
     
     validate.scalePointCloud(validated_dataset)
     
-    print(validate.validateDataset(validated_dataset))
-    
-
-    
-    
+    if validate.validateDataset(validated_dataset):
+        print(f'{Fore.GREEN} Dataset was succesfully validated into {validated_dataset.seq} {Fore.RESET}')
+    else:
+        print(f'{Fore.RED} There was a problem in the validation! {validated_dataset.seq} {Fore.RESET}')
+        
 if __name__ == "__main__":
     main()
 
