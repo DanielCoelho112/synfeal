@@ -1,9 +1,10 @@
 <launch>
+    <arg name="results_folder"/>
 
     <node name="rviz" pkg="rviz" type="rviz" args="--display-config $(find localbot_localization)/config/visualize_results.rviz" required="false">
     </node>
 
     <!-- Sleep 1 is to give time for the spawn to be finished-->
-    <node name="visualize_results" pkg="localbot_localization" type="visualize_results" /> 
+    <node name="visualize_results" pkg="localbot_localization" type="visualize_results" args="--results_folder $(arg results_folder)" output='screen'/> 
     
 </launch>

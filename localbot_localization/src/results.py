@@ -1,17 +1,14 @@
 from localbot_core.src.utilities import matrixToXYZ, matrixToQuaternion
 from localbot_localization.src.utilities import normalize_quat
 import numpy as np
-import torch
 import os
 
-# pytorch datasets: https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
 
 class LocalBotResults():
     def __init__(self, results_path):
-        self.path = f'/home/danc/results/localbot/{results_path}'
+        self.path = f'{os.environ["HOME"]}/results/localbot/{results_path}'
         self.nframes = int(sum(f.endswith('.txt') for f in os.listdir(self.path))/2)
         
-
     def __getitem__(self, index):
         
         # load pose
@@ -33,10 +30,10 @@ class LocalBotResults():
 
     def __len__(self):
         return self.nframes
-        #return 1
+        
 
 
-results = LocalBotResults('test1')
-print(len(results))
+#results = LocalBotResults('test1')
+#print(len(results))
 
 

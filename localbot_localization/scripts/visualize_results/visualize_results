@@ -28,23 +28,20 @@ from matplotlib import cm
 
 def main():
     
-    # parser = argparse.ArgumentParser(description='Data Collector')
-    # parser.add_argument('-m', '--mode', type=str, default='interactive', help='interactive/automatic_random_path/automatic_path')
-    # parser.add_argument('-s', '--seq', type=int, default=10, help='sequence number')
-    # parser.add_argument('-ns', '--n_steps', type=int, default=20, help='number of steps')
-    # parser.add_argument('-dp', '--destination_pose', type=str, default='x,y,z,rx,ry,rz', help='destination pose')
-    # arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
-    # args = vars(parser.parse_args(args=arglist))
+    parser = argparse.ArgumentParser(description='Visualizing results')
     
-    results = LocalBotResults('test1')
+    parser.add_argument('-rf', '--results_folder', type=str, required=True, help='Name of the results folder')
+    
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+    
+    results = LocalBotResults(args['results_folder'])
+    
     rospy.init_node('visualize_results')
     rate = rospy.Rate(10) 
     
-    
     marker_pub = rospy.Publisher("/marker_array", MarkerArray, queue_size=10)
-    #marker_pose = rospy.Publisher("/poses", Marker, queue_size=10)
     tf_broadcaster=tf2_ros.TransformBroadcaster()
-    idx = 0
     colormap = cm.tab20(np.linspace(0, 1, len(results)))
                     
     while not rospy.is_shutdown():
@@ -75,7 +72,6 @@ def main():
             matrix_quaternion_marker = np.dot(matrix_quaternion_marker,rotate_y90)
             quaternion_marker = R.from_matrix(matrix_quaternion_marker).as_quat()
             
-
             marker = Marker(header=Header(frame_id="map", stamp=rospy.Time.now()))
             marker.type = marker.ARROW
             marker.action = marker.ADD
@@ -136,13 +132,8 @@ def main():
             #                                                             rotation=Quaternion(x=pose_real[3], y=pose_real[4], z=pose_real[5], w=pose_real[6])))
             #     tf_broadcaster.sendTransform(transform)
             
-        
-            
-        
-        # publish markerarray
-        
-        marker_pub.publish(markers)
-           
+       
+        marker_pub.publish(markers)       
         rate.sleep()
         
         

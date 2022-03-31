@@ -2,14 +2,9 @@
 
 # 3rd-party
 
-from operator import pos
-import rospy
 import os
 from visualization_msgs.msg import *
-from cv_bridge import CvBridge
-from tf.listener import TransformListener
 from localbot_core.src.utilities import *
-from sensor_msgs.msg import PointCloud2, Image, PointField
 from colorama import Fore
 from datetime import datetime
 import yaml
@@ -20,12 +15,12 @@ class SaveResults():
     class to save results
     """
     
-    def __init__(self, output, model_path, seq):
+    def __init__(self, output, model_path, seq_path):
         
         # attribute initializer
         self.output_folder = f'{os.environ["HOME"]}/results/localbot/{output}'
         self.model_path = model_path
-        self.seq = seq
+        self.seq_path = seq_path
         
         if not os.path.exists(self.output_folder):
             print(f'Creating folder {self.output_folder}')
@@ -36,19 +31,19 @@ class SaveResults():
             exit(0)
         
         
-        dt_now = datetime.now() # current date and time
-        config = {'user' : os.environ["USER"],
-                  'date' : dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
-                  'model_path' : self.model_path,
-                  'seq' : f'seq{self.seq}'}
         
-        with open(f'{self.output_folder}/log.yaml', 'w') as file:
+        dt_now = datetime.now() # current date and time
+        config = {'user'       : os.environ["USER"],
+                  'date'       : dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
+                  'model_path' : self.model_path,
+                  'seq_path'   : self.seq_path}
+        
+        with open(f'{self.output_folder}/config.yaml', 'w') as file:
             yaml.dump(config, file)
         
         self.frame_idx = 0 # make sure to save as 00000
         self.csv = pd.DataFrame(columns=('frame', 'position_error (m)', 'rotation_error (rads)'))
         
-
         print('SaveResults initialized properly')
 
     def saveTXT(self, real_transformation, predicted_transformation):
@@ -77,7 +72,7 @@ class SaveResults():
 
     def step(self):
         self.frame_idx+=1
-        print(f'Moving to {self.frame_idx:05d}')
+        
         
         
 

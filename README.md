@@ -78,3 +78,13 @@ Run:
     rosrun localbot_localization point_net_training -fn test1 -mn pointnetv0 -train_set seq110 -test_set seq111 -n_epochs 5 -batch_size 2 -loss 'DynamicLoss()'
 
 # Producing the results
+
+Run:
+
+    rosrun localbot_localization point_net_produce_results -test_set seq111 -mp test1 -rf results_folder
+
+# Visualizing the results
+
+Run:
+
+    roslaunch localbot_localization visualize_results.launch results_folder:=test2
