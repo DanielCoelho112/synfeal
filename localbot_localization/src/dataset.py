@@ -44,8 +44,7 @@ class LocalBotDataset(data.Dataset):
         return config
 
 
-
-#dataset = LocalBotDataset('seq110', 100000)
-#print(dataset[78][1])
-# #print(sum(torch.isnan(dataset[78][0])))
+#dataset = LocalBotDataset('seq_test_v')
+#print(dataset[0][0].shape)
+#print(sum(torch.isnan(dataset[78][0])))
 

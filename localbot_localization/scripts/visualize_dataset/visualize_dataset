@@ -53,6 +53,10 @@ def main():
         
         
         for idx in range(len(train_dataset)):
+            print(idx)
+            
+            # if idx>60:
+            #     continue
         
             # publish markers
             _, pose = train_dataset[idx]

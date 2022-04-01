@@ -32,14 +32,19 @@ def main():
     
     idxs = validate.invalidFrames(validated_dataset)
     
+    print('init remove frames')
     validate.removeFrames(validated_dataset, idxs)
     
+    print('init reorganize dataset')
     validate.reorganizeDataset(validated_dataset)
     
+    print('init remove nans')
     validate.removeNansPointCloud(validated_dataset)
     
+    print('init downsample pointcloud')
     validate.downsamplePointCloud(validated_dataset, args['points'])
     
+    print('init scale pointcloud')
     validate.scalePointCloud(validated_dataset)
     
     if validate.validateDataset(validated_dataset):
