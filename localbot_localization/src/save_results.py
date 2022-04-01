@@ -3,7 +3,7 @@
 # 3rd-party
 
 import os
-from visualization_msgs.msg import *
+#from visualization_msgs.msg import *
 from localbot_core.src.utilities import *
 from colorama import Fore
 from datetime import datetime

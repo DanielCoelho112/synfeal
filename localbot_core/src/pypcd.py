@@ -29,8 +29,8 @@ import struct
 import copy
 import numpy as np
 
-from sensor_msgs.msg import PointField
-from sensor_msgs.msg import PointCloud2
+#from sensor_msgs.msg import PointField
+#from sensor_msgs.msg import PointCloud2
 
 # -----------------------------------------------------------------------------
 # ----- Settings

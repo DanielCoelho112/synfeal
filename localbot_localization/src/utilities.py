@@ -1,8 +1,8 @@
 import numpy as np
 import torch
 from sklearn.metrics import mean_squared_error
-from pyrr import Quaternion
-from pyrr.quaternion import cross as q_cross, inverse as q_inv
+#from pyrr import Quaternion
+#from pyrr.quaternion import cross as q_cross, inverse as q_inv
 from math import atan2
 from localbot_core.src.utilities import poseToMatrix, matrixToRodrigues
 

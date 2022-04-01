@@ -3,12 +3,12 @@ import functools
 import json
 import numpy as np
 import os
-from scipy.spatial.transform import Rotation as R
+#from scipy.spatial.transform import Rotation as R
 from colorama import Fore, Style
-import cv2
-import rospy
-import tf
-from geometry_msgs.msg import Pose
+#import cv2
+#import rospy
+#import tf
+#from geometry_msgs.msg import Pose
 import localbot_core.src.pypcd as pypcd
 
 
