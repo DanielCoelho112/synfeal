@@ -86,10 +86,6 @@ Run:
     rosrun localbot_localization merge_dataset -dataset1 'seq1_v' -dataset2 'seq1_v' -merged_dataset 'merged_dataset'
 
 
-
-
-
-
 # Visualizing the training set
 
 Run:

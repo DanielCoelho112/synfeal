@@ -50,7 +50,7 @@ def main():
             rate.sleep() 
     elif mode == 'automatic_path':
         rate = rospy.Rate(0.4) 
-        data_collector = AutomaticDataCollection(model_name='localbot', seq = seq)
+        data_collector = AutomaticDataCollection(model_name='localbot', seq = seq, ns = n_steps)
         if destination_pose == 'x,y,z,rx,ry,rz': # use random poses
             while not rospy.is_shutdown():
                 step_poses = data_collector.generatePath(n_steps)

@@ -37,7 +37,7 @@ class InteractiveDataCollection():
         self.server.applyChanges()
         
         # create instance to save dataset
-        self.save_dataset = SaveDataset(f'seq{seq}', mode='interactive')
+        self.save_dataset = SaveDataset(f'{seq}', mode='interactive')
         
     
     def makeBox(self, msg, pose, color):
