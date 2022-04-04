@@ -9,19 +9,19 @@ import cv2
 import rospy
 import tf
 from geometry_msgs.msg import Pose
-import localbot_core.src.pypcd as pypcd
+from localbot_core.src.pypcd import PointCloud
 
 
 def write_pcd(filename, msg, mode='binary'):
     
-    pc = pypcd.PointCloud.from_msg(msg)
+    pc = PointCloud.from_msg(msg)
     pc.save_pcd(filename, compression=mode)
     
 def read_pcd(filename):
 
     if not os.path.isfile(filename):
         raise Exception("[read_pcd] File does not exist.")
-    pc = pypcd.PointCloud.from_path(filename)
+    pc = PointCloud.from_path(filename)
 
     return pc
     
