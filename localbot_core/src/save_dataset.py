@@ -6,7 +6,7 @@ from visualization_msgs.msg import *
 from cv_bridge import CvBridge
 from tf.listener import TransformListener
 from localbot_core.src.utilities import *
-from sensor_msgs.msg import PointCloud2, Image, PointField
+from sensor_msgs.msg import PointCloud2, Image, PointField, CameraInfo
 from colorama import Fore
 from datetime import datetime
 import yaml
@@ -40,8 +40,7 @@ class SaveDataset():
                   'scaled'   : False,
                   'n_steps'  : ns}
         
-        with open(f'{self.output_folder}/config.yaml', 'w') as file:
-            yaml.dump(config, file)
+        
         
         self.frame_idx = 0 
         self.world_link = 'world'
@@ -58,6 +57,39 @@ class SaveDataset():
         print('... received!')
         self.transform_depth_rgb = self.listener.lookupTransform(self.depth_frame, self.rgb_frame, now)
         self.matrix_depth_rgb = self.listener.fromTranslationRotation(self.transform_depth_rgb[0], self.transform_depth_rgb[1])
+        
+        # get intrinsic matrices from both cameras
+        rgb_camera_info = rospy.wait_for_message('/kinect/rgb/camera_info', CameraInfo)
+        depth_camera_info = rospy.wait_for_message('/kinect/depth/camera_info', CameraInfo)
+        
+        # rgb information
+        rgb_intrinsic = rgb_camera_info.K
+        rgb_width = rgb_camera_info.width
+        rgb_height = rgb_camera_info.height
+        
+        # depth information
+        depth_width = depth_camera_info.width
+        depth_height = depth_camera_info.height
+        depth_intrinsic = depth_camera_info.K
+        
+        # save intrinsic to txt file
+        write_intrinsic(f'{self.output_folder}/rgb_intrinsic.txt', rgb_intrinsic)
+        write_intrinsic(f'{self.output_folder}/depth_intrinsic.txt', depth_intrinsic)
+        
+        rgb_dict = {'intrinsic' : f'{self.output_folder}/rgb_intrinsic.txt',
+                    'width'     : rgb_width,
+                    'height'    : rgb_height}
+        
+        depth_dict = {'intrinsic' : f'{self.output_folder}/depth_intrinsic.txt',
+                    'width'       : depth_width,
+                    'height'      : depth_height}
+        
+        config['rgb'] = rgb_dict
+        config['depth'] = depth_dict
+        
+        with open(f'{self.output_folder}/config.yaml', 'w') as file:
+            yaml.dump(config, file)
+        
         
         print('SaveDataset initialized properly')
 
@@ -117,7 +149,7 @@ class SaveDataset():
         self.frame_idx+=1
             
         
-        
+#SaveDataset('q', 'automatic')
         
 
     

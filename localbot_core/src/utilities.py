@@ -86,6 +86,20 @@ def poseToMatrix(pose):
     matrix[0:3,3] = trans
     matrix[3,3] = 1
     return matrix
+
+def write_intrinsic(filename, data):
+    matrix = np.zeros((3,3))
+    matrix[0,0] = data[0]
+    matrix[0,1] = data[1]
+    matrix[0,2] = data[2]
+    matrix[1,0] = data[3]
+    matrix[1,1] = data[4]
+    matrix[1,2] = data[5]
+    matrix[2,0] = data[6]
+    matrix[2,1] = data[7]
+    matrix[2,2] = data[8]
+    
+    np.savetxt(filename, matrix, delimiter=',',fmt='%.5f')
     
     
     

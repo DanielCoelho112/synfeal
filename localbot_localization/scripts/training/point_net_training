@@ -136,7 +136,7 @@ def main():
         
         
         test_loss=[]
-        for data in train_dataloader:
+        for data in test_dataloader:
             points, target = data
             points = points.transpose(2, 1) # 3xN which is what our network is expecting
             points, target = points.cuda(), target.cuda() # move data into GPU
