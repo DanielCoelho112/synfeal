@@ -36,7 +36,7 @@ class LocalBotDataset(data.Dataset):
                 
 
     def __len__(self):
-        return sum(f.endswith('.txt') for f in os.listdir(self.path_seq))
+        return sum(f.endswith('pose.txt') for f in os.listdir(self.path_seq))
     
     def getConfig(self):
         with open(f'{self.path_seq}/config.yaml') as f:

@@ -1,5 +1,5 @@
 import torch.utils.data as data
-from localbot_localization.src.utilities import normalize_quat
+from localbot_localization.src.utilities import normalize_quat, projectToCamera
 import numpy as np
 import torch
 import os
@@ -13,6 +13,7 @@ import random
 from os.path import exists
 import yaml
 from colorama import Fore
+import math
 
 class ValidateDataset():
     def __init__(self):
@@ -223,6 +224,51 @@ class ValidateDataset():
                 
         shutil.rmtree(dataset2_tmp.path_seq)
         
+    def createDepthImages(self, dataset, size):
+        
+        # loop through all point clouds
+        
+        intrinsic = np.loadtxt(f'{dataset.path_seq}/depth_intrinsic.txt', delimiter=',')
+        width = dataset.getConfig()['depth']['width']
+        height = dataset.getConfig()['depth']['height']
+        
+        for idx in range(len(dataset)):
+            pc_raw = read_pcd(f'{dataset.path_seq}/frame-{idx:05d}.pcd')
+            pts = np.vstack([pc_raw.pc_data['x'], pc_raw.pc_data['y'], pc_raw.pc_data['z'], pc_raw.pc_data['intensity']])  # stays 4xN
+            
+            pixels, valid_pixels, dist = projectToCamera(intrinsic, [0, 0, 0, 0, 0], width, height, pts)
+            
+            range_sparse = np.zeros((height, width), dtype=np.float32)
+            mask = 255 * np.ones((range_sparse.shape[0], range_sparse.shape[1]), dtype=np.uint8)
+        
+        
+            for idx_point in range(0, pts.shape[1]):
+                if valid_pixels[idx_point]:
+                    x0 = math.floor(pixels[0, idx_point])
+                    y0 = math.floor(pixels[1, idx_point])
+                    mask[y0, x0] = 0
+                    range_sparse[y0, x0] = dist[idx_point]
+                    
+            range_sparse = cv2.resize(range_sparse, (size,size), interpolation=cv2.INTER_NEAREST)
+            mask = cv2.resize(mask, (size, size), interpolation=cv2.INTER_NEAREST)
+            
+            #range_dense = np.zeros((range_sparse.shape[0], range_sparse.shape[1]), dtype=np.float32)
+            
+            # Computing the dense depth map
+            print('Computing inpaint ...')
+            range_dense = cv2.inpaint(range_sparse, mask, 3, cv2.INPAINT_NS)
+            print('Inpaint done')
+            
+            tmp = copy.deepcopy(range_dense)
+            tmp = tmp * 1000.0  # to milimeters
+            tmp = tmp.astype(np.uint16)
+            cv2.imwrite(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', tmp)
+            print(f'Saved depth image {dataset.path_seq}/frame-{idx:05d}.depth.png')
+
+                                                
+            
+            
+            
         
         
             

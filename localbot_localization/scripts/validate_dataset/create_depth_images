@@ -19,6 +19,7 @@ def main():
     parser = argparse.ArgumentParser(description='Validate dataset')
     parser.add_argument('-dataset', '--dataset', type=str, required=True, help='Name of the dataset')
     parser.add_argument('-suffix', '--suffix', type=str, required=True, help='Suffix to append to the name of the validated dataset')
+    parser.add_argument('-size', '--size', type=int, required=True, help='The depth images will be of shape sizexsize')
     
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
@@ -29,27 +30,11 @@ def main():
     
     validated_dataset = validate.duplicateDataset(dataset, args['suffix'])
     
-    idxs = validate.invalidFrames(validated_dataset)
+    validate.createDepthImages(validated_dataset, args['size'])
     
-    print('init remove frames')
-    validate.removeFrames(validated_dataset, idxs)
     
-    print('init reorganize dataset')
-    validate.reorganizeDataset(validated_dataset)
-    
-    print('init remove nans')
-    validate.removeNansPointCloud(validated_dataset)
-    
-    print('init downsample pointcloud')
-    validate.downsamplePointCloud(validated_dataset, args['points'])
-    
-    print('init scale pointcloud')
-    validate.scalePointCloud(validated_dataset)
-    
-    if validate.validateDataset(validated_dataset):
-        print(f'{Fore.GREEN} Dataset was succesfully validated into {validated_dataset.seq} {Fore.RESET}')
-    else:
-        print(f'{Fore.RED} There was a problem in the validation! {validated_dataset.seq} {Fore.RESET}')
+
+
         
 if __name__ == "__main__":
     main()

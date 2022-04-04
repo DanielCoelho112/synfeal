@@ -69,6 +69,14 @@ https://uapt33090-my.sharepoint.com/:v:/g/personal/danielsilveiracoelho_ua_pt/Ef
 In this case, we have to define where we want the model to go, and then a path is generated towards that pose. 
 
 
+
+# Creating depth images
+
+Run:
+
+    rosrun localbot_localization create_depth_images --dataset 'seq1' --size 224 --suffix '_depth'
+
+
 # Validating the datasets
 
 Every collected dataset MUST be validated.
