@@ -46,7 +46,7 @@ def main():
         
    
     # load the testing dataset
-    test_dataset = LocalBotDataset(path_seq=f'{args["testing_set"]}', npoints=2000)
+    test_dataset = LocalBotDataset(path_seq=f'{args["testing_set"]}')
     test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False,  num_workers=2)
     
     # create results folder

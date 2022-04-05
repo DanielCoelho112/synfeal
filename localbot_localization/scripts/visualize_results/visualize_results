@@ -32,8 +32,13 @@ def main():
     
     parser.add_argument('-rf', '--results_folder', type=str, required=True, help='Name of the results folder')
     
+    parser.add_argument('-idx_max', '--idx_max', type=int, required=True, help='max idx of the frame')
+    
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
+    
+    
+    idx_max = args['idx_max']
     
     results = LocalBotResults(args['results_folder'])
     
@@ -42,7 +47,7 @@ def main():
     
     marker_pub = rospy.Publisher("/marker_array", MarkerArray, queue_size=10)
     tf_broadcaster=tf2_ros.TransformBroadcaster()
-    colormap = cm.tab20(np.linspace(0, 1, len(results)))
+    colormap = cm.tab20(np.linspace(0, 1, idx_max+1))
                     
     while not rospy.is_shutdown():
         
@@ -58,8 +63,13 @@ def main():
         markers.markers.append(marker)
         
         
-        for idx in range(len(results)):
+
         
+        for idx in range(len(results)):
+            
+            if idx > idx_max:
+                continue
+            
             # publish markers
             pose_real, pose_predicted = results[idx]
             
