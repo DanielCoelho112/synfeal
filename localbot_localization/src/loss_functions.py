@@ -19,6 +19,24 @@ class BetaLoss(nn.Module):
         # Rotation loss
         loss += self.beta * self.loss_fn(pred[:, 3:], targ[:, 3:])  ## see paper: https://arxiv.org/abs/1704.00390
         return loss
+
+class TranslationLoss(nn.Module):
+    def __init__(self):
+        super(TranslationLoss, self).__init__()
+        # self.loss_fn = torch.nn.L1Loss() # PoseNet said that L1 was the best
+        self.loss_fn = torch.nn.MSELoss()
+
+    def forward(self, pred, targ):
+        """
+        :param pred: N x 7
+        :param targ: N x 7
+        :return:
+        """
+        # Translation loss
+        loss = self.loss_fn(pred[:, :3], targ[:, :3])
+        # Rotation loss
+        # loss += self.beta * self.loss_fn(pred[:, 3:], targ[:, 3:])  ## see paper: https://arxiv.org/abs/1704.00390
+        return loss
     
 class DynamicLoss(nn.Module):
     def __init__(self, sx=0.0, sq=-3.0):

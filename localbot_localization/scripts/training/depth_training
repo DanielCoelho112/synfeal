@@ -1,0 +1,231 @@
+#!/usr/bin/env python3
+
+# %% md
+
+### imports
+
+# %%
+import cv2
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from colorama import Fore, Style
+import numpy as np
+import matplotlib.pyplot as plt
+from datetime import datetime  # to track the time each epoch takes
+from localbot_localization.src.dataset import LocalBotDatasetDepth
+from localbot_localization.src.loss_functions import BetaLoss, DynamicLoss, TranslationLoss
+from localbot_localization.src.utilities import process_pose
+
+
+def main():
+    # Load the dataset
+    train_dataset = LocalBotDatasetDepth(path_seq='seq0_depth_v')
+    test_dataset = LocalBotDatasetDepth(path_seq='seq1_depth_v')
+
+    # check if the datasets are validated
+
+    config_train = train_dataset.getConfig()
+    config_test = test_dataset.getConfig()
+    if not config_train['is_valid']:
+        print(f'{Fore.RED} {train_dataset.seq} is not valid!')
+        exit(0)
+    if not config_test['is_valid']:
+        print(f'{Fore.RED} {test_dataset.seq} is not valid!')
+        exit(0)
+
+    batch_size = 8
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
+
+    # model definition
+    class CNNDepth(nn.Module):
+        def __init__(self):
+            super(CNNDepth,
+                  self).__init__()  # call the init constructor of the nn.Module. This way, we are only adding attributes.
+
+            # In this case, we only the layers that have parameters.
+            # self.conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3,
+            #                        stride=2)  # in_channels is the number of channels of the input image (or filter)
+            # self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3,
+            #                        stride=2)  # out_channels is the number of fiters used in this layer
+            # self.conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2)
+            # self.conv4 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=2)
+            # self.conv5 = nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=2)
+            #
+            # self.fc1 = nn.Linear(18432, 4096)
+            # self.fc2 = nn.Linear(4096, 2048)
+            # self.fc3 = nn.Linear(2048, 1024)
+            # self.fc4 = nn.Linear(1024, 512)
+            # self.fc_out_translation = nn.Linear(512, 3)
+            # self.fc_out_rotation = nn.Linear(512, 4)
+
+            # In this case, we only the layers that have parameters.
+            self.conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3,
+                                   stride=4)  # in_channels is the number of channels of the input image (or filter)
+            self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3,
+                                   stride=4)  # out_channels is the number of fiters used in this layer
+            self.conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2)
+            self.conv4 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=2)
+            # self.conv5 = nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=2)
+
+            # self.fc1 = nn.Linear(18432, 4096)
+            # self.fc1 = nn.Linear(18432, 4096)
+            # self.fc2 = nn.Linear(4096, 2048)
+            # self.fc3 = nn.Linear(2048, 1024)
+            self.fc4 = nn.Linear(1024, 512)
+            self.fc_out_translation = nn.Linear(512, 3)
+            self.fc_out_rotation = nn.Linear(512, 4)
+
+
+        # instead of treating the relu as modules, we can treat them as functions. We can access them via torch funtional
+        def forward(self, x, verbose=False):  # this is where we pass the input into the module
+
+            if verbose: print('shape ' + str(x.shape))
+            x = F.relu(self.conv1(x))
+            if verbose: print('layer1 shape ' + str(x.shape))
+            x = F.relu(self.conv2(x))
+            if verbose: print('layer2 shape ' + str(x.shape))
+            x = F.relu(self.conv3(x))
+            if verbose: print('layer3 shape ' + str(x.shape))
+            x = F.relu(self.conv4(x))
+            if verbose: print('layer4 shape ' + str(x.shape))
+            # x = F.relu(self.conv5(x))
+            # if verbose: print('layer5 shape ' + str(x.shape))
+
+            x = x.view(x.size(0), -1)
+            if verbose: print('x shape ' + str(x.shape))
+            # x = F.dropout(x, p=0.5)
+            # x = F.relu(self.fc1(x))
+            # if verbose: print('fc1 shape ' + str(x.shape))
+            #
+            # x = F.relu(self.fc2(x))
+            # if verbose: print('fc2 shape ' + str(x.shape))
+            #
+            # x = F.relu(self.fc3(x))
+            # if verbose: print('fc3 shape ' + str(x.shape))
+
+            x = F.relu(self.fc4(x))
+            if verbose: print('fc4 shape ' + str(x.shape))
+
+            x_translation = F.relu(self.fc_out_translation(x))
+            if verbose: print('x_translation shape ' + str(x_translation.shape))
+
+            x_rotation = F.relu(self.fc_out_rotation(x))
+            if verbose: print('x_rotation shape ' + str(x_rotation.shape))
+
+            x_pose = torch.cat((x_translation, x_rotation), dim=1)
+
+            return x_pose
+
+    # test the class
+    cnn = CNNDepth()
+
+    # from torchsummary import summary
+    # cnn.cuda()
+    # summary(cnn, input_size=(1, 224, 224))
+    # for data in train_loader:
+    #     print('first batch')
+    #     points, depth_image, pose = data
+    #
+    #
+    #     predicted_pose = cnn(depth_image)
+    #     print(predicted_pose)
+    #
+    #     exit(0)
+
+    # for idx in range(len(train_dataset)):
+    #     points, depth_image, target_pose = train_dataset[idx]
+    #
+    #     np_depth_image = depth_image.numpy()
+    #     np_depth_image = np_depth_image.reshape((224,224))
+    #     print(np_depth_image.shape)
+    #     cv2.imshow('image', np_depth_image)
+    #     cv2.waitKey(0)
+    #
+    #
+    # exit(0)
+
+    # define loss function
+    # criterion = BetaLoss()
+    criterion = TranslationLoss()
+    # criterion = DynamicLoss()
+
+    # Define optimizer
+    optimizer = optim.Adam(params=cnn.parameters(), lr=0.001)  # the most common optimizer in DL
+    # TODO set variable learning rate
+
+    print(torch.cuda.is_available())
+
+    # Send model and criterion to GPU
+    cnn.cuda()
+    criterion.cuda()
+
+    # ----------------------------------
+    # Do the training
+    # ----------------------------------
+
+    n_epochs = 100
+    train_losses = np.zeros(n_epochs)
+    test_losses = np.zeros(n_epochs)
+
+    for epoch in range(n_epochs):
+        t0 = datetime.now()
+        train_losses_per_batch = []
+
+        for points, depth_image, target_pose in train_loader:  # iterate batches
+
+            depth_image, target_pose = depth_image.cuda(), target_pose.cuda()  # move data into GPU
+            optimizer.zero_grad()  # Clears the gradients of all optimized tensors (always needed in the beginning of the training loop)
+
+            cnn = cnn.train()  # Sets the module in training mode. For example, the dropout module can only be use in training mode.
+
+            predicted_pose = cnn(depth_image)  # our model outputs the pose, and the transformations used
+
+            predicted_pose = process_pose(predicted_pose)
+
+            loss = criterion(predicted_pose, target_pose)
+
+            loss.backward()  # Computes the gradient of current tensor w.r.t. graph leaves.
+            optimizer.step()  # Performs a single optimization step (parameter update).
+
+            train_losses_per_batch.append(loss.item())
+
+        train_loss_epoch = np.mean(train_losses_per_batch)
+
+        test_losses_per_batch = []
+        for points, depth_image, target_pose  in test_loader:
+            depth_image, target_pose = depth_image.cuda(), target_pose.cuda()  # move data into GPU
+
+            cnn = cnn.eval()  # Sets the module in evaluation mode.
+
+            predicted_pose = cnn(depth_image)  # our model outputs the pose, and the transformations used
+            predicted_pose = process_pose(predicted_pose)
+
+            loss = criterion(predicted_pose, target_pose)
+
+            test_losses_per_batch.append(loss.item())
+
+        test_loss_epoch = np.mean(test_losses_per_batch)
+
+        # save losses
+        train_losses[epoch] = train_loss_epoch
+        # test_losses[epoch] = test_loss_epoch
+        test_losses[epoch] = []
+
+        dt = datetime.now() - t0
+        print(f'epoch {epoch + 1}/{n_epochs}, train_loss: {train_loss_epoch:.4f}, test_loss: {test_loss_epoch:.4f}, duration: {dt}')
+
+    plt.plot(train_losses, label='train loss')
+    plt.plot(test_losses, label='test loss')
+    plt.legend()
+    plt.show()
+    # fig.canvas.flush_events()
+    # fig.canvas.draw()
+    plt.draw()
+    plt.waitforbuttonpress(0.5)
+
+
+if __name__ == "__main__":
+    main()
