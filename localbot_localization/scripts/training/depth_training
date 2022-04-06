@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 
-# %% md
-
-### imports
-
-# %%
 import cv2
 import torch
 import torch.nn as nn
@@ -21,8 +16,8 @@ from localbot_localization.src.utilities import process_pose
 
 def main():
     # Load the dataset
-    train_dataset = LocalBotDatasetDepth(path_seq='seq0_depth_v')
-    test_dataset = LocalBotDatasetDepth(path_seq='seq1_depth_v')
+    train_dataset = LocalBotDatasetDepth(path_seq='seq_test0_d_v')
+    test_dataset = LocalBotDatasetDepth(path_seq='seq_test1_d_v')
 
     # check if the datasets are validated
 
@@ -109,10 +104,10 @@ def main():
             x = F.relu(self.fc4(x))
             if verbose: print('fc4 shape ' + str(x.shape))
 
-            x_translation = F.relu(self.fc_out_translation(x))
+            x_translation = self.fc_out_translation(x)
             if verbose: print('x_translation shape ' + str(x_translation.shape))
 
-            x_rotation = F.relu(self.fc_out_rotation(x))
+            x_rotation = self.fc_out_rotation(x)
             if verbose: print('x_rotation shape ' + str(x_rotation.shape))
 
             x_pose = torch.cat((x_translation, x_rotation), dim=1)
@@ -211,8 +206,8 @@ def main():
 
         # save losses
         train_losses[epoch] = train_loss_epoch
-        # test_losses[epoch] = test_loss_epoch
-        test_losses[epoch] = []
+        test_losses[epoch] = test_loss_epoch
+        #test_losses[epoch] = []
 
         dt = datetime.now() - t0
         print(f'epoch {epoch + 1}/{n_epochs}, train_loss: {train_loss_epoch:.4f}, test_loss: {test_loss_epoch:.4f}, duration: {dt}')
