@@ -60,7 +60,6 @@ class LocalBotDatasetDepth(data.Dataset):
 
     def __getitem__(self, index):
         # return Nx3, 1x6 torch tensors
-
         # load point cloud
         pc_raw = read_pcd(f'{self.path_seq}/frame-{index:05d}.pcd')
         point_set = np.vstack([pc_raw.pc_data['x'], pc_raw.pc_data['y'], pc_raw.pc_data['z']]).T  # stays NX3

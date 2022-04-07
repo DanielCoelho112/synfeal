@@ -99,7 +99,7 @@ class STNkd(nn.Module):
 class PointNetfeat(nn.Module):
     def __init__(self, feature_transform = False):
         super(PointNetfeat, self).__init__()
-        self.stn = STN3d()
+        #self.stn = STN3d()
         self.conv1 = torch.nn.Conv1d(3, 64, 1)
         self.conv2 = torch.nn.Conv1d(64, 128, 1)
         self.conv3 = torch.nn.Conv1d(128, 1024, 1)
@@ -112,10 +112,10 @@ class PointNetfeat(nn.Module):
 
     def forward(self, x):
         n_pts = x.size()[2] # input is (batch_size, number_of_features, number_of_points)
-        trans = self.stn(x)
-        x = x.transpose(2, 1) # this swaps number of feature with number of points --> (batch_size, number_of_points, number_of_features)
-        x = torch.bmm(x, trans) # batch matrix-matrix product --> x.shape = (32, 2500, 3), trans.shape = (32, 3, 3) --> output = (32, 2500, 3)
-        x = x.transpose(2, 1)  # now x.shape = (32, 3, 2500)
+        #trans = self.stn(x)
+        #x = x.transpose(2, 1) # this swaps number of feature with number of points --> (batch_size, number_of_points, number_of_features)
+        #x = torch.bmm(x, trans) # batch matrix-matrix product --> x.shape = (32, 2500, 3), trans.shape = (32, 3, 3) --> output = (32, 2500, 3)
+        #x = x.transpose(2, 1)  # now x.shape = (32, 3, 2500)
         x = F.relu(self.bn1(self.conv1(x))) # x.shape = (32, 64, 2500)
         
         if self.feature_transform:
@@ -132,6 +132,7 @@ class PointNetfeat(nn.Module):
         x = torch.max(x, 2, keepdim=True)[0]  # MAX POOLING
         
         x = x.view(-1, 1024) # flattening
+        trans = 0
         return x, trans, trans_feat
 
 

@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+import cv2
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from colorama import Fore, Style
+import numpy as np
+import matplotlib.pyplot as plt
+from datetime import datetime  # to track the time each epoch takes
+import argparse
+import sys
+import os
+import yaml
+from yaml.loader import SafeLoader
+from colorama import Fore
+
+from localbot_localization.src.dataset import LocalBotDatasetDepth
+from localbot_localization.src.loss_functions import BetaLoss, DynamicLoss, TranslationLoss
+from localbot_localization.src.utilities import process_pose
+from localbot_localization.src.models.depthnet import CNNDepth
+from localbot_localization.src.torch_utilities import summarizeModel, resumeTraining
+
+
+train_dataset = LocalBotDatasetDepth(path_seq='seq_depth_test_depth')
+
+train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=4, shuffle=True)
+
+model = CNNDepth()
+
+for points, depth_image, target_pose in train_loader:
+    model(depth_image)
+    break
+
+
+summarizeModel(model, train_dataset[0][1])
+    
+
+
