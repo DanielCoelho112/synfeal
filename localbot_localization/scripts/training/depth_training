@@ -9,15 +9,49 @@ from colorama import Fore, Style
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime  # to track the time each epoch takes
+import argparse
+import sys
+import os
+import yaml
+from yaml.loader import SafeLoader
+from colorama import Fore
+
 from localbot_localization.src.dataset import LocalBotDatasetDepth
 from localbot_localization.src.loss_functions import BetaLoss, DynamicLoss, TranslationLoss
 from localbot_localization.src.utilities import process_pose
 
 
 def main():
+    parser = argparse.ArgumentParser(description='PointNet training')
+    parser.add_argument('-v', '--visualize', action='store_true')
+    parser.add_argument('-fn', '--folder_name', type=str, required=True, help='folder name')
+    parser.add_argument('-mn', '--model_name', type=str, required=True, help='model name')
+    parser.add_argument('-train_set', '--training_set', type=str, required=True, help='Name of the training set')
+    parser.add_argument('-test_set', '--testing_set', type=str, required=True, help='Name of the testing set')
+    parser.add_argument('-mne', '--max_n_epochs', type=int, required=True, help='Number of epochs')
+    parser.add_argument('-batch_size', '--batch_size', type=int, required=True, help='Batch size')
+    parser.add_argument('-loss', '--loss_function', type=str, default='DynamicLoss()',
+                        help='Type of loss function. [DynamicLoss(), BetaLoss(B)]')
+    parser.add_argument('-lr', '--learning_rate', type=float, default=0.001, help='Learning rate value')
+    parser.add_argument('-lr_step_size', '--lr_step_size', type=int, default=20,
+                        help='Step size of the learning rate decay')
+    parser.add_argument('-lr_gamma', '--lr_gamma', type=float, default=0.5,
+                        help='Decay of the learning rate after step size')
+
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+
+    # Check if cuda is available, abort if not
+    # TODO arg to decide whther to use cuda
+    if not torch.cuda.is_available():
+        raise ValueError('Cuda is not available.')
+
     # Load the dataset
-    train_dataset = LocalBotDatasetDepth(path_seq='seq_test0_d_v')
-    test_dataset = LocalBotDatasetDepth(path_seq='seq_test1_d_v')
+    # train_dataset = LocalBotDatasetDepth(path_seq='seq_test0_d_v')
+    # test_dataset = LocalBotDatasetDepth(path_seq='seq_test1_d_v')
+
+    train_dataset = LocalBotDatasetDepth(path_seq='seq0_depth_v')
+    test_dataset = LocalBotDatasetDepth(path_seq='seq1_depth_v')
 
     # check if the datasets are validated
 
@@ -39,6 +73,9 @@ def main():
         def __init__(self):
             super(CNNDepth,
                   self).__init__()  # call the init constructor of the nn.Module. This way, we are only adding attributes.
+
+            # TODO implement architecture from :
+            # https://towardsdatascience.com/covolutional-neural-network-cb0883dd6529
 
             # In this case, we only the layers that have parameters.
             # self.conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3,
@@ -72,7 +109,6 @@ def main():
             self.fc4 = nn.Linear(1024, 512)
             self.fc_out_translation = nn.Linear(512, 3)
             self.fc_out_rotation = nn.Linear(512, 4)
-
 
         # instead of treating the relu as modules, we can treat them as functions. We can access them via torch funtional
         def forward(self, x, verbose=False):  # this is where we pass the input into the module
@@ -115,57 +151,82 @@ def main():
             return x_pose
 
     # test the class
-    cnn = CNNDepth()
+    model = CNNDepth()
 
-    # from torchsummary import summary
-    # cnn.cuda()
-    # summary(cnn, input_size=(1, 224, 224))
-    # for data in train_loader:
-    #     print('first batch')
-    #     points, depth_image, pose = data
-    #
-    #
-    #     predicted_pose = cnn(depth_image)
-    #     print(predicted_pose)
-    #
-    #     exit(0)
+    def summarizeModel(model, input_example):
+        from torchsummary import summary
+        model.cuda()
+        summary(model, input_size=input_example.shape)
+        model.cpu()
 
-    # for idx in range(len(train_dataset)):
-    #     points, depth_image, target_pose = train_dataset[idx]
-    #
-    #     np_depth_image = depth_image.numpy()
-    #     np_depth_image = np_depth_image.reshape((224,224))
-    #     print(np_depth_image.shape)
-    #     cv2.imshow('image', np_depth_image)
-    #     cv2.waitKey(0)
-    #
-    #
-    # exit(0)
+    summarizeModel(model, train_dataset[0][1])
 
-    # define loss function
-    # criterion = BetaLoss()
-    criterion = TranslationLoss()
+    def viewDatasetImages(dataset):
+        for idx in range(len(train_dataset)):
+            points, depth_image, target_pose = train_dataset[idx]
+            np_depth_image = depth_image.numpy()
+            np_depth_image = np_depth_image.reshape((224, 224))
+            print(np_depth_image.shape)
+            win_name = 'Dataset image ' + str(idx)
+            cv2.imshow(win_name, np_depth_image)
+            cv2.waitKey(0)
+            cv2.destroyWindow(win_name)
+            # TODO keypress of q to finish visualization
+
+    # viewDatasetImages(train_dataset)
+
+    # ----------------------------------
+    # Define loss function
+    # ----------------------------------
+    criterion = BetaLoss()
+    # criterion = TranslationLoss()
     # criterion = DynamicLoss()
 
     # Define optimizer
-    optimizer = optim.Adam(params=cnn.parameters(), lr=0.001)  # the most common optimizer in DL
+    optimizer = optim.Adam(params=model.parameters(), lr=1e-4)  # the most common optimizer in DL
     # TODO set variable learning rate
 
-    print(torch.cuda.is_available())
-
-    # Send model and criterion to GPU
-    cnn.cuda()
-    criterion.cuda()
-
     # ----------------------------------
-    # Do the training
+    # Training
     # ----------------------------------
 
-    n_epochs = 100
-    train_losses = np.zeros(n_epochs)
-    test_losses = np.zeros(n_epochs)
 
-    for epoch in range(n_epochs):
+    n_epochs = 1000  # TODO from argparse
+
+
+    # TODO set visualization optional
+    first_time = True
+    save_step = 10 # when to store the model
+
+    # load model if one exists in the output folder
+    start_epoch = 0
+    # folder_name = f'{os.environ["HOME"]}/models/localbot/{args["model_folder"]}'
+    folder_name = '.'
+    if os.path.exists(folder_name):
+        model_name = [f for f in os.listdir(folder_name) if f.endswith('.pth')][0] # get first in the list of files that have extension .pth
+        # file_name = f'{folder_name}/config.yaml'
+        file_name = 'config.yaml'
+        print(file_name)
+        with open(file_name) as f:
+            config = yaml.load(f, Loader=SafeLoader)
+
+        model = eval('CNNDepth()')
+        model.load_state_dict(torch.load(f'{folder_name}/{model_name}'))
+
+        start_epoch = config['epoch']
+        train_losses = config['train_losses']
+        test_losses = config['test_losses']
+        print(f'{Fore.BLUE} Resuming training of model from epoch: {start_epoch} {Fore.RESET}')
+    else:
+        print(f'Model Folder not found: {folder_name}. Starting from sratch.')
+        train_losses = []
+        test_losses = []
+        start_epoch = 0
+
+
+    model.cuda()  # Send model to GPU
+    criterion.cuda()  # Send criterion to GPU
+    for epoch in range(start_epoch, n_epochs):
         t0 = datetime.now()
         train_losses_per_batch = []
 
@@ -174,9 +235,9 @@ def main():
             depth_image, target_pose = depth_image.cuda(), target_pose.cuda()  # move data into GPU
             optimizer.zero_grad()  # Clears the gradients of all optimized tensors (always needed in the beginning of the training loop)
 
-            cnn = cnn.train()  # Sets the module in training mode. For example, the dropout module can only be use in training mode.
+            model = model.train()  # Sets the module in training mode. For example, the dropout module can only be use in training mode.
 
-            predicted_pose = cnn(depth_image)  # our model outputs the pose, and the transformations used
+            predicted_pose = model(depth_image)  # our model outputs the pose, and the transformations used
 
             predicted_pose = process_pose(predicted_pose)
 
@@ -187,40 +248,79 @@ def main():
 
             train_losses_per_batch.append(loss.item())
 
-        train_loss_epoch = np.mean(train_losses_per_batch)
+        train_loss_epoch = float(np.mean(train_losses_per_batch))
 
         test_losses_per_batch = []
-        for points, depth_image, target_pose  in test_loader:
+        for points, depth_image, target_pose in test_loader:
             depth_image, target_pose = depth_image.cuda(), target_pose.cuda()  # move data into GPU
 
-            cnn = cnn.eval()  # Sets the module in evaluation mode.
+            model = model.eval()  # Sets the module in evaluation mode.
 
-            predicted_pose = cnn(depth_image)  # our model outputs the pose, and the transformations used
+            predicted_pose = model(depth_image)  # our model outputs the pose, and the transformations used
             predicted_pose = process_pose(predicted_pose)
 
             loss = criterion(predicted_pose, target_pose)
 
             test_losses_per_batch.append(loss.item())
 
-        test_loss_epoch = np.mean(test_losses_per_batch)
+        test_loss_epoch = float(np.mean(test_losses_per_batch))
 
         # save losses
-        train_losses[epoch] = train_loss_epoch
-        test_losses[epoch] = test_loss_epoch
-        #test_losses[epoch] = []
+        train_losses.append(train_loss_epoch)
+        test_losses.append(test_loss_epoch)
+        # test_losses[epoch] = []
 
         dt = datetime.now() - t0
-        print(f'epoch {epoch + 1}/{n_epochs}, train_loss: {train_loss_epoch:.4f}, test_loss: {test_loss_epoch:.4f}, duration: {dt}')
+        print(
+            f'epoch {epoch + 1}/{n_epochs}, train_loss: {train_loss_epoch:.4f}, test_loss: {test_loss_epoch:.4f}, duration: {dt}')
 
-    plt.plot(train_losses, label='train loss')
-    plt.plot(test_losses, label='test loss')
-    plt.legend()
-    plt.show()
-    # fig.canvas.flush_events()
-    # fig.canvas.draw()
-    plt.draw()
-    plt.waitforbuttonpress(0.5)
+        # ----------------------
+        # Visualization
+        # ----------------------
+        if args['visualize']:
+            if first_time:
+                hanle_train_plot = plt.plot(train_losses, label='train loss')
+                hanle_test_plot = plt.plot(test_losses, label='test loss')
+                first_time = False
+                plt.legend()
+            else:
+                hanle_train_plot[0].set_data(range(0,len(train_losses)), train_losses)
+                hanle_test_plot[0].set_data(range(0,len(test_losses)), test_losses)
+                axis = plt.gca()
+                axis.relim(), axis.autoscale_view() # resize axis
 
+            plt.draw()
+            plt.waitforbuttonpress(0.01)
+
+        # ------------------
+        # Saving of Model
+        # ------------------
+        if (epoch+1)%save_step == 0:
+            folder_name = '.'
+            model_filename = folder_name + '/model.pth'
+            plt.savefig(f'{folder_name}/losses.png')
+            torch.save(model.state_dict(), model_filename)
+
+            dt_now = datetime.now()  # current date and time
+            config = {'user': os.environ["USER"],
+                      'date': dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
+                      'train_set': args['training_set'],
+                      'test_set': args['testing_set'],
+                      'max_n_epochs': args['max_n_epochs'],
+                      'epoch': epoch +1,
+                      'batch_size': args['batch_size'],
+                      'loss': args['loss_function'],
+                      'learning_rate': args['learning_rate'],
+                      'lr_step_size': args['lr_step_size'],
+                      'lr_gamma': args['lr_gamma'],
+                      'init_model': 'PointNet()',
+                      'train_losses': train_losses,
+                      'test_losses': test_losses}
+
+            with open(f'{folder_name}/config.yaml', 'w') as file:
+                yaml.dump(config, file)
+
+            print('Saved model at epoch ' + str(epoch))
 
 if __name__ == "__main__":
     main()

@@ -23,7 +23,6 @@ from colorama import Fore
 def main():
     
     parser = argparse.ArgumentParser(description='PointNet training')
-    
     parser.add_argument('-fn', '--folder_name', type=str, required=True, help='folder name')
     parser.add_argument('-mn', '--name', type=str, required=True, help='model name')
     parser.add_argument('-train_set', '--training_set', type=str, required=True, help='Name of the training set')
