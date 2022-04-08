@@ -45,6 +45,10 @@ class LocalBotDataset(data.Dataset):
             config = yaml.load(f, Loader=SafeLoader)
         return config
 
+    def setConfig(self, config):
+        with open(f'{self.path_seq}/config.yaml', 'w') as f:
+            yaml.dump(config, f)
+        
 
 #dataset = LocalBotDataset('seq_test_v')
 #print(dataset[0][0].shape)

@@ -1,4 +1,5 @@
 from turtle import st
+from cv2 import TermCriteria_COUNT
 import torch.utils.data as data
 from localbot_localization.src.utilities import normalize_quat, projectToCamera
 import numpy as np
@@ -266,7 +267,64 @@ class ValidateDataset():
             cv2.imwrite(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', tmp)
             print(f'Saved depth image {dataset.path_seq}/frame-{idx:05d}.depth.png')
     
-    def normalizeDepthImages(self, dataset, local, type):
+    def localProcessDepthImages(self, dataset, technique):
+        
+        config = dataset.getConfig()
+        
+        
+        for idx in range(len(dataset)):
+            cv_image = cv2.imread(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', cv2.IMREAD_UNCHANGED)
+            cv_image = cv_image.astype(np.float32) / 1000.0  # to meters
+            
+            if technique =='standardization':
+                mean = np.mean(cv_image)
+                std = np.std(cv_image)
+                final_cv_image = (cv_image - mean) / std
+
+            elif technique == 'normalization':
+                min_v = np.min(cv_image)
+                max_v = np.max(cv_image)
+                final_cv_image = (cv_image - min_v) / (max_v - min_v)
+            
+            else:
+                print('Tehcnique not implemented. Available techniques are: normalization and standardization')
+                exit(0)
+                
+                
+            print(type(final_cv_image))
+            print(final_cv_image.dtype)
+            
+            tmp = copy.deepcopy(final_cv_image).astype(np.float32)
+            
+            
+            #final_cv_image = final_cv_image.astype(np.uint16)
+            
+            os.remove(f'{dataset.path_seq}/frame-{idx:05d}.depth.png')
+            np.save(f'{dataset.path_seq}/frame-{idx:05d}.depth.npy', tmp)
+            #cv2.imwrite(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', tmp)
+
+            cv2.imshow('image', tmp)
+            cv2.waitKey(0)
+        
+        config['depth']['preprocessing'] = {'global' : None,
+                                            'technique' : technique}
+        dataset.setConfig(config)
+            
+            
+
+            
+    def globalProcessDepthImages(self, dataset, type):
+        
+        config=0
+        technique=0
+        
+        config['depth']['preprocessing'] = {'global' : {'dataset_train':None,
+                                                        'max' : None,
+                                                        'min' : None,
+                                                        'mean': None,
+                                                        'std' : None },
+                                            'technique' : technique}
+        
         for idx in range(len(dataset)):
             cv_image = cv2.imread(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', cv2.IMREAD_UNCHANGED)
             cv_image = cv_image.astype(np.float32) / 1000.0  # to meters
@@ -291,7 +349,6 @@ class ValidateDataset():
                 final_cv_image = (cv_image - min_v) / (max_v - min_v)
                 cv2.imshow('image', final_cv_image)
                 cv2.waitKey(0)
-            
             
             
         

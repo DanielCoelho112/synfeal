@@ -18,7 +18,7 @@ def main():
     parser.add_argument('-dataset', '--dataset', type=str, required=True, help='Name of the dataset')
     parser.add_argument('-suffix', '--suffix', type=str, required=True, help='Suffix to append to the name of the validated dataset')
     parser.add_argument('-global', '--global', type=str, default=None, help='Use information of the entire dataset')
-    parser.add_argument('-type', '--type', type=str, default='standardization', help='Use information of the entire dataset')
+    parser.add_argument('-t', '--technique', type=str, default='standardization', help='Use information of the entire dataset')
     
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
@@ -29,7 +29,7 @@ def main():
     
     validated_dataset = validate.duplicateDataset(dataset, args['suffix'])
     
-    validate.normalizeDepthImages(validated_dataset, args['global'], args['type'])
+    validate.localProcessDepthImages(validated_dataset, args['technique'])
     
     
 
