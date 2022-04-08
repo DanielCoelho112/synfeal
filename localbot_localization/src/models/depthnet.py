@@ -25,7 +25,7 @@ class CNNDepth(nn.Module): #https://towardsdatascience.com/covolutional-neural-n
             self.fc_out_rotation = nn.Linear(512, 4)
 
         # instead of treating the relu as modules, we can treat them as functions. We can access them via torch funtional
-        def forward(self, x, verbose=True):  # this is where we pass the input into the module
+        def forward(self, x, verbose=False):  # this is where we pass the input into the module
 
             if verbose: print('shape ' + str(x.shape))
             x = F.relu(self.conv1(x))

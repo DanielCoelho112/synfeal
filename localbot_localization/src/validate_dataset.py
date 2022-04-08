@@ -1,3 +1,4 @@
+from turtle import st
 import torch.utils.data as data
 from localbot_localization.src.utilities import normalize_quat, projectToCamera
 import numpy as np
@@ -264,6 +265,36 @@ class ValidateDataset():
             tmp = tmp.astype(np.uint16)
             cv2.imwrite(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', tmp)
             print(f'Saved depth image {dataset.path_seq}/frame-{idx:05d}.depth.png')
+    
+    def normalizeDepthImages(self, dataset, local, type):
+        for idx in range(len(dataset)):
+            cv_image = cv2.imread(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', cv2.IMREAD_UNCHANGED)
+            cv_image = cv_image.astype(np.float32) / 1000.0  # to meters
+            
+            mean = np.mean(cv_image)
+            std = np.std(cv_image)
+            
+            #print(f'mean: {mean}')
+            #print(f'std: {std}')
+            
+            if type =='standardization':
+                final_cv_image = (cv_image - mean) / std
+                
+                print(final_cv_image.shape)
+                
+                cv2.imshow('image', final_cv_image)
+                cv2.waitKey(0)
+            elif type == 'normalization':
+                min_v = np.min(cv_image)
+                max_v = np.max(cv_image)
+                
+                final_cv_image = (cv_image - min_v) / (max_v - min_v)
+                cv2.imshow('image', final_cv_image)
+                cv2.waitKey(0)
+            
+            
+            
+        
 
                                                 
             
