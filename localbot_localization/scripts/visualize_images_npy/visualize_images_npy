@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+import sys
+import argparse
+import copy
+import cv2
+import numpy as np
+import os
+from localbot_localization.src.dataset import LocalBotDataset
+
+def main():
+
+    parser = argparse.ArgumentParser(description='Validate dataset')
+    parser.add_argument('-dataset', '--dataset', type=str, required=True, help='Name of the dataset')
+
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+
+    dataset = LocalBotDataset(args['dataset'])
+    config = dataset.getConfig()
+    
+    technique = config['depth']['preprocessing']['technique']
+    
+    if config['depth']['preprocessing']['global'] == None:
+        mode = 'local'
+    else:
+        mode = 'global'
+
+
+    for idx in range(len(dataset)):
+        print(idx)
+        
+        cv_image = np.load(f'{dataset.path_seq}/frame-{idx:05d}.depth.npy').astype(np.float32)
+        
+        cv2.imshow(f'{mode}_{technique}', cv_image)
+        cv2.waitKey(0)
+
+        
+if __name__ == "__main__":
+    main()

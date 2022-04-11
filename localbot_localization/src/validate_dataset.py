@@ -230,9 +230,17 @@ class ValidateDataset():
         
         # loop through all point clouds
         
+        config = dataset.getConfig()
+        
         intrinsic = np.loadtxt(f'{dataset.path_seq}/depth_intrinsic.txt', delimiter=',')
         width = dataset.getConfig()['depth']['width']
         height = dataset.getConfig()['depth']['height']
+        
+        max_array = np.empty((len(dataset)))
+        min_array = np.empty((len(dataset)))
+        mean_array = np.empty((len(dataset)))
+        std_array = np.empty((len(dataset)))
+        
         
         for idx in range(len(dataset)):
             pc_raw = read_pcd(f'{dataset.path_seq}/frame-{idx:05d}.pcd')
@@ -254,23 +262,101 @@ class ValidateDataset():
             range_sparse = cv2.resize(range_sparse, (size,size), interpolation=cv2.INTER_NEAREST)
             mask = cv2.resize(mask, (size, size), interpolation=cv2.INTER_NEAREST)
             
-            #range_dense = np.zeros((range_sparse.shape[0], range_sparse.shape[1]), dtype=np.float32)
-            
             # Computing the dense depth map
             print('Computing inpaint ...')
             range_dense = cv2.inpaint(range_sparse, mask, 3, cv2.INPAINT_NS)
             print('Inpaint done')
             
+            min_array[idx] = np.min(range_dense)
+            max_array[idx] = np.max(range_dense)
+            mean_array[idx] = np.mean(range_dense)
+            std_array[idx] = np.std(range_dense)
+                        
             tmp = copy.deepcopy(range_dense)
             tmp = tmp * 1000.0  # to milimeters
             tmp = tmp.astype(np.uint16)
             cv2.imwrite(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', tmp)
             print(f'Saved depth image {dataset.path_seq}/frame-{idx:05d}.depth.png')
+            
+        config['depth']['statistics'] = {}
+        config['depth']['statistics']['max'] = round(float(np.mean(max_array)),5)
+        config['depth']['statistics']['min'] = round(float(np.mean(min_array)),5)
+        config['depth']['statistics']['mean'] = round(float(np.mean(mean_array)),5)
+        config['depth']['statistics']['std'] = round(float(np.mean(std_array)),5)
+        
+        dataset.setConfig(config)
     
-    def localProcessDepthImages(self, dataset, technique):
+    def processDepthImages(self, dataset, technique, global_dataset):
         
         config = dataset.getConfig()
         
+        # Local Processing
+        if global_dataset == None:
+        
+            for idx in range(len(dataset)):
+                cv_image = cv2.imread(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', cv2.IMREAD_UNCHANGED)
+                cv_image = cv_image.astype(np.float32) / 1000.0  # to meters
+                
+                if technique =='standardization':
+                    mean = np.mean(cv_image)
+                    std = np.std(cv_image)
+                    final_cv_image = (cv_image - mean) / std
+
+                elif technique == 'normalization':
+                    min_v = np.min(cv_image)
+                    max_v = np.max(cv_image)
+                    final_cv_image = (cv_image - min_v) / (max_v - min_v)
+                
+                else:
+                    print('Tehcnique not implemented. Available techniques are: normalization and standardization')
+                    exit(0)
+                    
+                tmp = copy.deepcopy(final_cv_image).astype(np.float32)
+                
+                os.remove(f'{dataset.path_seq}/frame-{idx:05d}.depth.png')
+                np.save(f'{dataset.path_seq}/frame-{idx:05d}.depth.npy', tmp)
+                #cv2.imwrite(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', tmp)
+
+            config['depth']['preprocessing'] = {'global' : None,
+                                                'technique' : technique}
+            dataset.setConfig(config)
+        
+        # Global Processing
+        else:
+            global_config = global_dataset.getConfig()
+            max_global = global_config['depth']['statistics']['max']
+            min_global = global_config['depth']['statistics']['min']
+            mean_global = global_config['depth']['statistics']['mean']
+            std_global = global_config['depth']['statistics']['std']
+            
+            for idx in range(len(dataset)):
+                cv_image = cv2.imread(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', cv2.IMREAD_UNCHANGED)
+                cv_image = cv_image.astype(np.float32) / 1000.0  # to meters
+                
+                if technique =='standardization':
+                    final_cv_image = (cv_image - mean_global) / std_global
+
+                elif technique == 'normalization':
+                    final_cv_image = (cv_image - min_global) / (max_global - min_global)
+                else:
+                    print('Tehcnique not implemented. Available techniques are: normalization and standardization')
+                    exit(0)
+                    
+                tmp = copy.deepcopy(final_cv_image).astype(np.float32)
+                
+                os.remove(f'{dataset.path_seq}/frame-{idx:05d}.depth.png')
+                np.save(f'{dataset.path_seq}/frame-{idx:05d}.depth.npy', tmp)
+                #cv2.imwrite(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', tmp)
+
+            config['depth']['preprocessing'] = {'global' : global_dataset.path_seq,
+                                                'technique' : technique}
+            dataset.setConfig(config)
+            
+            
+            
+    def globalProcessDepthImages(self, dataset, technique):
+        
+        config = dataset.getConfig()
         
         for idx in range(len(dataset)):
             cv_image = cv2.imread(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', cv2.IMREAD_UNCHANGED)
@@ -290,26 +376,15 @@ class ValidateDataset():
                 print('Tehcnique not implemented. Available techniques are: normalization and standardization')
                 exit(0)
                 
-                
-            print(type(final_cv_image))
-            print(final_cv_image.dtype)
-            
             tmp = copy.deepcopy(final_cv_image).astype(np.float32)
-            
-            
-            #final_cv_image = final_cv_image.astype(np.uint16)
             
             os.remove(f'{dataset.path_seq}/frame-{idx:05d}.depth.png')
             np.save(f'{dataset.path_seq}/frame-{idx:05d}.depth.npy', tmp)
             #cv2.imwrite(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', tmp)
 
-            cv2.imshow('image', tmp)
-            cv2.waitKey(0)
-        
         config['depth']['preprocessing'] = {'global' : None,
                                             'technique' : technique}
         dataset.setConfig(config)
-            
             
 
             
