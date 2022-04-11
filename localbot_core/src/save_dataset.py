@@ -36,7 +36,7 @@ class SaveDataset():
                   'date'     : dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
                   'mode'     : mode,
                   'is_valid' : False,
-                  'n_points' : None,
+                  'npoints' : None,
                   'scaled'   : False,
                   'n_steps'  : ns}
         

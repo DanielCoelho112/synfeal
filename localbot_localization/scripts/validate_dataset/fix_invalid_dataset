@@ -26,6 +26,23 @@ def main():
     
     validate = ValidateDataset()
     
+    idxs = validate.invalidFrames(dataset)
+    
+    print('init remove frames')
+    validate.removeFrames(dataset, idxs)
+    
+    print('init reorganize dataset')
+    validate.reorganizeDataset(dataset)
+    
+    print('init remove nans')
+    validate.removeNansPointCloud(dataset)
+    
+    print('init downsample pointcloud')
+    validate.downsamplePointCloud(dataset, args['points'])
+    
+    print('init scale pointcloud')
+    validate.scalePointCloud(dataset)
+    
     if validate.validateDataset(dataset):
         print(f'{Fore.GREEN} Dataset was succesfully validated into {dataset.seq} {Fore.RESET}')
     else:

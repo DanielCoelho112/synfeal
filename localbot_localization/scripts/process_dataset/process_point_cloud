@@ -19,7 +19,8 @@ def main():
     parser = argparse.ArgumentParser(description='Validate dataset')
     parser.add_argument('-dataset', '--dataset', type=str, required=True, help='Name of the dataset')
     parser.add_argument('-suffix', '--suffix', type=str, required=True, help='Suffix to append to the name of the validated dataset')
-    parser.add_argument('-size', '--size', type=int, required=True, help='The depth images will be of shape sizexsize')
+    parser.add_argument('-pts', '--points', type=int, default=20000, help='Number of points to downsample')
+    parser.add_argument('-ig', '--ignore_pointcloud', action='store_true', help='Ignore all pointcloud processing')
     
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
@@ -30,11 +31,17 @@ def main():
     
     validated_dataset = validate.duplicateDataset(dataset, args['suffix'])
     
-    validate.createDepthImages(validated_dataset, args['size'])
+    if not args['ignore_pointcloud']:
+        print('init remove nans')
+        validate.removeNansPointCloud(validated_dataset)
     
+    print('init downsample pointcloud')
+    validate.downsamplePointCloud(validated_dataset, args['points'])
     
-
-
+    if not args['ignore_pointcloud']:
+        print('init scale pointcloud')
+        validate.scalePointCloud(validated_dataset)    
+        
         
 if __name__ == "__main__":
     main()

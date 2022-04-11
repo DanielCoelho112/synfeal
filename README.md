@@ -74,7 +74,21 @@ In this case, we have to define where we want the model to go, and then a path i
 
 Run:
 
-    rosrun localbot_localization create_depth_images --dataset 'seq1' --size 224 --suffix '_depth'
+    rosrun localbot_localization create_depth_images --d 'seq1' --size 224 -s '_depth'
+
+
+# Processing depth images
+
+Run:
+
+    rosrun localbot_localization process_depth_images -d 'seq_depth_test_depth_stat' -s 'final_test' -t 'normalization'
+
+
+# Processing point clouds
+
+Run:
+
+    rosrun localbot_localization process_point_cloud -d seq1 - '_test' -pts 1000 -ig
 
 
 # Validating the datasets
@@ -83,7 +97,7 @@ Every collected dataset MUST be validated.
 
 Run:
 
-    rosrun localbot_localization validate_dataset -dataset seq1 -suffix '_v' -pts 20000
+    rosrun localbot_localization validate_dataset -d 'seq_depth_test_depth_stat_local_norm'
 
 # Merging different datasets
 
@@ -103,11 +117,14 @@ Run:
 
 # Training the models
 
-At the moment, the only available model is a modified version of PointNet.
-
-Run:
+**PointNet**
 
     rosrun localbot_localization point_net_training -fn test1 -mn pointnetv0 -train_set seq110 -test_set seq111 -n_epochs 5 -batch_size 2 -loss 'DynamicLoss()'
+
+**DepthNet**
+
+    rosrun localbot_localization depth_training -c -fn model_depth -mn depthv0 -train_set 'seq_test0_d_v' -test_set 'seq_test0_d_v'
+
 
 # Producing the results
 

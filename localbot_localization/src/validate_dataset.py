@@ -19,7 +19,7 @@ import math
 
 class ValidateDataset():
     def __init__(self):
-        self.files = ['.pcd', '.rgb.png', '.pose.txt']
+        self.files = ['.pcd', '.rgb.png', '.depth.npy', '.pose.txt']
         
     def resetConfig(self, config={}):
         self.config = config
@@ -172,22 +172,22 @@ class ValidateDataset():
             print(f'{Fore.RED} There are invalid frames in the dataset! {Fore.RESET}')
             return False
 
-        # check for missing data
-        dct = self.numberOfNans(dataset)
-        n_nans = 0
-        for count in dct.values():
-            n_nans += count
-        if n_nans != 0:
-            print(f'{Fore.RED} There are Nans in the dataset! {Fore.RESET}')
-            return False 
+        # # check for missing data
+        # dct = self.numberOfNans(dataset)
+        # n_nans = 0
+        # for count in dct.values():
+        #     n_nans += count
+        # if n_nans != 0:
+        #     print(f'{Fore.RED} There are Nans in the dataset! {Fore.RESET}')
+        #     return False 
         
-        #check for point clouds of different size
-        dct = self.numberOfPoints(dataset)
-        number_of_points = list(dct.values())
-        result = all(element == number_of_points[0] for element in number_of_points)
-        if not result:
-            print(f'{Fore.RED} Not all pointclouds have the same number of points! {Fore.RESET}')
-            return False
+        # #check for point clouds of different size
+        # dct = self.numberOfPoints(dataset)
+        # number_of_points = list(dct.values())
+        # result = all(element == number_of_points[0] for element in number_of_points)
+        # if not result:
+        #     print(f'{Fore.RED} Not all pointclouds have the same number of points! {Fore.RESET}')
+        #     return False
         
         config = dataset.getConfig()
         config['is_valid'] = True
@@ -229,7 +229,6 @@ class ValidateDataset():
     def createDepthImages(self, dataset, size):
         
         # loop through all point clouds
-        
         config = dataset.getConfig()
         
         intrinsic = np.loadtxt(f'{dataset.path_seq}/depth_intrinsic.txt', delimiter=',')
@@ -240,7 +239,6 @@ class ValidateDataset():
         min_array = np.empty((len(dataset)))
         mean_array = np.empty((len(dataset)))
         std_array = np.empty((len(dataset)))
-        
         
         for idx in range(len(dataset)):
             pc_raw = read_pcd(f'{dataset.path_seq}/frame-{idx:05d}.pcd')
@@ -290,6 +288,12 @@ class ValidateDataset():
         
         config = dataset.getConfig()
         
+        max_array = np.empty((len(dataset)))
+        min_array = np.empty((len(dataset)))
+        mean_array = np.empty((len(dataset)))
+        std_array = np.empty((len(dataset)))
+        
+        
         # Local Processing
         if global_dataset == None:
         
@@ -313,12 +317,22 @@ class ValidateDataset():
                     
                 tmp = copy.deepcopy(final_cv_image).astype(np.float32)
                 
+                min_array[idx] = np.min(tmp)
+                max_array[idx] = np.max(tmp)
+                mean_array[idx] = np.mean(tmp)
+                std_array[idx] = np.std(tmp)
+                
+                
                 os.remove(f'{dataset.path_seq}/frame-{idx:05d}.depth.png')
                 np.save(f'{dataset.path_seq}/frame-{idx:05d}.depth.npy', tmp)
                 #cv2.imwrite(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', tmp)
 
-            config['depth']['preprocessing'] = {'global' : None,
+            config['depth']['preprocessing'] = {'global'    : None,
                                                 'technique' : technique}
+            config['depth']['statistics']['max'] = round(float(np.mean(max_array)),5)
+            config['depth']['statistics']['min'] = round(float(np.mean(min_array)),5)
+            config['depth']['statistics']['mean'] = round(float(np.mean(mean_array)),5)
+            config['depth']['statistics']['std'] = round(float(np.mean(std_array)),5)
             dataset.setConfig(config)
         
         # Global Processing
@@ -344,12 +358,21 @@ class ValidateDataset():
                     
                 tmp = copy.deepcopy(final_cv_image).astype(np.float32)
                 
+                min_array[idx] = np.min(tmp)
+                max_array[idx] = np.max(tmp)
+                mean_array[idx] = np.mean(tmp)
+                std_array[idx] = np.std(tmp)
+                
                 os.remove(f'{dataset.path_seq}/frame-{idx:05d}.depth.png')
                 np.save(f'{dataset.path_seq}/frame-{idx:05d}.depth.npy', tmp)
                 #cv2.imwrite(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', tmp)
 
-            config['depth']['preprocessing'] = {'global' : global_dataset.path_seq,
+            config['depth']['preprocessing'] = {'global'    : global_dataset.path_seq,
                                                 'technique' : technique}
+            config['depth']['statistics']['max'] = round(float(np.mean(max_array)),5)
+            config['depth']['statistics']['min'] = round(float(np.mean(min_array)),5)
+            config['depth']['statistics']['mean'] = round(float(np.mean(mean_array)),5)
+            config['depth']['statistics']['std'] = round(float(np.mean(std_array)),5)
             dataset.setConfig(config)
             
             
