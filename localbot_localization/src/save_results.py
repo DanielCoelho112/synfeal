@@ -82,7 +82,7 @@ class SaveResults():
         rot_error_array = self.csv.iloc[:-1]['rotation_error (rads)'].to_numpy()
         
         fig, (ax1, ax2) = plt.subplots(2, sharex=True)
-        fig.suptitle('position and rotation rrrors')
+        fig.suptitle('position and rotation errors')
         ax1.plot(frames_array, pos_error_array, 'cyan',  label='position error')
         ax2.plot(frames_array, rot_error_array, 'navy', label='rotation error')
         ax2.set_xlabel('frame idx')

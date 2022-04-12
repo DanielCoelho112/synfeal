@@ -128,9 +128,13 @@ Run:
 
 # Producing the results
 
-Run:
+**PointNet**
 
     rosrun localbot_localization point_net_produce_results -test_set seq111 -mp test1 -rf results_folder
+
+**DepthNet**
+
+    rosrun localbot_localization depth_net_produce_results -test_set 'seq1d_p_global_norm' -mp 'depth_low_global_norm' -rf results15
 
 # Visualizing the results
 
