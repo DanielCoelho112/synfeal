@@ -9,13 +9,15 @@ from colorama import Fore
 from datetime import datetime
 import yaml
 import pandas as pd
+import shutil
+import matplotlib.pyplot as plt
 
 class SaveResults():
     """
     class to save results
     """
     
-    def __init__(self, output, model_path, seq_path):
+    def __init__(self, output, model_path, seq_path, overwrite):
         
         # attribute initializer
         self.output_folder = f'{os.environ["HOME"]}/results/localbot/{output}'
@@ -25,7 +27,10 @@ class SaveResults():
         if not os.path.exists(self.output_folder):
             print(f'Creating folder {self.output_folder}')
             os.makedirs(self.output_folder)  # Create the new folder
-        
+        elif overwrite:
+            print(f'Overwriting folder {self.output_folder}')
+            shutil.rmtree(self.output_folder)
+            os.makedirs(self.output_folder)  # Create the new folder
         else:
             print(f'{Fore.RED} {self.output_folder} already exists... Aborting SaveResults initialization! {Fore.RESET}')
             exit(0)
@@ -71,8 +76,23 @@ class SaveResults():
         self.csv.to_csv(f'{self.output_folder}/errors.csv', index=False, float_format='%.5f')
 
     def saveErrorsFig(self):
-        pass
-
+        frames_array = self.csv.iloc[:-1]['frame'].to_numpy().astype(int)
+        
+        pos_error_array = self.csv.iloc[:-1]['position_error (m)'].to_numpy()
+        rot_error_array = self.csv.iloc[:-1]['rotation_error (rads)'].to_numpy()
+        
+        fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+        fig.suptitle('position and rotation rrrors')
+        ax1.plot(frames_array, pos_error_array, 'cyan',  label='position error')
+        ax2.plot(frames_array, rot_error_array, 'navy', label='rotation error')
+        ax2.set_xlabel('frame idx')
+        ax2.set_ylabel('[rads]')
+        ax1.set_ylabel('[m]')
+        ax1.legend()
+        ax2.legend()
+        plt.savefig(f'{self.output_folder}/errors.png')
+        
+        
     def step(self):
         self.frame_idx+=1
         

@@ -100,9 +100,15 @@ def main():
     # Define loss function
     # ----------------------------------
     criterion = eval(args['loss_function'])
+    
+    # Add all params for optimization
+    param_list = [{'params': model.parameters()}]
+    if isinstance(criterion, DynamicLoss):
+        # Add sx and sq from loss function to optimizer params
+        param_list.append({'params': criterion.parameters()})
 
-    # Define optimizer
-    optimizer = optim.Adam(params=model.parameters(), lr=args['learning_rate'])  # the most common optimizer in DL
+    optimizer = optim.Adam(params = param_list, lr=args['learning_rate']) # the most common optimizer in DL
+
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args['lr_step_size'], gamma=args['lr_gamma'])
 
     # ----------------------------------

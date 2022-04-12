@@ -25,6 +25,7 @@ def main():
     parser.add_argument('-test_set', '--testing_set', type=str, required=True, help='Name of the testing set')
     parser.add_argument('-mp', '--model_folder', type=str, required=True, help='Path of the model to evaluate')
     parser.add_argument('-rf', '--results_folder', type=str, required=True, help='Batch size')
+    parser.add_argument('-ow', '--overwrite', action='store_true', help='Overwrite results folder')
     
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
@@ -52,7 +53,7 @@ def main():
     results_folder = args["results_folder"]
 
     # save results class
-    results = SaveResults(results_folder, args["model_folder"], args["testing_set"])
+    results = SaveResults(results_folder, args["model_folder"], args["testing_set"], args['overwrite'])
     
     for points, depth_image, target in test_dataloader:
         depth_image = depth_image.cuda()  # move data into GPU
@@ -74,6 +75,7 @@ def main():
         results.step()
 
     results.saveCSV()
+    results.saveErrorsFig()
     
 
 if __name__ == "__main__":
