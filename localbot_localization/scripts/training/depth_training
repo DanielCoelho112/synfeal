@@ -19,7 +19,7 @@ from colorama import Fore
 from localbot_localization.src.dataset import LocalBotDataset
 from localbot_localization.src.loss_functions import BetaLoss, DynamicLoss
 from localbot_localization.src.utilities import process_pose
-from localbot_localization.src.models.depthnet import CNNDepth
+from localbot_localization.src.models.depthnet import CNNDepth, CNNDepthLow, CNNDepthBatch, CNNDepthDropout
 from localbot_localization.src.torch_utilities import summarizeModel, resumeTraining
 
 def main():
@@ -40,6 +40,8 @@ def main():
     parser.add_argument('-lr_step_size', '--lr_step_size', type=int, default=20,
                         help='Step size of the learning rate decay')
     parser.add_argument('-lr_gamma', '--lr_gamma', type=float, default=0.5,
+                        help='Decay of the learning rate after step size')
+    parser.add_argument('-im', '--init_model', type=str, default='CNNDepth()',
                         help='Decay of the learning rate after step size')
 
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
@@ -86,7 +88,7 @@ def main():
     else:
         print(f'Model Folder not found: {folder_name}. Starting from sratch.')
         os.makedirs(folder_name)
-        model = CNNDepth()
+        model = eval(args['init_model'])
         train_losses = []
         test_losses = []
         start_epoch = 0
@@ -206,7 +208,7 @@ def main():
                       'learning_rate': args['learning_rate'],
                       'lr_step_size': args['lr_step_size'],
                       'lr_gamma': args['lr_gamma'],
-                      'init_model': 'CNNDepth()',
+                      'init_model': args['init_model'],
                       'train_losses': train_losses,
                       'test_losses': test_losses}
 

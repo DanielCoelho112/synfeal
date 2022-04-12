@@ -70,6 +70,9 @@ class SaveResults():
         print(self.csv)
         self.csv.to_csv(f'{self.output_folder}/errors.csv', index=False, float_format='%.5f')
 
+    def saveErrorsFig(self):
+        pass
+
     def step(self):
         self.frame_idx+=1
         

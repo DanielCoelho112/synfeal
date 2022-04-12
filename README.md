@@ -88,7 +88,7 @@ Run:
 
 Run:
 
-    rosrun localbot_localization process_point_cloud -d seq1 - '_test' -pts 1000 -ig
+    rosrun localbot_localization process_point_cloud -d seq1 -s '_test' -pts 1000 -ig
 
 
 # Validating the datasets
