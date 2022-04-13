@@ -140,4 +140,5 @@ Run:
 
 Run:
 
-    roslaunch localbot_localization visualize_results.launch results_folder:=test2
+    roslaunch localbot_localization visualize_results.launch results_folder:=results19 frame_selection_function:="'pos[idx]>1.5 and rot[idx]>0.2'"
+    roslaunch localbot_localization visualize_results.launch results_folder:=results19 idx_max:=10

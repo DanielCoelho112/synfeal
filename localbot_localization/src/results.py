@@ -1,6 +1,7 @@
 from localbot_core.src.utilities import matrixToXYZ, matrixToQuaternion
 from localbot_localization.src.utilities import normalize_quat
 import numpy as np
+import pandas as pd
 import os
 
 
@@ -8,6 +9,7 @@ class LocalBotResults():
     def __init__(self, results_path):
         self.path = f'{os.environ["HOME"]}/results/localbot/{results_path}'
         self.nframes = int(sum(f.endswith('.txt') for f in os.listdir(self.path))/2)
+        self.csv = pd.read_csv(f'{self.path}/errors.csv')
         
     def __getitem__(self, index):
         
@@ -30,6 +32,11 @@ class LocalBotResults():
 
     def __len__(self):
         return self.nframes
+    
+    def getErrorsArrays(self):
+        pos_error_array = self.csv.iloc[:-1]['position_error (m)'].to_numpy()
+        rot_error_array = self.csv.iloc[:-1]['rotation_error (rads)'].to_numpy()
+        return pos_error_array, rot_error_array
         
 
 
