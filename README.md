@@ -43,7 +43,7 @@ Here we have to manually drag the interactive marker and click on another marker
 
 2.  **automatic_random**
 
-        rosrun localbot_core data_collector --mode automatic_random --seq seq110 -ns 20 
+        rosrun localbot_core data_collector --mode automatic_random --seq seq110 -nf 1000
 
 In this case, in each frame, it is generated a random pose. Here we do not have any movement between poses.
 
@@ -53,7 +53,7 @@ https://uapt33090-my.sharepoint.com/:v:/g/personal/danielsilveiracoelho_ua_pt/ER
 
 3.  **automatic_path** with random poses 
 
-        rosrun localbot_core data_collector --mode automatic_path --seq seq110 -ns 20 
+        rosrun localbot_core data_collector --mode automatic_path --seq seq110 -ns 20  -nf 1000
 
 In this case, it is generated a random pose, and then the camera moves towards that pose in a continuous movement. As soon as the pose is reached, another pose is generated, and so on... One hyperparameter that must be defined is the number of steps (n_steps). Basically, it is the number of iterations between the initial pose and the final pose. 
 

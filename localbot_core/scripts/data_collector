@@ -25,6 +25,7 @@ def main():
     parser.add_argument('-s', '--seq', type=str, required=True, help='sequence number')
     parser.add_argument('-ns', '--n_steps', type=int, default=20, help='number of steps')
     parser.add_argument('-dp', '--destination_pose', type=str, default='x,y,z,rx,ry,rz', help='destination pose')
+    parser.add_argument('-nf', '--number_of_frames', type=int, default=1000, help='number of frames')
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     
@@ -47,7 +48,10 @@ def main():
             data_collector.setPose(pose)
             rospy.sleep(0.4)
             data_collector.saveFrame()
-            rate.sleep() 
+            rate.sleep()
+            
+            if data_collector.getFrameIdx() >= args['number_of_frames']:
+                break
     elif mode == 'automatic_path':
         rate = rospy.Rate(0.4) 
         data_collector = AutomaticDataCollection(model_name='localbot', seq = seq, ns = n_steps)
@@ -60,6 +64,8 @@ def main():
                     data_collector.saveFrame()
                     rate.sleep() 
                 print('final destination arrived')
+                if data_collector.getFrameIdx() >= args['number_of_frames']:
+                    break
         else:
             final_pose = data2pose(destination_pose)
             while not rospy.is_shutdown():

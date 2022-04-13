@@ -39,12 +39,12 @@ class AutomaticDataCollection():
         self.save_dataset = SaveDataset(f'{seq}', mode='automatic', ns = ns)
         
         # define minimum and maximum boundaries
-        self.x_min = 1
-        self.x_max = 4
-        self.y_min = 1
-        self.y_max = 5.5
-        self.z_min = -1
-        self.z_max = 1
+        self.x_min = 1.5
+        self.x_max = 3.5
+        self.y_min = 1.5
+        self.y_max = 5.0
+        self.z_min = -0.5
+        self.z_max = 0.5
         
         
     def generateRandomPose(self):
@@ -53,8 +53,8 @@ class AutomaticDataCollection():
         y = random.uniform(self.y_min, self.y_max)
         z = random.uniform(self.z_min, self.z_max)
         
-        rx = random.uniform(0, math.pi/5)
-        ry = random.uniform(0, math.pi/5)
+        rx = random.uniform(-math.pi/6, math.pi/6)
+        ry = random.uniform(-math.pi/6, math.pi/6)
         rz = random.uniform(0, 2*math.pi)
         
         quaternion = tf.transformations.quaternion_from_euler(rx, ry, rz)
@@ -147,6 +147,9 @@ class AutomaticDataCollection():
        
     def saveFrame(self):
         self.save_dataset.saveFrame()
+        
+    def getFrameIdx(self):
+        return self.save_dataset.frame_idx
 
 
             

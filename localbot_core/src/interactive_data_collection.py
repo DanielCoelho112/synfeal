@@ -208,3 +208,6 @@ class InteractiveDataCollection():
     def callbackTimer(self,event):
         print('Timer called at ' + str(event.current_real))
         
+    def getFrameIdx(self):
+        return self.save_dataset.frame_idx
+        
