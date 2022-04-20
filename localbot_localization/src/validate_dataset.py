@@ -19,7 +19,7 @@ import math
 
 class ValidateDataset():
     def __init__(self):
-        self.files = ['.pcd', '.rgb.png', '.depth.npy', '.pose.txt']
+        self.files = ['.pcd', '.rgb.png', '.pose.txt']
         
     def resetConfig(self, config={}):
         self.config = config
@@ -157,11 +157,27 @@ class ValidateDataset():
                     
     def reorganizeDataset(self, dataset):
         # here I assume the invalidFrames and removeFrames were called before.
-        for idx in range(len(dataset)):
+        # last_pose_idx is the idx of the last frame. We cannot use len(dataset) because the dataset might be missing some frames!
+        last_pose_idx = int(sorted([f for f in os.listdir(dataset.path_seq) if f.endswith('pose.txt')])[-1][6:11])
+        
+        for idx in range(last_pose_idx+1):
+            print(idx)
             if not exists(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt'):
-                for file in self.files:
-                    os.rename(f'{dataset.path_seq}/frame-{idx+1:05d}{file}', f'{dataset.path_seq}/frame-{idx:05d}{file}')
-                
+                # idx does not exists, so we have to rename the close one.
+                print(f'{idx} is missing!!!')
+                new_idx = None
+                for idx2 in range(idx+1, last_pose_idx+1):
+                    print(f'trying {idx2}')
+                    if exists(f'{dataset.path_seq}/frame-{idx2:05d}.pose.txt'):
+                        new_idx = idx2
+                        break
+                if not new_idx==None:    
+                    print(f'renaming idx {new_idx} to idx {idx}')
+                    for file in self.files:
+                        os.rename(f'{dataset.path_seq}/frame-{new_idx:05d}{file}', f'{dataset.path_seq}/frame-{idx:05d}{file}')
+                else:
+                    print(f'No candidate to replace {idx}')
+                    
     
     def validateDataset(self, dataset):
         # update config, check if all point clouds have the same size, if any has nans

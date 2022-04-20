@@ -12,13 +12,11 @@ from datetime import datetime
 import yaml
 import sensor_msgs.point_cloud2 as pc2
 
-
 class SaveDataset():
     """
     class to save datasets
     once initialized, we can call the method 'saveFrame' to save to disk the image, point cloud w.r.t frame frame and rgb_frame transformation.
-    """
-    
+    """    
     def __init__(self, output, mode, ns = None):
         
         self.output_folder = f'{os.environ["HOME"]}/datasets/localbot/{output}'
@@ -39,8 +37,6 @@ class SaveDataset():
                   'npoints' : None,
                   'scaled'   : False,
                   'n_steps'  : ns}
-        
-        
         
         self.frame_idx = 0 
         self.world_link = 'world'
