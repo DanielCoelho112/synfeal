@@ -17,7 +17,7 @@ def main():
     parser.add_argument('-d', '--dataset', type=str, required=True, help='Name of the dataset')
     parser.add_argument('-s', '--suffix', type=str, required=True, help='Suffix to append to the name of the validated dataset')
     parser.add_argument('-gd', '--global_dataset', type=str, default=None, help='Use information of the entire dataset')
-    parser.add_argument('-t', '--technique', type=str, default='standardization', help='Use information of the entire dataset')
+    parser.add_argument('-t', '--technique', type=str, default='standardization', help='technique to use')
     
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))

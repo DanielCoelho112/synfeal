@@ -216,17 +216,17 @@ class ValidateDataset():
         # both datasets must be valids
         # they should share the same number of points
         
-        if not (dataset1.getConfig()['is_valid'] and dataset2.getConfig()['is_valid']):
-            print(f'{Fore.RED} The datasets are not valid! Validate before merge. {Fore.RESET}')
-            return False
+        # if not (dataset1.getConfig()['is_valid'] and dataset2.getConfig()['is_valid']):
+        #     print(f'{Fore.RED} The datasets are not valid! Validate before merge. {Fore.RESET}')
+        #     return False
         
-        if not (dataset1.getConfig()['npoints'] == dataset2.getConfig()['npoints']):
-            print(f'{Fore.RED} The datasets dont have the same number of points! {Fore.RESET}')
-            return False
+        # if not (dataset1.getConfig()['npoints'] == dataset2.getConfig()['npoints']):
+        #     print(f'{Fore.RED} The datasets dont have the same number of points! {Fore.RESET}')
+        #     return False
 
-        if not (dataset1.getConfig()['scaled'] == dataset2.getConfig()['scaled']):
-            print(f'{Fore.RED} Property scaled is different! {Fore.RESET}')
-            return False
+        # if not (dataset1.getConfig()['scaled'] == dataset2.getConfig()['scaled']):
+        #     print(f'{Fore.RED} Property scaled is different! {Fore.RESET}')
+        #     return False
         
         size_dataset1 = len(dataset1)
         
