@@ -4,7 +4,7 @@ import torch
 import torch.nn.parallel
 import torch.nn as nn
 import torch.utils.data
-from localbot_localization.src.models.depthnet import CNNDepth, CNNDepthLow, CNNDepthBatch, CNNDepthDropout
+from localbot_localization.src.models.depthnet import CNNDepth, CNNDepthLow, CNNDepthBatch, CNNDepthDropout, CNNDepthBatchLowL2Reg2, CNNDepthBatchLowL2RegLeaky, CNNDepthBatchLowLeaky
 from localbot_localization.src.save_results import SaveResults
 from localbot_localization.src.utilities import *
 from localbot_localization.src.dataset import LocalBotDataset
