@@ -142,7 +142,7 @@ class ValidateDataset():
         # return a list with invalid frames
         idxs = []
         for index in range(len(dataset)):
-            for file in self.files:
+            for file in ['.pcd','.rgb.npy','.depth.npy','.pose.txt']:
                 if not exists(f'{dataset.path_seq}/frame-{index:05d}{file}'):
                     idxs.append(index)
                     break
