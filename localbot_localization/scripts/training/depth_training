@@ -108,6 +108,7 @@ def main():
         param_list.append({'params': criterion.parameters()})
 
     optimizer = optim.Adam(params = param_list, lr=args['learning_rate'], weight_decay=1e-5) # the most common optimizer in DL
+    # weight decay is the L2 regularizer!!
 
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args['lr_step_size'], gamma=args['lr_gamma'])
 
