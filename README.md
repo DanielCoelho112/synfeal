@@ -81,14 +81,14 @@ Run:
 
 Run:
 
-    rosrun localbot_localization create_statistics --d 'seq1' -s '_depth'
+    rosrun localbot_localization create_statistics --d 'seq1'
 
 
 # Processing images
 
 Run:
 
-    rosrun localbot_localization process_depth_images -d 'seq_depth_test_depth_stat' -s 'final_test' -t 'normalization'
+    rosrun localbot_localization process_images -d 'seq_depth_test_depth_stat' -s 'final_test' -t 'normalization'
 
 
 # Processing point clouds

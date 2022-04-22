@@ -19,9 +19,9 @@ def main():
     dataset = LocalBotDataset(args['dataset'])
     config = dataset.getConfig()
     
-    technique = config['depth']['preprocessing']['technique']
+    technique = config['processing']['technique']
     
-    if config['depth']['preprocessing']['global'] == None:
+    if config['processing']['global'] == None:
         mode = 'local'
     else:
         mode = 'global'
@@ -31,6 +31,8 @@ def main():
         print(idx)
         
         cv_image = np.load(f'{dataset.path_seq}/frame-{idx:05d}.depth.npy').astype(np.float32)
+        
+        #print(cv_image[:,:,0])
         
         cv2.imshow(f'{mode}_{technique}', cv_image)
         cv2.waitKey(0)
