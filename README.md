@@ -77,7 +77,14 @@ Run:
     rosrun localbot_localization create_depth_images --d 'seq1' --size 224 -s '_depth'
 
 
-# Processing depth images
+# Creating statistics of images
+
+Run:
+
+    rosrun localbot_localization create_statistics --d 'seq1' -s '_depth'
+
+
+# Processing images
 
 Run:
 

@@ -299,6 +299,64 @@ class ValidateDataset():
         config['depth']['statistics']['std'] = round(float(np.mean(std_array)),5)
         
         dataset.setConfig(config)
+        
+    def createStatistics(self, dataset):
+        
+        # loop through all point clouds
+        config = dataset.getConfig()
+        
+        intrinsic = np.loadtxt(f'{dataset.path_seq}/depth_intrinsic.txt', delimiter=',')
+        width = dataset.getConfig()['depth']['width']
+        height = dataset.getConfig()['depth']['height']
+        
+        max_array = np.empty((len(dataset)))
+        min_array = np.empty((len(dataset)))
+        mean_array = np.empty((len(dataset)))
+        std_array = np.empty((len(dataset)))
+        
+        for idx in range(len(dataset)):
+            pc_raw = read_pcd(f'{dataset.path_seq}/frame-{idx:05d}.pcd')
+            pts = np.vstack([pc_raw.pc_data['x'], pc_raw.pc_data['y'], pc_raw.pc_data['z'], pc_raw.pc_data['intensity']])  # stays 4xN
+            
+            pixels, valid_pixels, dist = projectToCamera(intrinsic, [0, 0, 0, 0, 0], width, height, pts)
+            
+            range_sparse = np.zeros((height, width), dtype=np.float32)
+            mask = 255 * np.ones((range_sparse.shape[0], range_sparse.shape[1]), dtype=np.uint8)
+        
+        
+            for idx_point in range(0, pts.shape[1]):
+                if valid_pixels[idx_point]:
+                    x0 = math.floor(pixels[0, idx_point])
+                    y0 = math.floor(pixels[1, idx_point])
+                    mask[y0, x0] = 0
+                    range_sparse[y0, x0] = dist[idx_point]
+                    
+            range_sparse = cv2.resize(range_sparse, (size,size), interpolation=cv2.INTER_NEAREST)
+            mask = cv2.resize(mask, (size, size), interpolation=cv2.INTER_NEAREST)
+            
+            # Computing the dense depth map
+            print('Computing inpaint ...')
+            range_dense = cv2.inpaint(range_sparse, mask, 3, cv2.INPAINT_NS)
+            print('Inpaint done')
+            
+            min_array[idx] = np.min(range_dense)
+            max_array[idx] = np.max(range_dense)
+            mean_array[idx] = np.mean(range_dense)
+            std_array[idx] = np.std(range_dense)
+                        
+            tmp = copy.deepcopy(range_dense)
+            tmp = tmp * 1000.0  # to milimeters
+            tmp = tmp.astype(np.uint16)
+            cv2.imwrite(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', tmp)
+            print(f'Saved depth image {dataset.path_seq}/frame-{idx:05d}.depth.png')
+            
+        config['depth']['statistics'] = {}
+        config['depth']['statistics']['max'] = round(float(np.mean(max_array)),5)
+        config['depth']['statistics']['min'] = round(float(np.mean(min_array)),5)
+        config['depth']['statistics']['mean'] = round(float(np.mean(mean_array)),5)
+        config['depth']['statistics']['std'] = round(float(np.mean(std_array)),5)
+        
+        dataset.setConfig(config)
     
     def processDepthImages(self, dataset, technique, global_dataset):
         
