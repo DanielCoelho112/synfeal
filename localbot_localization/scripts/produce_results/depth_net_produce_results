@@ -4,7 +4,7 @@ import torch
 import torch.nn.parallel
 import torch.nn as nn
 import torch.utils.data
-from localbot_localization.src.models.depthnet import CNNDepth, CNNDepthLow, CNNDepthBatch, CNNDepthDropout, CNNDepthBatchLowL2Reg2, CNNDepthBatchLowL2RegLeaky, CNNDepthBatchDropout8,CNNDepthBatchDropoutVar,CNNDepthBatchK3,CNNDepthBatchLeaky,CNNDepthBatchLow
+from localbot_localization.src.models.depthnet import CNNDepth, CNNDepthLow, CNNDepthBatch, CNNDepthDropout, CNNDepthBatchLowL2Reg2, CNNDepthBatchLowL2RegLeaky, CNNDepthBatchDropout8,CNNDepthBatchDropoutVar,CNNDepthBatchK3,CNNDepthBatchLeaky,CNNDepthBatchLow,CNNDepthBatchDropout8Cont,CNNDepthBatchDropout8Kernel7
 from localbot_localization.src.save_results import SaveResults
 from localbot_localization.src.utilities import *
 from localbot_localization.src.dataset import LocalBotDataset
@@ -55,7 +55,7 @@ def main():
     # save results class
     results = SaveResults(results_folder, args["model_folder"], args["testing_set"], args['overwrite'])
     
-    for points, depth_image, target in test_dataloader:
+    for points, depth_image, rgb_image, target in test_dataloader:
         depth_image = depth_image.cuda()  # move data into GPU
         
         pred = model(depth_image)  # our model outputs the pose, and the transformations used

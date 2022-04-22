@@ -129,7 +129,7 @@ def main():
         t0 = datetime.now()
         train_losses_per_batch = []
 
-        for points, depth_image, target_pose in train_loader:  # iterate batches
+        for points, depth_image, rgb_image, target_pose in train_loader:  # iterate batches
             
             if args['cuda']:
                 depth_image, target_pose = depth_image.cuda(), target_pose.cuda()  # move data into GPU
@@ -152,7 +152,7 @@ def main():
         train_loss_epoch = float(np.mean(train_losses_per_batch))
 
         test_losses_per_batch = []
-        for points, depth_image, target_pose in test_loader:
+        for points, depth_image, rgb_image, target_pose in test_loader:
             depth_image, target_pose = depth_image.cuda(), target_pose.cuda()  # move data into GPU
 
             model = model.eval()  # Sets the module in evaluation mode.

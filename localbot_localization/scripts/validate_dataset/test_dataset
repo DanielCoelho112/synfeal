@@ -27,10 +27,12 @@ def main():
     
     #for idx in range(len(dataset)):
     idx=0
-    matrix = np.loadtxt(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt', delimiter=',')
+    #matrix = np.loadtxt(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt', delimiter=',')
     
-    print(matrix)
-    print(type(matrix))
+    print(dataset[idx][2].shape)
+    
+    #print(matrix)
+    #print(type(matrix))
         
 if __name__ == "__main__":
     main()

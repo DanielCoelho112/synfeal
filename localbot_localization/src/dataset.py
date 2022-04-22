@@ -37,8 +37,13 @@ class LocalBotDataset(data.Dataset):
         h,w = cv_image.shape
         cv_image = cv_image.reshape((1,h,w))
         depth_image = torch.from_numpy(cv_image)
+        
+        # load rgb image
+        cv_image = np.load(f'{self.path_seq}/frame-{index:05d}.rgb.npy').astype(np.float32)        
+        # Convert to pytorch format
+        rgb_image = torch.from_numpy(cv_image)
 
-        return point_set, depth_image, pose
+        return point_set, depth_image, rgb_image, pose
     
 
     def __len__(self):
