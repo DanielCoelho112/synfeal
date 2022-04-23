@@ -33,6 +33,8 @@ def main():
                         required=True, help='Name of the results folder')
     parser.add_argument('-idx_max', '--idx_max', type=int,
                         default='0', help='max idx of the frame')
+    parser.add_argument('-idx_min', '--idx_min', type=int,
+                        default='0', help='min idx of the frame')
     parser.add_argument('-fsf', "--frame_selection_function",
                         default='None', type=str, help='see frames that obey a condition')
 
@@ -44,9 +46,10 @@ def main():
     pos, rot = results.getErrorsArrays()
 
     idx_max = int(args['idx_max'])
+    idx_min = int(args['idx_min'])
 
     if not idx_max == 0:
-        frames_used = list(range(idx_max))
+        frames_used = list(range(idx_min,idx_max))
     else:
         frames_used = []
 
