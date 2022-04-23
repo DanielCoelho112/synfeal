@@ -37,6 +37,10 @@ class LocalBotResults():
         pos_error_array = self.csv.iloc[:-1]['position_error (m)'].to_numpy()
         rot_error_array = self.csv.iloc[:-1]['rotation_error (rads)'].to_numpy()
         return pos_error_array, rot_error_array
+
+    def updateCSV(self):
+        self.csv.to_csv(f'{self.path}/errors.csv', index=False, float_format='%.5f')
+        
         
 
 

@@ -68,18 +68,27 @@ class SaveResults():
         
     def saveCSV(self):
         # save averages values in the last row
-        row = {'frame' : 'average_values', 
-               'position_error (m)' : self.csv.mean(axis=0).loc["position_error (m)"],
-               'rotation_error (rads)' : self.csv.mean(axis=0).loc["rotation_error (rads)"]}
-        self.csv = self.csv.append(row, ignore_index=True)  
+        mean_row = {'frame'                 : 'mean_values', 
+                    'position_error (m)'    : self.csv.mean(axis=0).loc["position_error (m)"],
+                    'rotation_error (rads)' : self.csv.mean(axis=0).loc["rotation_error (rads)"]}
+        
+        
+        median_row = {'frame'                 : 'median_values', 
+                      'position_error (m)'    : self.csv.median(axis=0).loc["position_error (m)"],
+                      'rotation_error (rads)' : self.csv.median(axis=0).loc["rotation_error (rads)"]}
+        
+        self.csv = self.csv.append(mean_row, ignore_index=True)  
+        self.csv = self.csv.append(median_row, ignore_index=True) 
+        
+        
         print(self.csv)
         self.csv.to_csv(f'{self.output_folder}/errors.csv', index=False, float_format='%.5f')
 
     def saveErrorsFig(self):
-        frames_array = self.csv.iloc[:-1]['frame'].to_numpy().astype(int)
+        frames_array = self.csv.iloc[:-2]['frame'].to_numpy().astype(int)
         
-        pos_error_array = self.csv.iloc[:-1]['position_error (m)'].to_numpy()
-        rot_error_array = self.csv.iloc[:-1]['rotation_error (rads)'].to_numpy()
+        pos_error_array = self.csv.iloc[:-2]['position_error (m)'].to_numpy()
+        rot_error_array = self.csv.iloc[:-2]['rotation_error (rads)'].to_numpy()
         
         fig, (ax1, ax2) = plt.subplots(2, sharex=True)
         fig.suptitle('position and rotation errors')

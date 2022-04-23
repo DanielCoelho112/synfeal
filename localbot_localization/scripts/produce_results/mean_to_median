@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+
+import cv2
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from colorama import Fore, Style
+import numpy as np
+import matplotlib.pyplot as plt
+from datetime import datetime  # to track the time each epoch takes
+import argparse
+import sys
+import os
+import yaml
+from yaml.loader import SafeLoader
+from colorama import Fore
+
+from localbot_localization.src.dataset import LocalBotDataset
+
+from localbot_localization.src.results import LocalBotResults
+
+parser = argparse.ArgumentParser(description='Producing results')
+
+parser.add_argument('-rf', '--results_folder', type=str, required=True, help='Batch size')
+
+
+arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+args = vars(parser.parse_args(args=arglist))
+
+results = LocalBotResults(args['results_folder'])
+
+csv = results.csv
+
+
+
+csv =csv.iloc[:-1,:]
+
+mean_row = {'frame'                 : 'mean_values', 
+            'position_error (m)'    : csv.mean(axis=0).loc["position_error (m)"],
+            'rotation_error (rads)' : csv.mean(axis=0).loc["rotation_error (rads)"]}
+        
+        
+median_row = {'frame'                 : 'median_values', 
+              'position_error (m)'    : csv.median(axis=0).loc["position_error (m)"],
+              'rotation_error (rads)' : csv.median(axis=0).loc["rotation_error (rads)"]}
+
+csv = csv.append(mean_row, ignore_index=True)  
+csv = csv.append(median_row, ignore_index=True) 
+        
+results.csv = csv
+        
+results.updateCSV() 
+
+
+
