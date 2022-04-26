@@ -34,9 +34,10 @@ class SaveDataset():
                   'date'     : dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
                   'mode'     : mode,
                   'is_valid' : False,
-                  'npoints' : None,
+                  'npoints'  : None,
                   'scaled'   : False,
-                  'n_steps'  : ns}
+                  'n_steps'  : ns,
+                  'raw'      : output}
         
         self.frame_idx = 0 
         self.world_link = 'world'

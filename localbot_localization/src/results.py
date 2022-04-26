@@ -3,6 +3,8 @@ from localbot_localization.src.utilities import normalize_quat
 import numpy as np
 import pandas as pd
 import os
+import yaml
+from yaml.loader import SafeLoader
 
 
 class LocalBotResults():
@@ -40,6 +42,12 @@ class LocalBotResults():
 
     def updateCSV(self):
         self.csv.to_csv(f'{self.path}/errors.csv', index=False, float_format='%.5f')
+    
+    def getConfig(self):
+        with open(f'{self.path}/config.yaml') as f:
+            config = yaml.load(f, Loader=SafeLoader)
+        return config
+
         
         
 
