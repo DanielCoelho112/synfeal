@@ -13,22 +13,25 @@ import sys
 import os
 from colorama import Fore
 from localbot_localization.src.results import LocalBotResults
+import shutil
 
 
 def main():
 
-    parser = argparse.ArgumentParser(description='Producing results')
+    parser = argparse.ArgumentParser(description='Generate overlapping')
     parser.add_argument('-rf', '--results_folder', type=str, required=True, help='Batch size')
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     results = LocalBotResults(args['results_folder'])
-    folder = f'{results.path}/side_by_side'
+    folder = f'{results.path}/overlapping'
 
+
+    #shutil.rmtree(f'{folder}')
     if not os.path.exists(folder):
         print(f'Creating folder {folder}')
         os.makedirs(folder)  # Create the new folder
     else:
-        print(f'{Fore.RED} {folder} already exists... Aborting side by side initialization! {Fore.RESET}')
+        print(f'{Fore.RED} {folder} already exists... Aborting overlaping generation! {Fore.RESET}')
         exit(0)
 
     for idx in range(len(results)):
@@ -37,19 +40,13 @@ def main():
         real_image = cv2.imread(f'{results.path}/images/frame-{idx:05d}.real.rgb.png', cv2.IMREAD_UNCHANGED)
         predicted_image = cv2.imread(f'{results.path}/images/frame-{idx:05d}.predicted.rgb.png', cv2.IMREAD_UNCHANGED)
         
-        #20,8
-        f = plt.figure(figsize=(20,8))
-        f.suptitle(f'frame{idx}')
-        ax = f.add_subplot(121)
-        ax2 = f.add_subplot(122)
-        ax.set_title('Real Image')
-        ax.imshow(cv2.cvtColor(real_image, cv2.COLOR_BGR2RGB))
-        ax.axis('off')
-        ax2.set_title('Predicted Image')
-        ax2.imshow(cv2.cvtColor(predicted_image, cv2.COLOR_BGR2RGB))
-        ax2.axis('off')
-        plt.savefig(f'{folder}/frame-{idx:05d}.png')
-        plt.close(f)
+        alpha = 0.35
+        overlapped_image = cv2.addWeighted(predicted_image,alpha,real_image,1-alpha,0)
+        #cv2.imshow('overlaped', overlapped_image)
+        #cv2.waitKey(0)
+        
+        cv2.imwrite(f'{folder}/frame-{idx:05d}.png', overlapped_image)
+        
         
 if __name__ == "__main__":
     main()
