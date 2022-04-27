@@ -39,7 +39,12 @@ class LocalBotDataset(data.Dataset):
         depth_image = torch.from_numpy(cv_image)
         
         # load rgb image
-        cv_image = np.load(f'{self.path_seq}/frame-{index:05d}.rgb.npy').astype(np.float32)        
+        cv_image = np.load(f'{self.path_seq}/frame-{index:05d}.rgb.npy').astype(np.float32)
+        
+        # For PoseNet
+        cv_image = cv2.resize(cv_image, (299,299), interpolation = cv2.INTER_AREA)
+        h,w,c = cv_image.shape
+        cv_image = cv_image.reshape((c,h,w))
         # Convert to pytorch format
         rgb_image = torch.from_numpy(cv_image)
 
@@ -59,7 +64,9 @@ class LocalBotDataset(data.Dataset):
             yaml.dump(config, f)
         
 
-#dataset = LocalBotDataset('seq_test_v')
-#print(dataset[0][0].shape)
+#dataset = LocalBotDataset('seq4dpii_v2')
+#print(dataset[0][2].shape)
+#cv2.imshow(dataset[0][2])
+#cv2.waitKey(0)
 #print(sum(torch.isnan(dataset[78][0])))
 

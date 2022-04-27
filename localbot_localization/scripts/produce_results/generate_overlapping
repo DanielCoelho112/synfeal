@@ -33,19 +33,26 @@ def main():
     else:
         print(f'{Fore.RED} {folder} already exists... Aborting overlaping generation! {Fore.RESET}')
         exit(0)
-
+        
+    alpha = 0.35
+    #alpha = 0.40
     for idx in range(len(results)):
         print(f'computing idx: {idx}')
         
         real_image = cv2.imread(f'{results.path}/images/frame-{idx:05d}.real.rgb.png', cv2.IMREAD_UNCHANGED)
         predicted_image = cv2.imread(f'{results.path}/images/frame-{idx:05d}.predicted.rgb.png', cv2.IMREAD_UNCHANGED)
         
-        alpha = 0.35
+        # real_image[:,:,0] = 0 #B
+        # real_image[:,:,2] = 0 #R
+        # predicted_image[:,:,0] = 0 #B
+        # predicted_image[:,:,1] = 0 #G
+        
         overlapped_image = cv2.addWeighted(predicted_image,alpha,real_image,1-alpha,0)
         #cv2.imshow('overlaped', overlapped_image)
         #cv2.waitKey(0)
         
         cv2.imwrite(f'{folder}/frame-{idx:05d}.png', overlapped_image)
+        
         
         
 if __name__ == "__main__":
