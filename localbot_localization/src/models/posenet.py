@@ -1,3 +1,4 @@
+
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -90,3 +91,48 @@ class PoseNetGoogleNet(nn.Module):
 
             return x_pose
 
+
+class PoseNetResNet(nn.Module): #https://github.com/youngguncho/PoseNet-Pytorch/blob/master/model.py
+    def __init__(self, pretrained, dropout_rate=0.0):
+        super(PoseNetResNet, self).__init__()
+        
+        base_model = models.resnet34(pretrained=pretrained)
+        feat_in = base_model.fc.in_features
+        
+        self.dropout_rate = dropout_rate
+        
+        self.base_model = nn.Sequential(*list(base_model.children())[:-1])
+        
+        self.fc_last = nn.Linear(feat_in, 2048, bias=True)
+        self.fc_position = nn.Linear(2048, 3, bias=True)
+        self.fc_rotation = nn.Linear(2048, 4, bias=True)
+        
+        init_modules = [self.fc_last, self.fc_position, self.fc_rotation]
+
+        # init modules accoring to kaiming normal 
+        # https://pytorch.org/docs/stable/nn.init.html
+        for module in init_modules:
+            if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
+                nn.init.kaiming_normal_(module.weight)
+                if module.bias is not None:
+                    nn.init.constant_(module.bias, 0)
+                    
+    def forward(self, x):
+        
+        x = self.base_model(x)
+        x = x.view(x.size(0), -1)
+        x_fully = self.fc_last(x)
+        x = F.relu(x_fully)
+
+        if self.dropout_rate > 0:
+            x = F.dropout(x, p=self.dropout_rate, training=self.training)
+
+        position = self.fc_position(x)
+        rotation = self.fc_rotation(x)
+        
+        x_pose = torch.cat((position, rotation), dim=1)
+
+        return x_pose
+        
+        
+        
