@@ -23,73 +23,78 @@ import tf2_ros
 import copy
 from tf.listener import TransformListener
 
-parser = argparse.ArgumentParser(description='Producing image results')
-
-parser.add_argument('-rf', '--results_folder', type=str, required=True, help='results folder')
 
 
-arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
-args = vars(parser.parse_args(args=arglist))
+def main():
 
-rospy.init_node(f"generate_images")
+    parser = argparse.ArgumentParser(description='Producing image results')
 
-results = LocalBotResults(args['results_folder'])
-config = results.getConfig()
-dataset_name = config['seq_path']
-dataset = LocalBotDataset(dataset_name)
-raw_dataset_name = dataset.getConfig()['raw']
-dataset = LocalBotDataset(raw_dataset_name)
-generate = GenerateRealPredicted(model_name='localbot', results=results)
-
-tf_broadcaster = tf2_ros.TransformBroadcaster()
-listener = TransformListener()
-
-# the poses store are w.r.t. rgb_frame. So we have to transform them to the base_footprint
-now = rospy.Time()
-print(f'Waiting for transformation from kinect_rgb_optical_frame to base_footprint')
-listener.waitForTransform('kinect_rgb_optical_frame', 'base_footprint', now, rospy.Duration(5)) # admissible waiting time
-print('... received!')
-transform_rgb_footprint = listener.lookupTransform('kinect_rgb_optical_frame', 'base_footprint', now)
-matrix_rgb_footprint = listener.fromTranslationRotation(transform_rgb_footprint[0], transform_rgb_footprint[1])
+    parser.add_argument('-rf', '--results_folder', type=str, required=True, help='results folder')
 
 
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
 
-for idx in range(len(results)):
-    print(f'Computing frame {idx}')
-    
-    _, rgb_predicted_pose = results[idx]  # rgb pose
+    rospy.init_node(f"generate_images")
+
+    results = LocalBotResults(args['results_folder'])
+    config = results.getConfig()
+    dataset_name = config['seq_path']
+    dataset = LocalBotDataset(dataset_name)
+    raw_dataset_name = dataset.getConfig()['raw']
+    dataset = LocalBotDataset(raw_dataset_name)
+    generate = GenerateRealPredicted(model_name='localbot', results=results)
+
+    tf_broadcaster = tf2_ros.TransformBroadcaster()
+    listener = TransformListener()
+
+    # the poses store are w.r.t. rgb_frame. So we have to transform them to the base_footprint
+    now = rospy.Time()
+    print(f'Waiting for transformation from kinect_rgb_optical_frame to base_footprint')
+    listener.waitForTransform('kinect_rgb_optical_frame', 'base_footprint', now, rospy.Duration(5)) # admissible waiting time
+    print('... received!')
+    transform_rgb_footprint = listener.lookupTransform('kinect_rgb_optical_frame', 'base_footprint', now)
+    matrix_rgb_footprint = listener.fromTranslationRotation(transform_rgb_footprint[0], transform_rgb_footprint[1])
+
+
+
+    for idx in range(len(results)):
+        print(f'Computing frame {idx}')
         
-    
-    rgb_matrix_predicted_pose = poseToMatrix(rgb_predicted_pose)
-    
-    
-    footprint_matrix_predicted_pose = np.dot(rgb_matrix_predicted_pose, matrix_rgb_footprint)
-    
-    xyz_new = matrixToXYZ(footprint_matrix_predicted_pose)
-    quaternion_new = matrixToQuaternion(footprint_matrix_predicted_pose)
-    
-    footprint_predicted_pose = np.append(xyz_new, quaternion_new)
-    
-    
-    # set predicted pose in Gazebo
-    footprint_predicted_pose=Pose(position=Point(x=footprint_predicted_pose[0], y=footprint_predicted_pose[1], z=footprint_predicted_pose[2]), 
-                        orientation=Quaternion(x=footprint_predicted_pose[3], y=footprint_predicted_pose[4], z=footprint_predicted_pose[5], w=footprint_predicted_pose[6]))    
-    generate.setPose(footprint_predicted_pose)
+        _, rgb_predicted_pose = results[idx]  # rgb pose
+            
+        
+        rgb_matrix_predicted_pose = poseToMatrix(rgb_predicted_pose)
+        
+        
+        footprint_matrix_predicted_pose = np.dot(rgb_matrix_predicted_pose, matrix_rgb_footprint)
+        
+        xyz_new = matrixToXYZ(footprint_matrix_predicted_pose)
+        quaternion_new = matrixToQuaternion(footprint_matrix_predicted_pose)
+        
+        footprint_predicted_pose = np.append(xyz_new, quaternion_new)
+        
+        
+        # set predicted pose in Gazebo
+        footprint_predicted_pose=Pose(position=Point(x=footprint_predicted_pose[0], y=footprint_predicted_pose[1], z=footprint_predicted_pose[2]), 
+                            orientation=Quaternion(x=footprint_predicted_pose[3], y=footprint_predicted_pose[4], z=footprint_predicted_pose[5], w=footprint_predicted_pose[6]))    
+        generate.setPose(footprint_predicted_pose)
 
-    rospy.sleep(1)
-    image = generate.getImage()
-    # save frames in results
-    filename_predicted=f'frame-{idx:05d}.predicted.rgb.png'
-    generate.saveImage(filename=filename_predicted, image=image)
-    
-    # get real pose of the dataset
-    # load npy
-    np_image = cv2.imread(f'{dataset.path_seq}/frame-{idx:05d}.rgb.png', cv2.IMREAD_UNCHANGED)
-    filename_real=f'frame-{idx:05d}.real.rgb.png'
-    generate.saveImage(filename=filename_real, image=np_image)
-    
-    
-
+        rospy.sleep(1)
+        image = generate.getImage()
+        # save frames in results
+        filename_predicted=f'frame-{idx:05d}.predicted.rgb.png'
+        generate.saveImage(filename=filename_predicted, image=image)
+        
+        # get real pose of the dataset
+        # load npy
+        np_image = cv2.imread(f'{dataset.path_seq}/frame-{idx:05d}.rgb.png', cv2.IMREAD_UNCHANGED)
+        filename_real=f'frame-{idx:05d}.real.rgb.png'
+        generate.saveImage(filename=filename_real, image=np_image)
+        
+        
+if __name__ == "__main__":
+    main()
 
 
 

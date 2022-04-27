@@ -8,49 +8,54 @@ import torch.optim as optim
 from colorama import Fore, Style
 import numpy as np
 import matplotlib.pyplot as plt
-from datetime import datetime  # to track the time each epoch takes
 import argparse
 import sys
 import os
-import yaml
-from yaml.loader import SafeLoader
 from colorama import Fore
-
-from localbot_localization.src.dataset import LocalBotDataset
-
 from localbot_localization.src.results import LocalBotResults
 
-parser = argparse.ArgumentParser(description='Producing results')
 
-parser.add_argument('-rf', '--results_folder', type=str, required=True, help='Batch size')
+def main():
+
+    parser = argparse.ArgumentParser(description='Producing results')
+    parser.add_argument('-rf', '--results_folder', type=str, required=True, help='Batch size')
+
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+
+    results = LocalBotResults(args['results_folder'])
+    folder = f'{results.path}/side_by_side'
+
+    if not os.path.exists(folder):
+        print(f'Creating folder {folder}')
+        os.makedirs(folder)  # Create the new folder
+    else:
+        print(f'{Fore.RED} {folder} already exists... Aborting side by side initialization! {Fore.RESET}')
+        exit(0)
 
 
-arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
-args = vars(parser.parse_args(args=arglist))
-
-results = LocalBotResults(args['results_folder'])
-
-csv = results.csv
-
-
-
-csv =csv.iloc[:-1,:]
-
-mean_row = {'frame'                 : 'mean_values', 
-            'position_error (m)'    : csv.mean(axis=0).loc["position_error (m)"],
-            'rotation_error (rads)' : csv.mean(axis=0).loc["rotation_error (rads)"]}
+    for idx in range(len(results)):
+        print(f'computing idx: {idx}')
         
+        real_image = cv2.imread(f'{results.path}/images/frame-{idx:05d}.real.rgb.png', cv2.IMREAD_UNCHANGED)
+        predicted_image = cv2.imread(f'{results.path}/images/frame-{idx:05d}.predicted.rgb.png', cv2.IMREAD_UNCHANGED)
         
-median_row = {'frame'                 : 'median_values', 
-              'position_error (m)'    : csv.median(axis=0).loc["position_error (m)"],
-              'rotation_error (rads)' : csv.median(axis=0).loc["rotation_error (rads)"]}
-
-csv = csv.append(mean_row, ignore_index=True)  
-csv = csv.append(median_row, ignore_index=True) 
+        #20,8
+        f = plt.figure(figsize=(20,8))
+        f.suptitle(f'frame{idx}')
+        ax = f.add_subplot(121)
+        ax2 = f.add_subplot(122)
+        ax.set_title('Real Image')
+        ax.imshow(cv2.cvtColor(real_image, cv2.COLOR_BGR2RGB))
+        ax.axis('off')
+        ax2.set_title('Predicted Image')
+        ax2.imshow(cv2.cvtColor(predicted_image, cv2.COLOR_BGR2RGB))
+        ax2.axis('off')
+        plt.savefig(f'{folder}/frame-{idx:05d}.png')
+        plt.close(f)
         
-results.csv = csv
-        
-results.updateCSV() 
 
+    
 
-
+if __name__ == "__main__":
+    main()
