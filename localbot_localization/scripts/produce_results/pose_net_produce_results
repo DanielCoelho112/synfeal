@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+
+import torch
+import torch.nn.parallel
+import torch.nn as nn
+import torch.utils.data
+from localbot_localization.src.models.depthnet import CNNDepth, CNNDepthLow, CNNDepthBatch, CNNDepthDropout, CNNDepthBatchLowL2Reg2, CNNDepthBatchLowL2RegLeaky, CNNDepthBatchDropout8,CNNDepthBatchDropoutVar,CNNDepthBatchK3,CNNDepthBatchLeaky,CNNDepthBatchLow,CNNDepthBatchDropout8Cont,CNNDepthBatchDropout8Kernel7
+from localbot_localization.src.models.posenet import PoseNetGoogleNet, PoseNetResNet
+from localbot_localization.src.save_results import SaveResults
+from localbot_localization.src.utilities import *
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_core.src.utilities import *
+import numpy as np
+from datetime import datetime
+import os
+import sys
+import argparse
+import yaml
+from yaml.loader import SafeLoader
+from colorama import Fore
+from torchvision import transforms
+
+def main():
+    
+    parser = argparse.ArgumentParser(description='Producing results')
+    
+    parser.add_argument('-test_set', '--testing_set', type=str, required=True, help='Name of the testing set')
+    parser.add_argument('-mp', '--model_folder', type=str, required=True, help='Path of the model to evaluate')
+    parser.add_argument('-rf', '--results_folder', type=str, required=True, help='Batch size')
+    parser.add_argument('-ow', '--overwrite', action='store_true', help='Overwrite results folder')
+    
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+    
+    transform = transforms.Compose([
+        transforms.Resize(300),
+        transforms.CenterCrop(299),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
+    
+    
+    # load model
+    folder_name = f'{os.environ["HOME"]}/models/localbot/{args["model_folder"]}'
+    if os.path.exists(folder_name):
+        model_name = [f for f in os.listdir(folder_name) if f.endswith('.pth')][0]
+        with open(f'{folder_name}/config.yaml') as f:
+            config = yaml.load(f, Loader=SafeLoader)
+        
+        model = eval(config['init_model'])
+        model.load_state_dict(torch.load(f'{folder_name}/{model_name}',map_location='cuda:0'))
+        model.eval()
+        model.cuda()
+        
+    else:
+        print(f'{Fore.RED} Model Folder not found: {folder_name} {Fore.RESET}')
+        
+    # load the testing dataset
+    test_dataset = LocalBotDataset(path_seq=f'{args["testing_set"]}', transform=transform)
+    test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False,  num_workers=2)
+    
+    # create results folder
+    results_folder = args["results_folder"]
+
+    # save results class
+    results = SaveResults(results_folder, args["model_folder"], args["testing_set"], args['overwrite'])
+    
+    i = 0
+    for points, depth_image, rgb_image, target in test_dataloader:
+        print(i)
+        rgb_image = rgb_image.cuda()  # move data into GPU
+        
+        pred = model(rgb_image)  # our model outputs the pose, and the transformations used
+        pred = process_pose(pred)
+        
+        target = target.detach().numpy()
+        pred = pred.cpu().detach().numpy()
+        
+        pos_error = compute_position_error(pred[0], target[0])  # RMSE
+        rot_error = compute_rotation_error(pred[0], target[0])
+                
+        transformation_pred = poseToMatrix(pred[0])
+        transformation_target = poseToMatrix(target[0])
+        
+        results.saveTXT(transformation_target, transformation_pred)
+        results.updateCSV(pos_error, rot_error)
+        results.step()
+        i+=1
+        
+
+    results.saveCSV()
+    results.saveErrorsFig()
+    
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+    
+    
+    
+ 

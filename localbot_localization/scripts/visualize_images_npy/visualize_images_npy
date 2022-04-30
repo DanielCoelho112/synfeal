@@ -30,7 +30,7 @@ def main():
     for idx in range(len(dataset)):
         print(idx)
         
-        cv_image = np.load(f'{dataset.path_seq}/frame-{idx:05d}.depth.npy').astype(np.float32)
+        cv_image = np.load(f'{dataset.path_seq}/frame-{idx:05d}.rgb.npy').astype(np.float32)
         
         #print(cv_image[:,:,0])
         

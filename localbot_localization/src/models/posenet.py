@@ -13,6 +13,8 @@ from torchvision import transforms, models
 class PoseNetGoogleNet(nn.Module): 
         def __init__(self, pretrained,dropout_rate=0.0):
             super(PoseNetGoogleNet, self).__init__()
+            
+            self.dropout_rate = dropout_rate
 
             base_model = models.inception_v3(pretrained)
             base_model.aux_logits = False
@@ -34,6 +36,8 @@ class PoseNetGoogleNet(nn.Module):
             self.Mixed_7b = base_model.Mixed_7b
             self.Mixed_7c = base_model.Mixed_7c
 
+            self.bn1 = nn.BatchNorm1d(1024)
+            
             # Out 2
             self.pos = nn.Linear(2048, 3, bias=True)
             self.ori = nn.Linear(2048, 4, bias=True)
@@ -80,7 +84,7 @@ class PoseNetGoogleNet(nn.Module):
             # 8 x 8 x 2048
             x = F.avg_pool2d(x, kernel_size=8)
             # 1 x 1 x 2048
-            x = F.dropout(x, training=self.training)
+            x = F.dropout(x, p=self.dropout_rate, training=self.training)
             # 1 x 1 x 2048
             x = x.view(x.size(0), -1)
             # 2048

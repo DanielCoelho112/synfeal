@@ -73,6 +73,7 @@ def main():
     print(f'frames used: {Fore.GREEN} {frames_used} {Fore.RESET}')
 
     while not rospy.is_shutdown():
+        print('while')
 
         markers = MarkerArray()
 
@@ -90,6 +91,8 @@ def main():
         
 
         for idx,frame_idx in enumerate(frames_used):
+            
+            print(idx)
 
             # publish markers
             pose_real, pose_predicted = results[frame_idx]
@@ -178,7 +181,7 @@ def main():
             #     tf_broadcaster.sendTransform(transform)
 
         marker_pub.publish(markers)
-        rate.sleep()
+        #rate.sleep()
 
 
 if __name__ == "__main__":
