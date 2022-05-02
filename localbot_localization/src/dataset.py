@@ -51,7 +51,7 @@ class LocalBotDataset(data.Dataset):
         # rgb_image = torch.from_numpy(cv_image)
         
         rgb_image = Image.open(f'{self.root}/{self.seq[:4]}_images/frame-{index:05d}.rgb.png')
-        print(rgb_image)
+        #print(rgb_image)
         
 
         return point_set, depth_image, self.transform(rgb_image), pose

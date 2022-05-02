@@ -61,14 +61,14 @@ def main():
         transforms.Resize(300),
         transforms.RandomCrop(299),
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        transforms.Normalize([0.20171, 0.18024, 0.18053], [0.07934, 0.06803, 0.06967])
     ])
     
     transform_test = transforms.Compose([
         transforms.Resize(300),
         transforms.CenterCrop(299),
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        transforms.Normalize([0.20171, 0.18024, 0.18053], [0.07934, 0.06803, 0.06967])
     ])
     
     train_dataset = LocalBotDataset(path_seq=args['training_set'], transform=transform_train)

@@ -374,6 +374,82 @@ class ValidateDataset():
         config['statistics']['D']['std'] = round(float(np.mean(config['statistics']['D']['std'])),5)
         
         dataset.setConfig(config)
+
+    def createStatisticsRGB01(self, dataset):
+            
+            # loop through all point clouds
+            config = dataset.getConfig()
+            
+            config['statistics'] = {'B' : {'max'  : np.empty((len(dataset))),
+                                        'min'  : np.empty((len(dataset))),
+                                        'mean' : np.empty((len(dataset))),
+                                        'std'  : np.empty((len(dataset)))},
+                                    'G' : {'max'  : np.empty((len(dataset))),
+                                        'min'  : np.empty((len(dataset))),
+                                        'mean' : np.empty((len(dataset))),
+                                        'std'  : np.empty((len(dataset)))},
+                                    'R' : {'max'  : np.empty((len(dataset))),
+                                        'min'  : np.empty((len(dataset))),
+                                        'mean' : np.empty((len(dataset))),
+                                        'std'  : np.empty((len(dataset)))}}
+            
+            for idx in range(len(dataset)):
+                
+                print(f'creating stats of frame {idx}')
+                
+                # Load RGB image
+                cv_image = cv2.imread(f'{dataset.path_seq}/frame-{idx:05d}.rgb.png', cv2.IMREAD_UNCHANGED)
+                
+                #cv2.imshow('fig', cv_image)
+                #cv2.waitKey(0)
+                
+                #print(cv_image.shape)
+                
+                blue_image = cv_image[:,:,0]/255
+                green_image = cv_image[:,:,1]/255
+                red_image = cv_image[:,:,2]/255
+                
+                # cv2.imshow('fig', green_image)
+                # cv2.waitKey(0)
+                
+                ## B channel
+                config['statistics']['B']['max'][idx] = np.max(blue_image)
+                config['statistics']['B']['min'][idx] = np.min(blue_image)
+                config['statistics']['B']['mean'][idx] = np.mean(blue_image)
+                config['statistics']['B']['std'][idx] = np.std(blue_image)
+                
+                ## G channel
+                config['statistics']['G']['max'][idx] = np.max(green_image)
+                config['statistics']['G']['min'][idx] = np.min(green_image)
+                config['statistics']['G']['mean'][idx] = np.mean(green_image)
+                config['statistics']['G']['std'][idx] = np.std(green_image)
+                
+                ## R channel
+                config['statistics']['R']['max'][idx] = np.max(red_image)
+                config['statistics']['R']['min'][idx] = np.min(red_image)
+                config['statistics']['R']['mean'][idx] = np.mean(red_image)
+                config['statistics']['R']['std'][idx] = np.std(red_image)
+                
+            
+                            
+            
+            config['statistics']['B']['max'] = round(float(np.mean(config['statistics']['B']['max'])),5)
+            config['statistics']['B']['min'] = round(float(np.mean(config['statistics']['B']['min'])),5)
+            config['statistics']['B']['mean'] = round(float(np.mean(config['statistics']['B']['mean'])),5)
+            config['statistics']['B']['std'] = round(float(np.mean(config['statistics']['B']['std'])),5)
+            
+            config['statistics']['G']['max'] = round(float(np.mean(config['statistics']['G']['max'])),5)
+            config['statistics']['G']['min'] = round(float(np.mean(config['statistics']['G']['min'])),5)
+            config['statistics']['G']['mean'] = round(float(np.mean(config['statistics']['G']['mean'])),5)
+            config['statistics']['G']['std'] = round(float(np.mean(config['statistics']['G']['std'])),5)
+        
+            config['statistics']['R']['max'] = round(float(np.mean(config['statistics']['R']['max'])),5)
+            config['statistics']['R']['min'] = round(float(np.mean(config['statistics']['R']['min'])),5)
+            config['statistics']['R']['mean'] = round(float(np.mean(config['statistics']['R']['mean'])),5)
+            config['statistics']['R']['std'] = round(float(np.mean(config['statistics']['R']['std'])),5)
+            
+
+            dataset.setConfig(config)
     
     def processImages(self, dataset, technique, global_dataset):
         
