@@ -42,6 +42,7 @@ def main():
                         help='Step size of the learning rate decay')
     parser.add_argument('-lr_gamma', '--lr_gamma', type=float, default=0.5,
                         help='Decay of the learning rate after step size')
+    parser.add_argument('-wc', '--weight_decay', type=float, default=0, help='L2 regularizer')
     parser.add_argument('-im', '--init_model', type=str, default='CNNDepth()',
                         help='Decay of the learning rate after step size')
 
@@ -57,22 +58,39 @@ def main():
     folder_name = f'{os.environ["HOME"]}/models/localbot/{args["folder_name"]}'
     model_name = f'{folder_name}/{args["model_name"]}.pth'
     
-    transform_train = transforms.Compose([
+    # transform_train = transforms.Compose([
+    #     transforms.Resize(300),
+    #     transforms.RandomCrop(299),
+    #     transforms.ToTensor(),
+    #     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    # ])
+    
+    # transform_test = transforms.Compose([
+    #     transforms.Resize(300),
+    #     transforms.CenterCrop(299),
+    #     transforms.ToTensor(),
+    #     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    # ])
+    
+    rgb_transform_train = transforms.Compose([
         transforms.Resize(300),
         transforms.RandomCrop(299),
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        transforms.Normalize([0.20171, 0.18024, 0.18053], [0.07934, 0.06803, 0.06967])
     ])
     
-    transform_test = transforms.Compose([
+    rgb_transform_test = transforms.Compose([
         transforms.Resize(300),
         transforms.CenterCrop(299),
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        transforms.Normalize([0.20171, 0.18024, 0.18053], [0.07934, 0.06803, 0.06967])
     ])
     
-    train_dataset = LocalBotDataset(path_seq=args['training_set'], transform=transform_train)
-    test_dataset = LocalBotDataset(path_seq=args['testing_set'], transform=transform_test)
+    depth_transform_train = {'resize':[299,299], 'normalize' : True}
+    depth_transform_test  = {'resize':[299,299], 'normalize' : True}
+    
+    train_dataset = LocalBotDataset(path_seq=args['training_set'], rgb_transform = rgb_transform_train, depth_transform = depth_transform_train)
+    test_dataset = LocalBotDataset(path_seq=args['testing_set'], rgb_transform = rgb_transform_test, depth_transform = depth_transform_test)
 
     # check if the datasets are validated
     config_train = train_dataset.getConfig()
@@ -121,7 +139,7 @@ def main():
         # Add sx and sq from loss function to optimizer params
         param_list.append({'params': criterion.parameters()})
 
-    optimizer = optim.Adam(params = param_list, lr=args['learning_rate'], weight_decay=1e-3) # the most common optimizer in DL
+    optimizer = optim.Adam(params = param_list, lr=args['learning_rate'], weight_decay=args['weight_decay']) # the most common optimizer in DL
     # weight decay is the L2 regularizer!!
 
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args['lr_step_size'], gamma=args['lr_gamma'])
@@ -129,6 +147,9 @@ def main():
     # ----------------------------------
     # Training
     # ----------------------------------
+    
+    stored_test_loss_epoch = np.inf
+    
 
     n_epochs = args['n_epochs']
 
@@ -214,29 +235,35 @@ def main():
         # ------------------
         if (epoch+1)%save_step == 0:
             
-            plt.savefig(f'{folder_name}/losses.png')
-            torch.save(model.state_dict(), model_name)
+            # only save if test loss is lower than the previous!
+            if test_loss_epoch < stored_test_loss_epoch:
+            
+                plt.savefig(f'{folder_name}/losses.png')
+                torch.save(model.state_dict(), model_name)
 
-            dt_now = datetime.now()  # current date and time
-            config = {'user': os.environ["USER"],
-                      'date': dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
-                      'train_set': args['training_set'],
-                      'test_set': args['testing_set'],
-                      'max_n_epochs': args['n_epochs'],
-                      'epoch': epoch +1,
-                      'batch_size': args['batch_size'],
-                      'loss': args['loss_function'],
-                      'learning_rate': args['learning_rate'],
-                      'lr_step_size': args['lr_step_size'],
-                      'lr_gamma': args['lr_gamma'],
-                      'init_model': args['init_model'],
-                      'train_losses': train_losses,
-                      'test_losses': test_losses}
+                dt_now = datetime.now()  # current date and time
+                config = {'user': os.environ["USER"],
+                        'date': dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
+                        'train_set': args['training_set'],
+                        'test_set': args['testing_set'],
+                        'max_n_epochs': args['n_epochs'],
+                        'epoch': epoch +1,
+                        'batch_size': args['batch_size'],
+                        'loss': args['loss_function'],
+                        'learning_rate': args['learning_rate'],
+                        'lr_step_size': args['lr_step_size'],
+                        'lr_gamma': args['lr_gamma'],
+                        'init_model': args['init_model'],
+                        'train_losses': train_losses,
+                        'test_losses': test_losses,
+                        'weight_decay' : args['weight_decay']}
 
-            with open(f'{folder_name}/config.yaml', 'w') as file:
-                yaml.dump(config, file)
+                with open(f'{folder_name}/config.yaml', 'w') as file:
+                    yaml.dump(config, file)
 
-            print(f'Saved model at epoch {epoch+1}')
+                print(f'Saved model at epoch {epoch+1}')
+            else:
+                print('Current model is no better than the stored model. Ignoring saving.')
 
 if __name__ == "__main__":
     main()
