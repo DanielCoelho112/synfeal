@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+
+import cv2
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from colorama import Fore, Style
+import numpy as np
+import matplotlib.pyplot as plt
+from datetime import datetime  # to track the time each epoch takes
+import argparse
+import sys
+import os
+import yaml
+from yaml.loader import SafeLoader
+from colorama import Fore
+
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.loss_functions import BetaLoss, DynamicLoss
+from localbot_localization.src.utilities import process_pose
+from localbot_localization.src.models.posenet import PoseNetGoogleNet
+from localbot_localization.src.torch_utilities import summarizeModel, resumeTraining
+from torchvision import transforms
+
+import pickle
+
+    
+def main():
+    
+    rgb_transform_train = transforms.Compose([
+        transforms.Resize(300),
+        transforms.RandomCrop(299),
+        transforms.ToTensor(),
+        transforms.Normalize([0.20171, 0.18024, 0.18053], [0.07934, 0.06803, 0.06967])
+    ])
+    
+    rgb_transform_test = transforms.Compose([
+        transforms.Resize(300),
+        transforms.CenterCrop(299),
+        transforms.ToTensor(),
+        transforms.Normalize([0.20171, 0.18024, 0.18053], [0.07934, 0.06803, 0.06967])
+    ])
+    
+    # Store data (serialize)
+    with open('filename.pickle', 'wb') as handle:
+        pickle.dump(rgb_transform_test, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            
+    # Load data (deserialize)
+    with open('filename.pickle', 'rb') as handle:
+        unserialized_data = pickle.load(handle)
+        
+    
+    
+    depth_transform= {'resize':[299,299], 'normalize' : True}
+
+    dataset = LocalBotDataset('seq4dpii_v2',depth_transform=depth_transform ,rgb_transform=unserialized_data, inputs=['rgb_image'])
+    
+    print(dataset[0][0].shape)
+            
+
+
+if __name__ == "__main__":
+    main()
