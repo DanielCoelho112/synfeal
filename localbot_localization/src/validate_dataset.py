@@ -242,7 +242,7 @@ class ValidateDataset():
                 
         shutil.rmtree(dataset2_tmp.path_seq)
         
-    def createDepthImages(self, dataset, size):
+    def createDepthImages(self, dataset, rescale):
         
         # loop through all point clouds
         config = dataset.getConfig()
@@ -267,14 +267,17 @@ class ValidateDataset():
                     y0 = math.floor(pixels[1, idx_point])
                     mask[y0, x0] = 0
                     range_sparse[y0, x0] = dist[idx_point]
-                    
-            range_sparse = cv2.resize(range_sparse, (size,size), interpolation=cv2.INTER_NEAREST)
-            mask = cv2.resize(mask, (size, size), interpolation=cv2.INTER_NEAREST)
             
+            range_sparse = cv2.resize(range_sparse, (0, 0), fx=rescale, fy=rescale, interpolation=cv2.INTER_NEAREST)
+            mask = cv2.resize(mask, (0, 0), fx=rescale, fy=rescale, interpolation=cv2.INTER_NEAREST)
+            
+    
             # Computing the dense depth map
             print('Computing inpaint ...')
             range_dense = cv2.inpaint(range_sparse, mask, 3, cv2.INPAINT_NS)
             print('Inpaint done')
+            
+            range_dense = cv2.resize(range_dense, (0, 0), fx=1 / rescale, fy=1 / rescale, interpolation=cv2.INTER_NEAREST)
                         
             tmp = copy.deepcopy(range_dense)
             tmp = tmp * 1000.0  # to milimeters
@@ -316,9 +319,9 @@ class ValidateDataset():
             
             #print(cv_image.shape)
             
-            blue_image = cv_image[:,:,0]
-            green_image = cv_image[:,:,1]
-            red_image = cv_image[:,:,2]
+            blue_image = cv_image[:,:,0]/255
+            green_image = cv_image[:,:,1]/255
+            red_image = cv_image[:,:,2]/255
             
             # cv2.imshow('fig', green_image)
             # cv2.waitKey(0)
@@ -353,25 +356,25 @@ class ValidateDataset():
             config['statistics']['D']['std'][idx] = np.std(depth_image)
                         
         
-        config['statistics']['B']['max'] = round(float(np.mean(config['statistics']['B']['max'])),5)
-        config['statistics']['B']['min'] = round(float(np.mean(config['statistics']['B']['min'])),5)
+        config['statistics']['B']['max']  = round(float(np.mean(config['statistics']['B']['max'])),5)
+        config['statistics']['B']['min']  = round(float(np.mean(config['statistics']['B']['min'])),5)
         config['statistics']['B']['mean'] = round(float(np.mean(config['statistics']['B']['mean'])),5)
-        config['statistics']['B']['std'] = round(float(np.mean(config['statistics']['B']['std'])),5)
+        config['statistics']['B']['std']  = round(float(np.mean(config['statistics']['B']['std'])),5)
         
-        config['statistics']['G']['max'] = round(float(np.mean(config['statistics']['G']['max'])),5)
-        config['statistics']['G']['min'] = round(float(np.mean(config['statistics']['G']['min'])),5)
+        config['statistics']['G']['max']  = round(float(np.mean(config['statistics']['G']['max'])),5)
+        config['statistics']['G']['min']  = round(float(np.mean(config['statistics']['G']['min'])),5)
         config['statistics']['G']['mean'] = round(float(np.mean(config['statistics']['G']['mean'])),5)
-        config['statistics']['G']['std'] = round(float(np.mean(config['statistics']['G']['std'])),5)
+        config['statistics']['G']['std']  = round(float(np.mean(config['statistics']['G']['std'])),5)
     
-        config['statistics']['R']['max'] = round(float(np.mean(config['statistics']['R']['max'])),5)
-        config['statistics']['R']['min'] = round(float(np.mean(config['statistics']['R']['min'])),5)
+        config['statistics']['R']['max']  = round(float(np.mean(config['statistics']['R']['max'])),5)
+        config['statistics']['R']['min']  = round(float(np.mean(config['statistics']['R']['min'])),5)
         config['statistics']['R']['mean'] = round(float(np.mean(config['statistics']['R']['mean'])),5)
-        config['statistics']['R']['std'] = round(float(np.mean(config['statistics']['R']['std'])),5)
+        config['statistics']['R']['std']  = round(float(np.mean(config['statistics']['R']['std'])),5)
         
-        config['statistics']['D']['max'] = round(float(np.mean(config['statistics']['D']['max'])),5)
-        config['statistics']['D']['min'] = round(float(np.mean(config['statistics']['D']['min'])),5)
+        config['statistics']['D']['max']  = round(float(np.mean(config['statistics']['D']['max'])),5)
+        config['statistics']['D']['min']  = round(float(np.mean(config['statistics']['D']['min'])),5)
         config['statistics']['D']['mean'] = round(float(np.mean(config['statistics']['D']['mean'])),5)
-        config['statistics']['D']['std'] = round(float(np.mean(config['statistics']['D']['std'])),5)
+        config['statistics']['D']['std']  = round(float(np.mean(config['statistics']['D']['std'])),5)
         
         dataset.setConfig(config)
 

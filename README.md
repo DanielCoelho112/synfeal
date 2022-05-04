@@ -70,32 +70,11 @@ In this case, we have to define where we want the model to go, and then a path i
 
 
 
-# Creating depth images
+# Processing the dataset
 
 Run:
 
-    rosrun localbot_localization create_depth_images --d 'seq1' --size 224 -s '_depth'
-
-
-# Creating statistics of images
-
-Run:
-
-    rosrun localbot_localization create_statistics --d 'seq1'
-
-
-# Processing images
-
-Run:
-
-    rosrun localbot_localization process_images -d 'seq_depth_test_depth_stat' -s 'final_test' -t 'normalization'
-
-
-# Processing point clouds
-
-Run:
-
-    rosrun localbot_localization process_point_cloud -d seq1 -s '_test' -pts 1000 -ig
+    rosrun localbot_localization process_dataset -d 'seq44' -s '_processed' -fi 0.5 -pts 1000 -igp
 
 
 # Validating the datasets

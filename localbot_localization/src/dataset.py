@@ -26,8 +26,9 @@ class LocalBotDataset(data.Dataset):
             self.inputs = inputs
         
         config = self.getConfig()
-        self.depth_mean = config['statistics']['D']['mean']
-        self.depth_std = config['statistics']['D']['std']
+        if 'statistics' in config:
+            self.depth_mean = config['statistics']['D']['mean']
+            self.depth_std = config['statistics']['D']['std']
         
         
     def __getitem__(self, index):
