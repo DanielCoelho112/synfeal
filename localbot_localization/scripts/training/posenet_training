@@ -73,18 +73,22 @@ def main():
     #     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     # ])
     
+    config_stats = LocalBotDataset(path_seq=args['training_set']).getConfig()['statistics']
+    rgb_mean = [config_stats['R']['mean'], config_stats['G']['mean'], config_stats['B']['mean']]
+    rgb_std = [config_stats['R']['std'], config_stats['G']['std'], config_stats['B']['std']]
+    
     rgb_transform_train = transforms.Compose([
         transforms.Resize(300),
         transforms.RandomCrop(299),
         transforms.ToTensor(),
-        transforms.Normalize([0.20171, 0.18024, 0.18053], [0.07934, 0.06803, 0.06967])
+        transforms.Normalize(rgb_mean, rgb_std)
     ])
     
     rgb_transform_test = transforms.Compose([
         transforms.Resize(300),
         transforms.CenterCrop(299),
         transforms.ToTensor(),
-        transforms.Normalize([0.20171, 0.18024, 0.18053], [0.07934, 0.06803, 0.06967])
+        transforms.Normalize(rgb_mean, rgb_std)
     ])
     
     depth_transform_train = {'resize':[299,299], 'normalize' : True}

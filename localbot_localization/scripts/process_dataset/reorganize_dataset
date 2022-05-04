@@ -26,6 +26,8 @@ def main():
     
     new_dataset = validate.duplicateDataset(dataset, args['suffix'])
     
+    print(f'{Fore.RED} Make sure that in each frame you have a point cloud, rgb image and pose. In negative case, an error will be raised! {Fore.RESET}')
+    
     validate.reorganizeDataset(new_dataset)
     
     
