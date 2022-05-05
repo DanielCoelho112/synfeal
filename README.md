@@ -128,3 +128,15 @@ Run:
 
     roslaunch localbot_localization visualize_results.launch results_folder:=results19 frame_selection_function:="'pos[idx]>1.5 and rot[idx]>0.2'"
     roslaunch localbot_localization visualize_results.launch results_folder:=results19 idx_max:=10
+
+
+# Extras:
+## Using SfM to collect data
+
+    rosrun localbot_localization create_images_posenet -d 'seq5_sfm' -s '_images'
+
+    cd ~/PhD/localization/openMVG_Build/software/SfM
+
+    python3 localbot.py
+
+    rosrun localbot_localization convert_sfmjson_poses -d 'seq5_sfm'
