@@ -100,7 +100,16 @@ def write_intrinsic(filename, data):
     matrix[2,2] = data[8]
     
     np.savetxt(filename, matrix, delimiter=',',fmt='%.5f')
+
+def rotationAndpositionToMatrix44(rotation, position):
+    matrix44 = np.empty(shape=(4,4))
+    matrix44[:3,:3] = rotation
+    matrix44[:3,3] = position
+    matrix44[3,:3] = 0
+    matrix44[3,3] = 1
     
+    return matrix44
+
     
     
 

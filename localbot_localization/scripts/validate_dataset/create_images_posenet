@@ -20,15 +20,20 @@ import shutil
 def main():    
     parser = argparse.ArgumentParser(description='Validate dataset')
     parser.add_argument('-dataset', '--dataset', type=str, required=True, help='Name of the dataset')
+    parser.add_argument('-s', '--suffix', type=str, required=True, help='Suffix to append to the name of the dataset')
    
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     
     dataset = LocalBotDataset(path_seq=args['dataset'])
     
+    validate = ValidateDataset()
+    #validated_dataset = validate.duplicateDataset(dataset, args['suffix'])
+    
+    os.makedirs(f'{dataset.path_seq}{args["suffix"]}')
     
     for idx in range(len(dataset)):
-        shutil.copyfile(f'{dataset.path_seq}/frame-{idx:05d}.rgb.png', f'{dataset.path_seq}_images/frame-{idx:05d}.rgb.png')
+        shutil.copyfile(f'{dataset.path_seq}/frame-{idx:05d}.rgb.png', f'{dataset.path_seq}{args["suffix"]}/frame-{idx:05d}.rgb.png')
         
     #print(matrix)
     #print(type(matrix))
