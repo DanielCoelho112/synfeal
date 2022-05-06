@@ -133,7 +133,7 @@ Run:
 # Extras:
 ## Using SfM to collect data
 
-    rosrun localbot_localization create_images_posenet -d 'seq5_sfm' -s '_images'
+    rosrun localbot_localization create_images_sfm -d 'seq5_sfm' -s '_images'
 
     cd ~/PhD/localization/openMVG_Build/software/SfM
 

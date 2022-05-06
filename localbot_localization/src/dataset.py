@@ -46,6 +46,10 @@ class LocalBotDataset(data.Dataset):
             # load depth image
             depth_image = cv2.imread(f'{self.path_seq}/frame-{index:05d}.depth.png', cv2.IMREAD_UNCHANGED)
             depth_image = depth_image.astype(np.float32) / 1000.0  # to meters
+            #h,w = depth_image.shape
+            #depth_image = depth_image.reshape((1,h,w))
+            #depth_image = Image.fromarray(depth_image) # PIL image. CHECK DATA!!!
+            # then applly transforms!!!!!
             
             # do cv show to see if we have the same image!
             if self.depth_transform['normalize']:
@@ -90,18 +94,51 @@ class LocalBotDataset(data.Dataset):
     def setConfig(self, config):
         with open(f'{self.path_seq}/config.yaml', 'w') as f:
             yaml.dump(config, f)
+      
+      
+      
+      
         
-# transform = transforms.Compose([
-#         transforms.Resize(300),
-#         transforms.CenterCrop(299),
-#         transforms.ToTensor(),
-#         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+# depth_transform_train = transforms.Compose([
+#     transforms.ToTensor(),
+#     transforms.ToPILImage(),
+#     transforms.Resize(300),
+#     transforms.RandomCrop(299),
+#     transforms.ToTensor(),
+#     transforms.Normalize(depth_mean, depth_std)
+    
+    
 # ])
-#depth_transform= {'resize':[299,299], 'normalize' : True}
 
-#dataset = LocalBotDataset('seq4dpii_v2',depth_transform=depth_transform ,rgb_transform=transform, inputs=['point_cloud','rgb_image'])
-#print(dataset[1][1].shape)
-#cv2.imshow(dataset[0][2])
-#cv2.waitKey(0)
+
+
+
+
+# config_stats = LocalBotDataset('seq5',depth_transform=None ,rgb_transform=None, inputs=['depth_image']).getConfig()['statistics']
+# rgb_mean = [config_stats['R']['mean'], config_stats['G']['mean'], config_stats['B']['mean']]
+# rgb_std = [config_stats['R']['std'], config_stats['G']['std'], config_stats['B']['std']]
+# depth_mean = config_stats['D']['mean']
+# depth_std = config_stats['D']['std']
+
+
+# rgb_transform_train = transforms.Compose([
+#     transforms.Resize(300),
+#     transforms.RandomCrop(299),
+#     transforms.ToTensor(),
+#     transforms.Normalize(rgb_mean, rgb_std)
+# ])
+
+# rgb_transform_test = transforms.Compose([
+#     transforms.Resize(300),
+#     transforms.CenterCrop(299),
+#     transforms.ToTensor(),
+#     transforms.Normalize(rgb_mean, rgb_std)
+# ])
+
+# dataset = LocalBotDataset('seq5',depth_transform=None ,rgb_transform=rgb_transform_train, inputs=['rgb_image'])
+
+# print(dataset[0][0].shape)
+# cv2.imshow(dataset[0][0])
+# cv2.waitKey(0)
 #print(sum(torch.isnan(dataset[78][0])))
 

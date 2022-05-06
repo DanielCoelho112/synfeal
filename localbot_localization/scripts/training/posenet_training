@@ -77,6 +77,9 @@ def main():
     rgb_mean = [config_stats['R']['mean'], config_stats['G']['mean'], config_stats['B']['mean']]
     rgb_std = [config_stats['R']['std'], config_stats['G']['std'], config_stats['B']['std']]
     
+    depth_mean = config_stats['D']['mean']
+    depth_std = config_stats['D']['std']
+    
     rgb_transform_train = transforms.Compose([
         transforms.Resize(300),
         transforms.RandomCrop(299),
@@ -91,8 +94,21 @@ def main():
         transforms.Normalize(rgb_mean, rgb_std)
     ])
     
-    depth_transform_train = {'resize':[299,299], 'normalize' : True}
-    depth_transform_test  = {'resize':[299,299], 'normalize' : True}
+    
+    depth_transform_train = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.ToPILImage(),
+        transforms.Resize(300),
+        transforms.RandomCrop(299),
+        transforms.ToTensor(),
+        transforms.Normalize(depth_mean, depth_std)
+        
+        
+    ])
+    
+    
+    #depth_transform_train = {'resize':[299,299], 'normalize' : True}
+    #depth_transform_test  = {'resize':[299,299], 'normalize' : True}
     
 
     train_dataset = LocalBotDataset(path_seq=args['training_set'], rgb_transform = rgb_transform_train, depth_transform = depth_transform_train)
