@@ -1,0 +1,9 @@
+FROM nvcr.io/nvidia/pytorch:1.11-py3
+
+RUN apt-get update
+RUN git clone https://github.com/DanielCoelho112/localization_end_to_end
+RUN pip install -r /workspace/localization_end_to_end/requirements.txt
+
+WORKDIR /workspace/
+
+CMD "ls"
