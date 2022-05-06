@@ -31,10 +31,10 @@ def main():
     
     train_dataset = LocalBotDataset(path_seq=args['dataset'], inputs='rgb_image')
     
-    rospy.init_node('visualize_dataset')
+    rospy.init_node('visualize_dataset2')
     rate = rospy.Rate(10) 
     
-    marker_pub = rospy.Publisher("/marker_array", MarkerArray, queue_size=10)
+    marker_pub = rospy.Publisher("/marker_array2", MarkerArray, queue_size=10)
     tf_broadcaster=tf2_ros.TransformBroadcaster()
     #colormap = cm.tab20(np.linspace(0, 1, len(train_dataset)))
                     
@@ -76,8 +76,8 @@ def main():
             marker.scale.x = 0.3
             marker.scale.y = 0.05
             marker.scale.z = 0.05
-            marker.color.a = 0.8
-            marker.color.r = 0.3
+            marker.color.a = 1.0
+            marker.color.r = 1.0
             marker.color.g = 0.6
             marker.color.b = 0.3
             marker.pose.orientation.x = quaternion_marker[0]

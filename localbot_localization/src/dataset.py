@@ -61,8 +61,9 @@ class LocalBotDataset(data.Dataset):
         
         if 'rgb_image' in self.inputs:
             # TODO: change this to the correct dataset
-            rgb_image = Image.open(f'{self.root}/{self.seq[:4]}_images/frame-{index:05d}.rgb.png')
-            rgb_image = self.rgb_transform(rgb_image)
+            rgb_image = Image.open(f'{self.path_seq}/frame-{index:05d}.rgb.png')
+            if self.rgb_transform != None:
+                rgb_image = self.rgb_transform(rgb_image)
             output.append(rgb_image)
 
         
