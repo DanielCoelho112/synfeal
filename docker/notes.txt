@@ -2,6 +2,10 @@ Build the image:
 
     docker build . --network=host -t nvidia-pytorch-localbot
 
-Spawn the container:
+Spawn the container - interative:
 
-docker run -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --name pytorch_test7 --network=host -v /home/danc/models/localbot:/home/danc/models/localbot nvidia-pytorch-localbot bash 
+    docker run -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --name pytorch_test7 --network=host -v /home/danc/models/localbot:/home/danc/models/localbot nvidia-pytorch-localbot bash 
+
+Spaw the container - detached:
+
+    docker run -it -d --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --name pytorch_test12 --network=host -v /home/danc/models/localbot:/home/danc/models/localbot   nvidia-pytorch-localbot bash -c "cd localization_end_to_end && git pull"
