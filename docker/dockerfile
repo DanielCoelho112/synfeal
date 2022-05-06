@@ -1,11 +1,9 @@
 FROM nvcr.io/nvidia/pytorch:22.04-py3
-
 RUN apt-get update
-RUN git clone https://github.com/DanielCoelho112/localization_end_to_end
-RUN export PYTHONPATH=/workspace/localization_end_to_end
-#RUN pip install -r /workspace/localization_end_to_end/requirements.txt
-
-
-WORKDIR /workspace/
-
+RUN useradd -m danc
+RUN chown -R danc:danc /home/danc
+USER danc
+RUN cd /home/danc && git clone https://github.com/DanielCoelho112/localization_end_to_end
+RUN export PYTHONPATH="/home/danc/localization_end_to_end"
+WORKDIR /home/danc
 CMD "ls"

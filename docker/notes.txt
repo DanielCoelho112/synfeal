@@ -1,0 +1,7 @@
+Build the image:
+
+    docker build . --network=host -t nvidia-pytorch-localbot
+
+Spawn the container:
+
+docker run -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --name pytorch_test7 --network=host -v /home/danc/models/localbot:/home/danc/models/localbot nvidia-pytorch-localbot bash 
