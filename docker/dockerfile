@@ -1,7 +1,7 @@
-FROM nvcr.io/nvidia/pytorch:22.04-py3
-RUN apt-get update
+FROM nvcr.io/nvidia/pytorch:20.06-py3
+#RUN apt-get update
 RUN useradd -m danc
-RUN chown -R danc:danc /home/danc
+# RUN chown -R danc:danc /home/danc
 USER danc
 RUN cd /home/danc && git clone https://github.com/DanielCoelho112/localization_end_to_end
 RUN export PYTHONPATH="/home/danc/localization_end_to_end"

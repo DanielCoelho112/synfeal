@@ -141,8 +141,10 @@ class ValidateDataset():
     def invalidFrames(self, dataset):
         # return a list with invalid frames
         idxs = []
+        files = copy.deepcopy(self.files)
+        files.append('.depth.png')
         for index in range(len(dataset)):
-            for file in ['.pcd','.rgb.npy','.depth.npy','.pose.txt']:
+            for file in files:
                 if not exists(f'{dataset.path_seq}/frame-{index:05d}{file}'):
                     idxs.append(index)
                     break

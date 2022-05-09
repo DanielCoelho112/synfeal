@@ -46,26 +46,17 @@ class LocalBotDataset(data.Dataset):
             # load depth image
             depth_image = cv2.imread(f'{self.path_seq}/frame-{index:05d}.depth.png', cv2.IMREAD_UNCHANGED)
             depth_image = depth_image.astype(np.float32) / 1000.0  # to meters
-            #h,w = depth_image.shape
-            #depth_image = depth_image.reshape((1,h,w))
-            #depth_image = Image.fromarray(depth_image) # PIL image. CHECK DATA!!!
-            # then applly transforms!!!!!
+            depth_image = Image.fromarray(depth_image)
             
-            # do cv show to see if we have the same image!
-            if self.depth_transform['normalize']:
-                depth_image = (depth_image - self.depth_mean) /  self.depth_std
+            if self.depth_transform!=None:
+                depth_image = self.depth_transform(depth_image)
             
-            if 'resize' in self.depth_transform:
-                # resize image
-                depth_image = cv2.resize(depth_image, dsize=(self.depth_transform['resize'][0],self.depth_transform['resize'][1]), interpolation=INTER_AREA)
-            h,w = depth_image.shape
-            depth_image = depth_image.reshape((1,h,w))
-            depth_image = torch.from_numpy(depth_image)
             output.append(depth_image)
         
         if 'rgb_image' in self.inputs:
             # TODO: change this to the correct dataset
             rgb_image = Image.open(f'{self.path_seq}/frame-{index:05d}.rgb.png')
+            
             if self.rgb_transform != None:
                 rgb_image = self.rgb_transform(rgb_image)
             output.append(rgb_image)
@@ -96,30 +87,21 @@ class LocalBotDataset(data.Dataset):
             yaml.dump(config, f)
       
       
-      
-      
-        
-# depth_transform_train = transforms.Compose([
-#     transforms.ToTensor(),
-#     transforms.ToPILImage(),
-#     transforms.Resize(300),
-#     transforms.RandomCrop(299),
-#     transforms.ToTensor(),
-#     transforms.Normalize(depth_mean, depth_std)
-    
-    
-# ])
-
-
-
-
-
 # config_stats = LocalBotDataset('seq5',depth_transform=None ,rgb_transform=None, inputs=['depth_image']).getConfig()['statistics']
 # rgb_mean = [config_stats['R']['mean'], config_stats['G']['mean'], config_stats['B']['mean']]
 # rgb_std = [config_stats['R']['std'], config_stats['G']['std'], config_stats['B']['std']]
 # depth_mean = config_stats['D']['mean']
 # depth_std = config_stats['D']['std']
 
+# print(depth_mean)
+
+        
+# depth_transform_train = transforms.Compose([
+#     transforms.Resize(300),
+#     transforms.CenterCrop(299),
+#     transforms.ToTensor(),
+#     transforms.Normalize(mean=(depth_mean,), std=(depth_std,))
+# ])
 
 # rgb_transform_train = transforms.Compose([
 #     transforms.Resize(300),
@@ -135,10 +117,12 @@ class LocalBotDataset(data.Dataset):
 #     transforms.Normalize(rgb_mean, rgb_std)
 # ])
 
-# dataset = LocalBotDataset('seq5',depth_transform=None ,rgb_transform=rgb_transform_train, inputs=['rgb_image'])
+# dataset = LocalBotDataset('seq6',depth_transform=depth_transform_train ,rgb_transform=rgb_transform_train, inputs=['depth_image', 'rgb_image'])
 
-# print(dataset[0][0].shape)
-# cv2.imshow(dataset[0][0])
-# cv2.waitKey(0)
-#print(sum(torch.isnan(dataset[78][0])))
+# for i in range(100,110):
+#     print(f'depth size: {dataset[i][0].shape}')
+#     print(f'rgb size: {dataset[i][1].shape}')
+    
+#     print(f'depth mean: {np.mean(dataset[i][0].numpy())}')
+#     print(f'rgb mean: {np.mean(dataset[i][1].numpy())}')
 
