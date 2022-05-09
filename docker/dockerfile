@@ -1,9 +1,11 @@
 FROM nvcr.io/nvidia/pytorch:20.06-py3
-#RUN apt-get update
-RUN useradd -m danc
-# RUN chown -R danc:danc /home/danc
-USER danc
-RUN cd /home/danc && git clone https://github.com/DanielCoelho112/localization_end_to_end
-RUN export PYTHONPATH="/home/danc/localization_end_to_end"
-WORKDIR /home/danc
-CMD "ls"
+RUN mkdir /root/datasets
+RUN mkdir /root/datasets/localbot
+RUN mkdir /root/models
+RUN mkdir /root/models/localbot
+
+#RUN export PYTHONPATH="/home/danc/localization_end_to_end"
+
+RUN git clone https://github.com/DanielCoelho112/localization_end_to_end
+ENV PYTHONPATH="/workspace/localization_end_to_end"
+CMD ["sh", "-c", "cd localization_end_to_end && git pull"]
