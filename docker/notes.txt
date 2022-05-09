@@ -8,6 +8,18 @@ Spawn the container - interative:
 
     docker run -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --name pytorch_t10 --network=host -v /home/DanielCoelho11/models/localbot:/root/models/localbot -v /home/DanielCoelho11/datasets/localbot:/root/datasets/localbot danielc11/pytorch-localization bash
 
-Spaw the container - detached:
+Spawn the container - detached:
 
-    docker run -it -d --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --name pytorch_test12 --network=host -v /home/danc/models/localbot:/home/danc/models/localbot   nvidia-pytorch-localbot bash -c "cd localization_end_to_end && git pull"
+    docker run -d --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --name pytorch_t10 --network=host -v /home/DanielCoelho11/models/localbot:/root/models/localbot -v /home/DanielCoelho11/datasets/localbot:/root/datasets/localbot danielc11/pytorch-localization bash -c "cd localization_end_to_end && git pull"
+
+
+Attach to a running container?
+
+    docker attach container_id
+
+Dettaching from running container?
+
+    press: CRTL-p CTRL-q
+
+
+
