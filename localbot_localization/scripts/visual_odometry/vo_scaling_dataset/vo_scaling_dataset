@@ -1,0 +1,164 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+import json
+
+# 3rd-party
+import rospy
+from colorama import Fore, Style
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.validate_dataset import ValidateDataset
+import numpy as np
+from localbot_core.src.utilities import *
+from os.path import exists
+import shutil
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Validate dataset')
+    parser.add_argument('-d', '--dataset', type=str,
+                        required=True, help='Name of the dataset')
+    parser.add_argument('-td', '--true_dataset', type=str,
+                        required=True, help='Name of the dataset')
+
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+
+    dataset = LocalBotDataset(path_seq=args['dataset'])
+    tdataset = LocalBotDataset(path_seq=args['true_dataset'])
+    
+    
+    # transfs = [(2,i) for i in range(5,len(tdataset)-1)]
+    transfs = [(2,i) for i in range(3,20)]
+    #transfs = [(3,i) for i in range(5,9)]
+    #print(transfs)
+    #print(len(tdataset))
+   
+    
+    #transfs = [(2,3),(3,4),(4,5),(5,6),(6,7)]
+    scale_x = []
+    scale_y = []
+    scale_z = []
+    
+    for transf in transfs:
+        src = transf[0]
+        tgt = transf[1]
+        
+        # vo dataset
+        matrix_src = np.loadtxt(f'{dataset.path_seq}/frame-{src:05d}.pose.txt', delimiter=',')
+        matrix_tgt = np.loadtxt(f'{dataset.path_seq}/frame-{tgt:05d}.pose.txt', delimiter=',')
+        matrix44_vo = np.dot(np.linalg.inv(matrix_src), matrix_tgt)
+        d_vo = matrix44_vo[:3,3]
+        
+        
+        matrix_src = np.loadtxt(f'{tdataset.path_seq}/frame-{src:05d}.pose.txt', delimiter=',')
+        matrix_tgt = np.loadtxt(f'{tdataset.path_seq}/frame-{tgt:05d}.pose.txt', delimiter=',')
+        matrix44_t = np.dot(np.linalg.inv(matrix_src), matrix_tgt)
+        d_t = matrix44_t[:3,3]
+        
+        if any(abs(d_vo) < 0.01):
+            print('ignoring indexs: ', transf)
+            continue 
+        
+        sx = d_t[0]/d_vo[0]
+        sy = d_t[1]/d_vo[1]
+        sz = d_t[2]/d_vo[2]
+        #scales.append((sx,sy,sz))
+        scale_x.append(round(sx,3))
+        scale_y.append(round(sy,3))
+        scale_z.append(round(sz,3))
+    
+    
+    
+    scale_x = sum(scale_x)/len(scale_x)
+    scale_y = sum(scale_y)/len(scale_y)
+    scale_z = sum(scale_z)/len(scale_z)
+        
+    
+    #print(scale_x)
+    #print(scale_y)
+    #print(scale_z)
+    
+    
+    #for idx in range(3,len(dataset)-1):
+    for idx in range(3,len(dataset)-1):
+        matrix44 = np.loadtxt(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt', delimiter=',')
+        
+        translation_old = matrix44[:3,3]
+        #print(translation_old)
+        translation_new = translation_old * np.array([scale_x,scale_y,scale_z])
+        #print(translation_new)
+        matrix44[:3,3] = translation_new
+        
+        write_transformation(filename=f'{dataset.path_seq}/frame-{idx:05d}.pose.txt', transformation=matrix44)
+        
+    # load true dataset
+    # compute transforamtion from 2-3, 3-4, 4-5, 6-7, 7-8, 9-10
+    # print dx, dy, dz
+        
+    # load vo dataset
+    # compute transforamtion from 2-3, 3-4, 4-5, 6-7, 7-8, 9-10
+    # print dx, dy, dz
+    
+    
+    # compute scale x, scale scale y, scale z
+    # see if there is a pattern, or if it is somehing random
+    
+    # if they are somehow close, average that and we have a scale factor to multiply all distances!
+    
+    # loop through each new pose, scale them, and save them
+
+ 
+    # scaling transformations based on the different between ground truth (gazebo) and visual odometry
+        
+        
+    
+    
+    
+        
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # matrix_frame0 = np.empty(shape=(4,4))
+    
+    # for idx_view in range(len(file['views'])):
+    #     frame = file['views'][idx_view]['value']['ptr_wrapper']['data']['filename']
+    #     frame_id = int(frame[6:11])
+    #     pose_id = file['views'][idx_view]['value']['ptr_wrapper']['data']['id_pose']
+        
+    #     map_frame_poseid[frame] = pose_id
+        
+    #     rotation = np.array(file['extrinsics'][pose_id]['value']['rotation'])
+    #     position = np.array(file['extrinsics'][pose_id]['value']['center'])
+    #     matrix44 = rotationAndpositionToMatrix44(rotation=rotation, position=position)
+        
+    #     if frame_id == 0:
+    #         matrix_frame0 = matrix44
+        
+    #     # transform matrix44 to be w.r.t. frame0
+    #     matrix44_wrt_0 = np.dot(np.linalg.inv(matrix_frame0), matrix44)
+        
+    #     # scale things
+        
+        
+    #     # transform_matrix44_wrt0 to be w.r.t world
+    #     matrix44_wrt_world = np.dot(matrix44_frame0_world, matrix44_wrt_0)
+    #     write_transformation(filename=f'{dataset.path_seq}/frame-{frame_id:05d}.pose.txt', transformation=matrix44_wrt_world)
+    
+if __name__ == "__main__":
+    main()

@@ -140,3 +140,11 @@ Run:
     python3 localbot.py
 
     rosrun localbot_localization convert_sfmjson_poses -d 'seq5_sfm'
+
+## Using Visual Odometry to collect data
+
+    git clone https://github.com/FlagArihant2000/visual-odometry
+    cd /visual-odometry/code/
+    python3 main.py
+
+    run our scripts...

@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+import json
+
+# 3rd-party
+import rospy
+from colorama import Fore, Style
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.validate_dataset import ValidateDataset
+import numpy as np
+from localbot_core.src.utilities import *
+from os.path import exists
+import shutil
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Validate dataset')
+    parser.add_argument('-d', '--dataset', type=str,
+                        required=True, help='Name of the dataset')
+
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+
+    dataset = LocalBotDataset(path_seq=args['dataset'])
+    size_dataset = sum(f.endswith('rgb.png') for f in os.listdir(dataset.path_seq))
+    
+    #for idx in range(len(dataset)):
+    #    os.remove(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt')
+
+
+    # reorganize dataset - When we dont have frames, we assume the previous frame.
+    for idx in range(size_dataset-1):
+            print(idx)
+            if not exists(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt'):
+                # idx does not exists, so we have to rename the close one.
+                print(f'{idx} is missing!!!')
+                new_idx = None
+                for idx2 in range(idx-1, -1, -1):
+                    print(f'trying {idx2}')
+                    if exists(f'{dataset.path_seq}/frame-{idx2:05d}.pose.txt'):
+                        new_idx = idx2
+                        break
+                if not new_idx==None:    
+                    print(f'copying idx {new_idx} to idx {idx}')
+                    shutil.copy2(f'{dataset.path_seq}/frame-{new_idx:05d}.pose.txt', f'{dataset.path_seq}/frame-{idx:05d}.pose.txt')
+                    
+                else:
+                    print(f'No candidate to replace {idx}')
+    
+
+    # compute all transformation w.r.t frame2 from the visual odometry
+    matrix44_frame2_vo =  np.loadtxt(f'{dataset.path_seq}/frame-00002.pose.txt', delimiter=',')
+    for idx in range(size_dataset-1):
+        print(idx)
+        matrix44 = np.loadtxt(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt', delimiter=',')
+        matrix44_wrt_f2_vo = np.dot(np.linalg.inv(matrix44_frame2_vo), matrix44)
+        
+        write_transformation(filename=f'{dataset.path_seq}/frame-{idx:05d}.pose.txt', transformation=matrix44_wrt_f2_vo)
+        
+    
+    # scaling transformations based on the different between ground truth (gazebo) and visual odometry
+        
+        
+    
+    
+    
+        
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # matrix_frame0 = np.empty(shape=(4,4))
+    
+    # for idx_view in range(len(file['views'])):
+    #     frame = file['views'][idx_view]['value']['ptr_wrapper']['data']['filename']
+    #     frame_id = int(frame[6:11])
+    #     pose_id = file['views'][idx_view]['value']['ptr_wrapper']['data']['id_pose']
+        
+    #     map_frame_poseid[frame] = pose_id
+        
+    #     rotation = np.array(file['extrinsics'][pose_id]['value']['rotation'])
+    #     position = np.array(file['extrinsics'][pose_id]['value']['center'])
+    #     matrix44 = rotationAndpositionToMatrix44(rotation=rotation, position=position)
+        
+    #     if frame_id == 0:
+    #         matrix_frame0 = matrix44
+        
+    #     # transform matrix44 to be w.r.t. frame0
+    #     matrix44_wrt_0 = np.dot(np.linalg.inv(matrix_frame0), matrix44)
+        
+    #     # scale things
+        
+        
+    #     # transform_matrix44_wrt0 to be w.r.t world
+    #     matrix44_wrt_world = np.dot(matrix44_frame0_world, matrix44_wrt_0)
+    #     write_transformation(filename=f'{dataset.path_seq}/frame-{frame_id:05d}.pose.txt', transformation=matrix44_wrt_world)
+    
+if __name__ == "__main__":
+    main()
