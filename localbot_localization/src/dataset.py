@@ -1,5 +1,4 @@
 import cv2
-from cv2 import INTER_AREA
 import torch.utils.data as data
 from localbot_core.src.utilities import read_pcd, matrixToXYZ, matrixToQuaternion
 from localbot_localization.src.utilities import normalize_quat
@@ -9,7 +8,7 @@ import os
 import yaml
 from yaml.loader import SafeLoader
 from PIL import Image
-from torchvision import transforms
+
 
 # pytorch datasets: https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
 

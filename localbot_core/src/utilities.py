@@ -6,7 +6,6 @@ import os
 from scipy.spatial.transform import Rotation as R
 from colorama import Fore, Style
 import cv2
-import rospy
 import tf
 from geometry_msgs.msg import Pose
 from localbot_core.src.pypcd import PointCloud
