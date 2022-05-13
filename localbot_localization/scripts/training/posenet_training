@@ -228,14 +228,7 @@ def main():
 
             plt.draw()
             plt.waitforbuttonpress(0.01)
-        
-        else:
-            hanle_train_plot = plt.plot(train_losses, label='train loss')
-            hanle_test_plot = plt.plot(test_losses, label='test loss')
-            first_time = False
-            plt.legend()
-            
-            
+                   
         # ------------------
         # Saving of Model
         # ------------------
@@ -243,7 +236,11 @@ def main():
             
             # only save if test loss is lower than the previous saved!
             if test_loss_epoch < stored_test_loss_epoch:
-            
+                
+                plt.figure()
+                plt.plot(train_losses, label='train loss')
+                plt.plot(test_losses, label='test loss')
+                plt.legend()
                 plt.savefig(f'{folder_name}/losses.png')
                 torch.save(model.state_dict(), model_name)
 
