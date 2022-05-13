@@ -30,33 +30,6 @@ def write_transformation(filename, transformation):
 def write_img(filename, img):
     cv2.imwrite(filename, img)
     
-def data2pose(data):
-    
-    if type(data) is str:
-        data = list(data)
-        lst_data = [i for i in data if i!=','] # remove ','
-        data = {'x'  : lst_data[0], 
-                'y'  : lst_data[1], 
-                'z'  : lst_data[2],
-                'rx' : lst_data[3],
-                'ry' : lst_data[4], 
-                'rz' : lst_data[5]}
-        
-    #quaternion = tf.transformations.quaternion_from_euler(data['rx'], data['ry'], data['rz'])
-    quaternion = R.from_euler('xyz',[[data['rx'], data['ry'], data['rz']]], degrees=False).as_quat()
-    
-    p = Pose()
-    p.position.x = data['x']
-    p.position.y = data['y']
-    p.position.z = data['z']
-    
-    p.orientation.x = quaternion[0]
-    p.orientation.y = quaternion[1]
-    p.orientation.z = quaternion[2]
-    p.orientation.w = quaternion[3]
-        
-    return p
-
 def matrixToRodrigues(matrix):
     rods, _ = cv2.Rodrigues(matrix[0:3, 0:3])
     rods = rods.transpose()

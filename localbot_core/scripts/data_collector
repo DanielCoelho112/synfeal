@@ -6,7 +6,7 @@ import argparse
 
 # 3rd-party
 import rospkg
-from localbot_core.src.utilities import data2pose
+from localbot_core.src.utilities_ros import data2pose
 import rospy
 from colorama import Fore, Style
 from std_msgs.msg import Header, ColorRGBA

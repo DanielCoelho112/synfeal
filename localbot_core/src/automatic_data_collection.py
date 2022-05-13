@@ -21,6 +21,7 @@ from localbot_core.src.save_dataset import SaveDataset
 import tf
 import numpy as np
 from localbot_core.src.utilities import *
+from localbot_core.src.utilities_ros import *
 from colorama import Fore
 
 
