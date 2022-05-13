@@ -6,7 +6,7 @@ import os
 from scipy.spatial.transform import Rotation as R
 from colorama import Fore, Style
 import cv2
-import tf
+#import tf
 from geometry_msgs.msg import Pose
 from localbot_core.src.pypcd import PointCloud
 
@@ -42,7 +42,9 @@ def data2pose(data):
                 'ry' : lst_data[4], 
                 'rz' : lst_data[5]}
         
-    quaternion = tf.transformations.quaternion_from_euler(data['rx'], data['ry'], data['rz'])
+    #quaternion = tf.transformations.quaternion_from_euler(data['rx'], data['ry'], data['rz'])
+    quaternion = R.from_euler('xyz',[[data['rx'], data['ry'], data['rz']]], degrees=False).as_quat()
+    
     p = Pose()
     p.position.x = data['x']
     p.position.y = data['y']
