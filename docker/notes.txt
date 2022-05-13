@@ -4,6 +4,8 @@ Build the image:
 
     docker push danielc11/pytorch-localization:latest
 
+    docker pull danielc11/pytorch-localization:latest
+
 Spawn the container - interative:
 
     docker run -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --name pytorch_t10 --network=host -v /home/DanielCoelho11/models/localbot:/root/models/localbot -v /home/DanielCoelho11/datasets/localbot:/root/datasets/localbot danielc11/pytorch-localization bash

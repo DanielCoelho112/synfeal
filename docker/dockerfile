@@ -5,11 +5,14 @@ RUN mkdir /root/models
 RUN mkdir /root/models/localbot
 
 RUN pip install colorama
+RUN pip install Pillow
 RUN pip install torchsummary
 RUN pip install scipy==1.5.4
 
 RUN git clone https://github.com/DanielCoelho112/localization_end_to_end
+
 ENV PYTHONPATH="/workspace/localization_end_to_end"
+ENV USER="deep"
 CMD ["sh", "-c", "cd localization_end_to_end && git pull"]
 
 

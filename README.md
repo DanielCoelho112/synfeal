@@ -124,7 +124,7 @@ Run:
 
 **PoseNet**
 
-    rosrun localbot_localization posenet_training -fn posenett_test_dataset_new -mn depthv0 -train_set 'seq6_d' -test_set 'seq6_d' -n_epochs 10  -batch_size 2 -im 'PoseNetGoogleNet(False)' -ss 2
+    rosrun localbot_localization posenet_training -fn posenett_test_dataset_new -mn depthv0 -train_set 'seq6_d' -test_set 'seq6_d' -n_epochs 10  -batch_size 2 -im 'PoseNetGoogleNet(False)' -ss 2 -c
 
 # Visualizing the results
 

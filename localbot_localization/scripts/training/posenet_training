@@ -228,6 +228,13 @@ def main():
 
             plt.draw()
             plt.waitforbuttonpress(0.01)
+        
+        else:
+            hanle_train_plot = plt.plot(train_losses, label='train loss')
+            hanle_test_plot = plt.plot(test_losses, label='test loss')
+            first_time = False
+            plt.legend()
+            
             
         # ------------------
         # Saving of Model
