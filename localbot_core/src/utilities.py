@@ -7,8 +7,8 @@ from scipy.spatial.transform import Rotation as R
 from colorama import Fore, Style
 import cv2
 #import tf
-from geometry_msgs.msg import Pose
-from localbot_core.src.pypcd import PointCloud
+#from geometry_msgs.msg import Pose
+from localbot_core.src.pypcd_no_ros import PointCloud
 
 
 def write_pcd(filename, msg, mode='binary'):
