@@ -45,6 +45,7 @@ def main():
     size_dataset_0 = sum(f.endswith('.txt') for f in os.listdir(p0_sfm))
     
     for idx in range(size_dataset_1):
+        print(idx2)
         idx2 = idx + int(first_frame_1)
         matrix44 = np.loadtxt(f'{p1_sfm}/frame-{idx2:05d}.pose.txt', delimiter=',')
         

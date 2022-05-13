@@ -29,16 +29,20 @@ def main():
     
     first_frame = int(args['poses_sfm'].split('_')[-2])
     
-    
+    print(first_frame)
+
     matrix44_frame0_sfm = np.loadtxt(f'{p_sfm}/frame-{first_frame:05d}.pose.txt', delimiter=',')
+    
+    
+    print(matrix44_frame0_sfm)
     
     size_dataset = sum(f.endswith('.txt') for f in os.listdir(p_sfm))
     
     print(size_dataset)
     
     for idx in range(size_dataset):
-        print(idx)
-        idx2 = idx + int(first_frame)
+        idx2 = idx + first_frame
+        print(idx2)
         matrix44 = np.loadtxt(f'{p_sfm}/frame-{idx2:05d}.pose.txt', delimiter=',')
         
         # transform matrix44 to be w.r.t. frame0

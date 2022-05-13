@@ -32,7 +32,7 @@ def main():
 
     
     #TODO: CHANGE MANUALLY
-    json_path = f'{d_sfm}/MeshroomCache/GlobalSfM/a7967581c70d37c06e8c8774fd491a5a635b5e20/cameras.sfm'
+    json_path = f'{d_sfm}/MeshroomCache/GlobalSfM/f3e7b8ebacc14d6e4a2fb944e192bb6bd80ca22c/cameras.sfm'
     
     # for each frame, we read the rotation, and translation. Transform into a 4x4 matrix and save it as txt.
     file = json.load(open(json_path))
