@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+import json
+
+
+# 3rd-party
+import rospy
+from colorama import Fore, Style
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.validate_dataset import ValidateDataset
+import numpy as np
+from localbot_core.src.utilities import *
+
+
+def main():
+    parser = argparse.ArgumentParser(description='sfm processing')
+    parser.add_argument('-d_sfm', '--dataset_sfm', type=str,
+                        required=True, help='Name of the dataset')
+    parser.add_argument('-p_sfm', '--poses_sfm', type=str,
+                        required=True, help='Name of the dataset')
+
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+
+
+    d_sfm = f'/home/danc/datasets/localbot/meshroom/{args["dataset_sfm"]}'
+    p_sfm = f'/home/danc/datasets/localbot/meshroom/{args["poses_sfm"]}'
+
+    
+    #TODO: CHANGE MANUALLY
+    json_path = f'{d_sfm}/MeshroomCache/GlobalSfM/a7967581c70d37c06e8c8774fd491a5a635b5e20/cameras.sfm'
+    
+    # for each frame, we read the rotation, and translation. Transform into a 4x4 matrix and save it as txt.
+    file = json.load(open(json_path))
+    
+    # create mappings betwenn frame idx and pose idx
+    maps = {} # key: pose_id, value: frame id
+    
+    for view in file['views']:
+        frame_name = view['path'].split('/')[-1]
+        pose_id = view['poseId']
+        maps[pose_id] = frame_name
+    
+    for pose in file['poses']:
+        pose_id = pose['poseId']
+        frame_name = maps[pose_id].split('.')[0]
+        frame_name_txt = f'{frame_name}.pose.txt'
+        
+        rotation = np.array(pose['pose']['transform']['rotation'])
+        rotation33 = np.empty(shape=(3,3))
+        rotation33[:,0] =  rotation[0:3]
+        rotation33[:,1] =  rotation[3:6]
+        rotation33[:,2] =  rotation[6:9]
+        
+        translation = np.array(pose['pose']['transform']['center'])
+        
+        matrix44 = rotationAndpositionToMatrix44(rotation33, translation)
+        
+        write_transformation(filename=f'{p_sfm}/{frame_name_txt}', transformation=matrix44)
+    
+    
+if __name__ == "__main__":
+    main()

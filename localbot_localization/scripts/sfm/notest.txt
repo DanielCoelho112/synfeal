@@ -1,0 +1,21 @@
+sfm_convert_camerassfm_poses
+sfm_convert_to_initial_frame
+sfm_scale_transformations
+
+sfm_merge_sfm_datasets...
+
+
+sfm__convert_to_world_frame
+
+test_sfm to seq56_sfm
+
+
+run:
+
+rosrun localbot_localization sfm_convert_camerassfm_poses -d_sfm 'meshroom_0-499' -p_sfm 'seq56_sfm_0_499'
+
+rosrun localbot_localization sfm_convert_to_initial_frame  -p_sfm 'seq56_sfm_0_499'
+
+rosrun localbot_localization sfm_scale_transformations  -p_sfm 'seq56_sfm_0_499' -d 'seq56'
+
+

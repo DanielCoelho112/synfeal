@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+import json
+
+from regex import F
+
+# 3rd-party
+import rospy
+from colorama import Fore, Style
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.validate_dataset import ValidateDataset
+import numpy as np
+from localbot_core.src.utilities import *
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Validate dataset')
+    parser.add_argument('-d', '--dataset', type=str,
+                        required=True, help='Name of the dataset')
+    parser.add_argument('-p_sfm', '--poses_sfm', type=str,
+                        required=True, help='Name of the dataset')
+
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+
+    dataset = LocalBotDataset(path_seq=args['dataset'])
+    
+    p_sfm = f'/home/danc/datasets/localbot/meshroom/{args["poses_sfm"]}'
+    size_dataset = sum(f.endswith('.txt') for f in os.listdir(p_sfm))
+    
+    first_frame = int(args['poses_sfm'].split('_')[-2])
+    
+    # transfs = [(2,i) for i in range(5,len(tdataset)-1)]
+    transfs = [(first_frame,i) for i in range(first_frame+5,first_frame+5+15)]
+    
+
+    #transfs = [(3,i) for i in range(5,9)]
+    #print(transfs)
+    #print(len(tdataset))
+   
+    
+    #transfs = [(2,3),(3,4),(4,5),(5,6),(6,7)]
+    scale_x = []
+    scale_y = []
+    scale_z = []
+    
+    for transf in transfs:
+        src = transf[0]
+        tgt = transf[1]
+        
+        # true dataset
+        matrix_src = np.loadtxt(f'{dataset.path_seq}/frame-{src:05d}.pose.txt', delimiter=',')
+        matrix_tgt = np.loadtxt(f'{dataset.path_seq}/frame-{tgt:05d}.pose.txt', delimiter=',')
+        matrix44_vo = np.dot(np.linalg.inv(matrix_src), matrix_tgt)
+        d_t = matrix44_vo[:3,3]
+        
+        # sfm dataset
+        matrix_src = np.loadtxt(f'{p_sfm}/frame-{src:05d}.pose.txt', delimiter=',')
+        matrix_tgt = np.loadtxt(f'{p_sfm}/frame-{tgt:05d}.pose.txt', delimiter=',')
+        matrix44_t = np.dot(np.linalg.inv(matrix_src), matrix_tgt)
+        d_sfm = matrix44_t[:3,3]
+        
+        if any(abs(d_sfm) < 0.01):
+            print('ignoring indexs: ', transf)
+            continue 
+        
+        sx = d_t[0]/d_sfm[0]
+        sy = d_t[1]/d_sfm[1]
+        sz = d_t[2]/d_sfm[2]
+        #scales.append((sx,sy,sz))
+        scale_x.append(round(sx,3))
+        scale_y.append(round(sy,3))
+        scale_z.append(round(sz,3))
+    
+    scale_x = sum(scale_x)/len(scale_x)
+    scale_y = sum(scale_y)/len(scale_y)
+    scale_z = sum(scale_z)/len(scale_z)
+    print(scale_x)
+    print(scale_y)  
+    print(scale_z)    
+    
+    # #print(scale_x)
+    # #print(scale_y)
+    # #print(scale_z)
+    
+    
+    # #for idx in range(3,len(dataset)-1):
+    for idx in range(size_dataset):
+        idx2 = idx+first_frame
+        matrix44 = np.loadtxt(f'{p_sfm}/frame-{idx2:05d}.pose.txt', delimiter=',')
+        
+        translation_old = matrix44[:3,3]
+        #print(translation_old)
+        translation_new = translation_old * np.array([scale_x,scale_y,scale_z])
+        #print(translation_new)
+        matrix44[:3,3] = translation_new
+        
+        write_transformation(filename=f'{p_sfm}/frame-{idx2:05d}.pose.txt', transformation=matrix44)
+    
+if __name__ == "__main__":
+    main()
