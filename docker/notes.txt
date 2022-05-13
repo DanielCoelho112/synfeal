@@ -23,7 +23,3 @@ Dettaching from running container?
 
 
 
-missing:
-
-    pip install colorama
-
