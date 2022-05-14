@@ -71,10 +71,10 @@ def main():
         s = d_t_e/d_sfm_e
         scale.append(s)
 
-
+    print(f'scale values: {scale}')
     scale = sum(scale)/len(scale)
    
-    print('applying scale of {scale}')
+    print(f'applying scale of {scale}')
 
     # #for idx in range(3,len(dataset)-1):
     for idx in range(size_dataset):

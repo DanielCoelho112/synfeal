@@ -32,7 +32,7 @@ def main():
 
     
     #TODO: CHANGE MANUALLY
-    json_path = f'{d_sfm}/MeshroomCache/GlobalSfM/f3e7b8ebacc14d6e4a2fb944e192bb6bd80ca22c/cameras.sfm'
+    json_path = f'{d_sfm}/MeshroomCache/GlobalSfM/a7967581c70d37c06e8c8774fd491a5a635b5e20/cameras.sfm'
     
     # for each frame, we read the rotation, and translation. Transform into a 4x4 matrix and save it as txt.
     file = json.load(open(json_path))
@@ -52,9 +52,14 @@ def main():
         
         rotation = np.array(pose['pose']['transform']['rotation'])
         rotation33 = np.empty(shape=(3,3))
-        rotation33[:,0] =  rotation[0:3]
-        rotation33[:,1] =  rotation[3:6]
-        rotation33[:,2] =  rotation[6:9]
+        
+        #rotation33[:,0] =  rotation[0:3]
+        #rotation33[:,1] =  rotation[3:6]
+        #rotation33[:,2] =  rotation[6:9]
+        
+        rotation33[0,:] =  rotation[0:3]
+        rotation33[1,:] =  rotation[3:6]
+        rotation33[2,:] =  rotation[6:9]
         
         translation = np.array(pose['pose']['transform']['center'])
         
