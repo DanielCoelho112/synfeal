@@ -29,7 +29,7 @@ def main():
     args = vars(parser.parse_args(args=arglist))
 
     dataset = LocalBotDataset(path_seq=args['dataset'])
-    p_sfm = f'/home/danc/datasets/localbot/meshroom/{args["poses_sfm"]}'
+    p_sfm = f'/home/danc/datasets/localbot/meshroom_batches/{args["poses_sfm"]}'
     
     
     # remove poses from dataset

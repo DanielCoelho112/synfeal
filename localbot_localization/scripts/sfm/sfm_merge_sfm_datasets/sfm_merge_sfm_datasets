@@ -24,25 +24,34 @@ def main():
                         required=True, help='Name of the dataset')
     parser.add_argument('-p1_sfm', '--pose1_sfm', type=str,
                         required=True, help='Name of the dataset')
-    parser.add_argument('-p2_sfm', '--pose2_sfm', type=str,
-                        required=True, help='Name of the dataset')
+    # parser.add_argument('-p2_sfm', '--pose2_sfm', type=str,
+    #                     required=True, help='Name of the dataset')
 
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
 
     # get transformation from p0
     
-    p0_sfm = f'/home/danc/datasets/localbot/meshroom/{args["pose0_sfm"]}'
-    p1_sfm = f'/home/danc/datasets/localbot/meshroom/{args["pose1_sfm"]}'
-    p2_sfm = f'/home/danc/datasets/localbot/meshroom/{args["pose2_sfm"]}'
+    p0_sfm = f'/home/danc/datasets/localbot/meshroom_batches/{args["pose0_sfm"]}'
+    p1_sfm = f'/home/danc/datasets/localbot/meshroom_batches/{args["pose1_sfm"]}'
+    #p2_sfm = f'/home/danc/datasets/localbot/meshroom_batches/{args["pose2_sfm"]}'
     
     last_frame_0 = sum(f.endswith('.txt') for f in os.listdir(p0_sfm))-1
     matrix44_last_frame_0 = np.loadtxt(f'{p0_sfm}/frame-{last_frame_0:05d}.pose.txt', delimiter=',')
     
     first_frame_1 = args['pose1_sfm'].split('_')[-2]
+    last_frame_1 = args['pose1_sfm'].split('_')[-1]
+    
+    
     size_dataset_1 = sum(f.endswith('.txt') for f in os.listdir(p1_sfm))
     
     size_dataset_0 = sum(f.endswith('.txt') for f in os.listdir(p0_sfm))
+    
+    
+    print(last_frame_1)
+    name_p2 = f'seq56_sfm_0_{last_frame_1}'
+    p2_sfm = f'/home/danc/datasets/localbot/meshroom_batches/{name_p2}'
+    
     
     for idx in range(size_dataset_1):
         
@@ -56,7 +65,8 @@ def main():
         write_transformation(filename=f'{p1_sfm}/frame-{idx2:05d}.pose.txt', transformation=matrix44_wrt_first_frame_0)
 
     
-    # copy p0 and p1 to p2 (p2 must be already created!)
+    # copy p0 and p1 to p2 
+    os.makedirs(p2_sfm)  # Create the new folder
     
     for idx in range(size_dataset_0):
         shutil.copy2(f'{p0_sfm}/frame-{idx:05d}.pose.txt', f'{p2_sfm}/frame-{idx:05d}.pose.txt')

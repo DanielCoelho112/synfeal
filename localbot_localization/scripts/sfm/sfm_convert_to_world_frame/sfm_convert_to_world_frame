@@ -28,7 +28,7 @@ def main():
     args = vars(parser.parse_args(args=arglist))
 
     dataset = LocalBotDataset(path_seq=args['dataset'])
-    p_sfm = f'/home/danc/datasets/localbot/meshroom/{args["poses_sfm"]}'
+    p_sfm = f'/home/danc/datasets/localbot/meshroom_batches/{args["poses_sfm"]}'
     
     matrix44_frame0_world = np.loadtxt(f'{dataset.path_seq}/frame-00000.pose.txt', delimiter=',')
     

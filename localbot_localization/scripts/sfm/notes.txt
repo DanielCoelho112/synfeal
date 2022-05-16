@@ -18,4 +18,6 @@ rosrun localbot_localization sfm_convert_to_initial_frame  -p_sfm 'seq56_sfm_0_4
 
 rosrun localbot_localization sfm_scale_transformations  -p_sfm 'seq56_sfm_0_499' -d 'seq56'
 
+rosrun localbot_localization sfm_merge_sfm_datasets  -p0_sfm 'seq56_sfm_0_499' -p1_sfm 'seq56_sfm_499_998'
+
 

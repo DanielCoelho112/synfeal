@@ -55,7 +55,7 @@ def main():
         for idx in range(len(train_dataset)):
             print(idx)
             
-            if idx>900 or idx<800:
+            if idx < 7080 or idx > 7100:
                 continue
         
             # publish markers
@@ -73,10 +73,10 @@ def main():
             marker = Marker(header=Header(frame_id="map", stamp=rospy.Time.now()))
             marker.type = marker.ARROW
             marker.action = marker.ADD
-            marker.scale.x = 0.3
-            marker.scale.y = 0.05
-            marker.scale.z = 0.05
-            marker.color.a = 1.0
+            marker.scale.x = 0.35
+            marker.scale.y = 0.02
+            marker.scale.z = 0.02
+            marker.color.a = 0.8
             marker.color.r = 1.0
             marker.color.g = 0.6
             marker.color.b = 0.3

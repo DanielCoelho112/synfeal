@@ -55,7 +55,7 @@ def main():
         for idx in range(len(train_dataset)):
             print(idx)
             
-            if idx>900 or idx<800:
+            if idx < 7080 or idx > 7100:
                 continue
         
             # publish markers

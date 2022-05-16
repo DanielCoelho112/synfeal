@@ -25,7 +25,7 @@ def main():
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
 
-    p_sfm = f'/home/danc/datasets/localbot/meshroom/{args["poses_sfm"]}'
+    p_sfm = f'/home/danc/datasets/localbot/meshroom_batches/{args["poses_sfm"]}'
     
     first_frame = int(args['poses_sfm'].split('_')[-2])
     

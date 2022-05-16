@@ -30,7 +30,7 @@ def main():
 
     dataset = LocalBotDataset(path_seq=args['dataset'])
     
-    p_sfm = f'/home/danc/datasets/localbot/meshroom/{args["poses_sfm"]}'
+    p_sfm = f'/home/danc/datasets/localbot/meshroom_batches/{args["poses_sfm"]}'
     size_dataset = sum(f.endswith('.txt') for f in os.listdir(p_sfm))
     
     first_frame = int(args['poses_sfm'].split('_')[-2])
