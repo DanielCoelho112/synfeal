@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+
+# 3rd-party
+import rospkg
+from localbot_core.src.utilities_ros import data2pose
+import rospy
+from colorama import Fore, Style
+from std_msgs.msg import Header, ColorRGBA
+from gazebo_msgs.srv import SetLightProperties, SetLightPropertiesRequest, GetLightProperties, GetLightPropertiesRequest
+from geometry_msgs.msg import Point, Pose, Vector3, Quaternion
+from visualization_msgs.msg import *
+from localbot_core.src.interactive_data_collection import InteractiveDataCollection
+from localbot_core.src.automatic_data_collection import AutomaticDataCollection
+
+
+
+def main():
+    
+    rospy.init_node(f"set_lights")
+    
+    set_light_service = rospy.ServiceProxy('gazebo/set_light_properties', SetLightProperties) 
+    get_light_service = rospy.ServiceProxy('gazebo/get_light_properties', GetLightProperties)
+    sl = SetLightPropertiesRequest()
+    sl.light_name = 'user_point_light_0'
+    
+
+    
+    sl.diffuse.b = 0.5
+    sl.diffuse.g = 0.5
+    sl.diffuse.r = 0.5
+    sl.diffuse.a = 1
+    
+    
+    
+    sl.attenuation_constant = 0.2
+    sl.attenuation_linear = 0.01
+    
+    
+    set_light_service(sl)
+    
+    print(get_light_service('user_point_light_0'))
+    
+    
+
+
+
+if __name__ == "__main__":
+    main()
+
+
+

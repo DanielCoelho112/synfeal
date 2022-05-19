@@ -4,7 +4,7 @@
     <arg name="headless" default="false"/>
     <arg name="gui" default="true"/>
     <arg name="debug" default="false"/>
-    <arg name="verbose" default="false"/>
+    <arg name="verbose" default="true"/>
     <arg name="world" default="$(find localbot_gazebo)/worlds/my_room_024.world"/>
 
     <!-- Create gazebo world -->
