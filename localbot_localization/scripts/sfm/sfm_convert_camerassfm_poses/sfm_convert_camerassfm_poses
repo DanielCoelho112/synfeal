@@ -37,11 +37,14 @@ def main():
     #dirs =[i for i in os.walk(f"{p_sfm}")]
     
     path = f'{d_sfm}/MeshroomCache/GlobalSfM'
+    #path = f'{d_sfm}/MeshroomCache/StructureFromMotion'
     
     variable_folder = [item for item in os.listdir(path) if os.path.isdir(os.path.join(path, item))][0]
     print(variable_folder)
     
     json_path = f'{d_sfm}/MeshroomCache/GlobalSfM/{variable_folder}/cameras.sfm'
+    #json_path = f'{d_sfm}/MeshroomCache/StructureFromMotion/{variable_folder}/cameras.sfm'
+    
     
     # for each frame, we read the rotation, and translation. Transform into a 4x4 matrix and save it as txt.
     file = json.load(open(json_path))

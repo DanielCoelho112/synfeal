@@ -5,7 +5,7 @@ import os
 from visualization_msgs.msg import *
 from cv_bridge import CvBridge
 from tf.listener import TransformListener
-from localbot_core.src.utilities import *
+from localbot_core.src.utilities_ros import *
 from sensor_msgs.msg import PointCloud2, Image, PointField, CameraInfo
 from colorama import Fore
 from datetime import datetime

@@ -139,11 +139,9 @@ Run:
 
     rosrun localbot_localization create_images_sfm -d 'seq5_sfm' -s '_images'
 
-    cd ~/PhD/localization/openMVG_Build/software/SfM
+    cd ~/PhD/localization/Meshroom-2021...
 
-    python3 localbot.py
-
-    rosrun localbot_localization convert_sfmjson_poses -d 'seq5_sfm'
+    ./Meshroom
 
 ## Using Visual Odometry to collect data
 

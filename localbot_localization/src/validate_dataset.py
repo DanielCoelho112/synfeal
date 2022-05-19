@@ -10,7 +10,7 @@ from localbot_localization.src.dataset import LocalBotDataset
 import localbot_core.src.pypcd as pypcd
 from sensor_msgs.msg import PointCloud2, PointField
 import sensor_msgs.point_cloud2 as pc2
-from localbot_core.src.utilities import *
+from localbot_core.src.utilities_ros import *
 import random
 from os.path import exists
 import yaml

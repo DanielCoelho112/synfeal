@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+import os
+
+# 3rd-party
+import rospy
+from visualization_msgs.msg import *
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.validate_dataset import ValidateDataset
+import numpy as np
+import shutil
+from localbot_core.src.utilities import *
+
+def main():    
+    parser = argparse.ArgumentParser(description='Validate dataset')
+    parser.add_argument('-i', '--input', type=str, required=True, help='input folder')
+    parser.add_argument('-o', '--output', type=str, required=True, help='number of frames to copy')
+   
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+    
+    input_folder = args['input']
+    output_folder = f'/home/danc/datasets/localbot/{args["output"]}'
+    
+    if os.path.exists(output_folder):
+        shutil.rmtree(output_folder)
+        
+    os.makedirs(f'{output_folder}')
+       
+    poses = np.load(f'{input_folder}/traj.npz')
+    poses = poses['poses']
+    
+    nf = poses.shape[0]
+    print('number of frames=', nf )
+    
+    matrix44_ = np.empty(shape=(4,4))
+    
+    for idx in range(nf):
+        matrix44 = poses[idx,:,:]
+        
+        # matrix44_[:,3] = matrix44[:,3]
+        # matrix44_[3,:] = matrix44[3,:] 
+        # matrix44_[0,0:3] = matrix44[0:3,0]
+        # matrix44_[1,0:3] = matrix44[0:3,1] 
+        # matrix44_[2,0:3] = matrix44[0:3,2] 
+        
+     
+        write_transformation(filename=f'{output_folder}/frame-{idx:05d}.pose.txt', transformation=matrix44)
+
+        
+        
+        
+
+        
+
+        
+if __name__ == "__main__":
+    main()
+
+
+

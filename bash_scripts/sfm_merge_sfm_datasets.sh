@@ -1,8 +1,8 @@
-#rosrun localbot_localization sfm_merge_sfm_datasets  -p0_sfm 'seq56_sfm_0_499' -p1_sfm 'seq56_sfm_499_998' 
+rosrun localbot_localization sfm_merge_sfm_datasets  -p0_sfm 'seq56_sfm_0_499' -p1_sfm 'seq56_sfm_499_998' 
  
-#rosrun localbot_localization sfm_merge_sfm_datasets  -p0_sfm 'seq56_sfm_0_998' -p1_sfm 'seq56_sfm_998_1497' 
+rosrun localbot_localization sfm_merge_sfm_datasets  -p0_sfm 'seq56_sfm_0_998' -p1_sfm 'seq56_sfm_998_1497' 
 
-#rosrun localbot_localization sfm_merge_sfm_datasets  -p0_sfm 'seq56_sfm_0_1497' -p1_sfm 'seq56_sfm_1497_1996' 
+rosrun localbot_localization sfm_merge_sfm_datasets  -p0_sfm 'seq56_sfm_0_1497' -p1_sfm 'seq56_sfm_1497_1996' 
 
 rosrun localbot_localization sfm_merge_sfm_datasets  -p0_sfm 'seq56_sfm_0_1996' -p1_sfm 'seq56_sfm_1996_2495' 
 
