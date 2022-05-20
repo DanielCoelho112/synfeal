@@ -28,7 +28,7 @@ from colorama import Fore
 
 class AutomaticDataCollection():
     
-    def __init__(self, model_name, seq, ns = None):
+    def __init__(self, model_name, seq, dbf = None):
         self.set_state_service = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState) 
         self.menu_handler = MenuHandler()
         self.model_name = model_name # model_name = 'localbot'
@@ -37,7 +37,7 @@ class AutomaticDataCollection():
         self.get_model_state_service = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
         
         # create instance to save dataset
-        self.save_dataset = SaveDataset(f'{seq}', mode='automatic', ns = ns)
+        self.save_dataset = SaveDataset(f'{seq}', mode='automatic', dbf = dbf)
         
         # define minimum and maximum boundaries
         self.x_min = 1.5
@@ -72,7 +72,7 @@ class AutomaticDataCollection():
         
         return p
             
-    def generatePath(self, n_steps,  final_pose = None):
+    def generatePath(self, dbf,  final_pose = None):
         
         initial_pose = self.getPose().pose
         
@@ -85,10 +85,17 @@ class AutomaticDataCollection():
                 l2_dst = np.linalg.norm(xyz_final - xyz_initial)
                 
                 # if final pose is close to the initial choose another final pose
-                if l2_dst < 2:
+                if l2_dst < 1.5:
                     final_pose = self.generateRandomPose()
                 else:
                     break
+                
+                
+        # compute n_steps based on l2_dist
+        n_steps = int(l2_dst / dbf)
+        
+        print('using n_steps of: ', n_steps)
+        
         
         step_poses = [] # list of tuples
         rx, ry, rz = tf.transformations.euler_from_quaternion([initial_pose.orientation.x, initial_pose.orientation.y, initial_pose.orientation.z, initial_pose.orientation.w])

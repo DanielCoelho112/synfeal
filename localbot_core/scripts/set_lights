@@ -20,27 +20,59 @@ from localbot_core.src.automatic_data_collection import AutomaticDataCollection
 
 def main():
     
-    rospy.init_node(f"set_lights")
+    rospy.init_node("set_lights")
     
     set_light_service = rospy.ServiceProxy('gazebo/set_light_properties', SetLightProperties) 
     get_light_service = rospy.ServiceProxy('gazebo/get_light_properties', GetLightProperties)
     sl = SetLightPropertiesRequest()
     sl.light_name = 'user_point_light_0'
     
-
     
+    # <pose>2.23113 5.6544 1 0 -0 0</pose>
+    #   <diffuse>0.5 0.5 0.5 1</diffuse>
+    #   <specular>0.1 0.1 0.1 1</specular>
+    #   <attenuation>
+    #     <range>20</range>
+    #     <constant>0.5</constant>
+    #     <linear>0.01</linear>
+    #     <quadratic>0.001</quadratic>
+    #   </attenuation>
+    #   <cast_shadows>0</cast_shadows>
+    #   <direction>0 0 -1</direction>
+    
+        
     sl.diffuse.b = 0.5
     sl.diffuse.g = 0.5
     sl.diffuse.r = 0.5
     sl.diffuse.a = 1
     
-    
+    sl.specular.b = 0.1
+    sl.specular.g = 0.1
+    sl.specular.r = 0.1
+    sl.specular.a = 1
     
     sl.attenuation_constant = 0.2
     sl.attenuation_linear = 0.01
+    sl.attenuation_quadratic = 0.001
     
+    sl.cast_shadows = 0
+    sl.direction.x=0
+    sl.direction.y=0
+    sl.direction.z=-1
     
+    sl.pose.position.x = 2.231130
+    sl.pose.position.y = 5.654400
+    sl.pose.position.z = 1.000000
+    
+    sl.pose.orientation.x = 0
+    sl.pose.orientation.y = 0
+    sl.pose.orientation.z = 0
+    sl.pose.orientation.w = 0
+    
+
     set_light_service(sl)
+    
+    rospy.sleep(2)
     
     print(get_light_service('user_point_light_0'))
     

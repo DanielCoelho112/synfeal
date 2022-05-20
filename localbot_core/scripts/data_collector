@@ -19,19 +19,18 @@ from localbot_core.src.automatic_data_collection import AutomaticDataCollection
 
 
 def main():
-    
     parser = argparse.ArgumentParser(description='Data Collector')
     parser.add_argument('-m', '--mode', type=str, default='interactive', help='interactive/automatic_random_path/automatic_path')
     parser.add_argument('-s', '--seq', type=str, required=True, help='sequence number')
-    parser.add_argument('-ns', '--n_steps', type=int, default=20, help='number of steps')
     parser.add_argument('-dp', '--destination_pose', type=str, default='x,y,z,rx,ry,rz', help='destination pose')
-    parser.add_argument('-nf', '--number_of_frames', type=int, default=1000, help='number of frames')
+    parser.add_argument('-nf', '--number_of_frames', type=int, required=True, help='number of frames')
+    parser.add_argument('-dbf', '--distance_between_frames', type=float, default=0.03, help='Distance between frames in m')
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     
     mode = args['mode']
     seq = args['seq']
-    n_steps = args['n_steps']
+    distance_between_frames = args['distance_between_frames']
     destination_pose = args['destination_pose']
     
     rospy.init_node(f"{mode}_data_collection")
@@ -54,10 +53,10 @@ def main():
                 break
     elif mode == 'automatic_path':
         rate = rospy.Rate(0.4) 
-        data_collector = AutomaticDataCollection(model_name='localbot', seq = seq, ns = n_steps)
+        data_collector = AutomaticDataCollection(model_name='localbot', seq = seq, dbf = distance_between_frames)
         if destination_pose == 'x,y,z,rx,ry,rz': # use random poses
             while not rospy.is_shutdown():
-                step_poses = data_collector.generatePath(n_steps)
+                step_poses = data_collector.generatePath(distance_between_frames)
                 for pose in step_poses:
                     data_collector.setPose(pose)
                     rospy.sleep(0.4)
@@ -69,7 +68,7 @@ def main():
         else:
             final_pose = data2pose(destination_pose)
             while not rospy.is_shutdown():
-                step_poses = data_collector.generatePath(n_steps,final_pose=final_pose)
+                step_poses = data_collector.generatePath(distance_between_frames,final_pose=final_pose)
                 for pose in step_poses:
                     data_collector.setPose(pose)
                     rospy.sleep(0.4)

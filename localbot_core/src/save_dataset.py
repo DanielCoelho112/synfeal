@@ -17,7 +17,7 @@ class SaveDataset():
     class to save datasets
     once initialized, we can call the method 'saveFrame' to save to disk the image, point cloud w.r.t frame frame and rgb_frame transformation.
     """    
-    def __init__(self, output, mode, ns = None):
+    def __init__(self, output, mode, dbf = None):
         
         self.output_folder = f'{os.environ["HOME"]}/datasets/localbot/{output}'
         
@@ -36,7 +36,7 @@ class SaveDataset():
                   'is_valid' : False,
                   'npoints'  : None,
                   'scaled'   : False,
-                  'n_steps'  : ns,
+                  'distance_between_frames'  : dbf,
                   'raw'      : output}
         
         self.frame_idx = 0 

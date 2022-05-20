@@ -5,11 +5,11 @@
     <arg name="gui" default="true"/>
     <arg name="debug" default="false"/>
     <arg name="verbose" default="true"/>
-    <arg name="world" default="$(find localbot_gazebo)/worlds/my_room_024.world"/>
+    <arg name="world" default="my_room_024.world"/>
 
     <!-- Create gazebo world -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
-        <arg name="world_name" value="$(arg world)"/>
+        <arg name="world_name" value="$(find localbot_gazebo)/worlds/$(arg world)"/>
         <arg name="paused" value="false"/>
         <arg name="use_sim_time" value="true"/>
         <arg name="gui" value="$(arg gui)"/>
