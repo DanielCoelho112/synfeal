@@ -130,3 +130,7 @@ dmypy.json
 
 # ignoere .vscode folder
 .vscode
+.vscode/*
+
+.idea
+.idea/*
