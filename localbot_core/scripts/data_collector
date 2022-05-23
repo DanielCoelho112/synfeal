@@ -25,6 +25,8 @@ def main():
     parser.add_argument('-dp', '--destination_pose', type=str, default='x,y,z,rx,ry,rz', help='destination pose')
     parser.add_argument('-nf', '--number_of_frames', type=int, required=True, help='number of frames')
     parser.add_argument('-dbf', '--distance_between_frames', type=float, default=0.03, help='Distance between frames in m')
+    parser.add_argument('-uvl', '--use_variable_lights', action='store_true', help='use variable lights')
+    parser.add_argument('-rl', '--random_lights', action='store_true', help='use random lights')
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     
@@ -40,26 +42,33 @@ def main():
         InteractiveDataCollection(model_name='localbot', seq = seq)
         rospy.spin() 
     elif mode == 'automatic_random':
-        rate = rospy.Rate(0.4) 
+        rate = rospy.Rate(0.6) 
         data_collector = AutomaticDataCollection(model_name='localbot', seq = seq)
         while not rospy.is_shutdown():    
             pose = data_collector.generateRandomPose()
+            if args['use_variable_lights']:
+                light = data_collector.generateLights(n_steps = 1, random = True)
+                data_collector.setLight(light)
             data_collector.setPose(pose)
-            rospy.sleep(0.4)
+            rospy.sleep(0.6)
             data_collector.saveFrame()
             rate.sleep()
             
             if data_collector.getFrameIdx() >= args['number_of_frames']:
                 break
     elif mode == 'automatic_path':
-        rate = rospy.Rate(0.4) 
+        rate = rospy.Rate(0.6) 
         data_collector = AutomaticDataCollection(model_name='localbot', seq = seq, dbf = distance_between_frames)
         if destination_pose == 'x,y,z,rx,ry,rz': # use random poses
             while not rospy.is_shutdown():
                 step_poses = data_collector.generatePath(distance_between_frames)
-                for pose in step_poses:
+                if args['use_variable_lights']:
+                    step_lights = data_collector.generateLights(n_steps = len(step_poses), random = args['random_lights'])
+                for idx, pose in enumerate(step_poses):
                     data_collector.setPose(pose)
-                    rospy.sleep(0.4)
+                    if args['use_variable_lights']:
+                        data_collector.setLight(step_lights[idx])
+                    rospy.sleep(0.6)
                     data_collector.saveFrame()
                     rate.sleep() 
                 print('final destination arrived')
@@ -69,9 +78,13 @@ def main():
             final_pose = data2pose(destination_pose)
             while not rospy.is_shutdown():
                 step_poses = data_collector.generatePath(distance_between_frames,final_pose=final_pose)
-                for pose in step_poses:
+                if args['use_variable_lights']:
+                    step_lights = data_collector.generateLights(n_steps = len(step_poses), random = True)
+                for idx, pose in enumerate(step_poses):
                     data_collector.setPose(pose)
-                    rospy.sleep(0.4)
+                    if args['use_variable_lights']:
+                        data_collector.setLight(step_lights[idx])
+                    rospy.sleep(0.6)
                     data_collector.saveFrame()
                     rate.sleep() 
                 print('final destination arrived')

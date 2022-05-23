@@ -47,6 +47,14 @@ class AutomaticDataCollection():
         self.z_min = -0.5
         self.z_max = 0.5
         
+        # define minimum and maximum light
+        self.att_min = 0.1
+        self.att_max = 1.0
+        
+        self.light_names = ['user_point_light_0', 'user_point_light_1', 'user_point_light_2', 'user_point_light_3', 'user_point_light_4', 'user_point_light_5']
+        
+        self.att_initial = 1.0
+        
         
     def generateRandomPose(self):
         
@@ -152,7 +160,35 @@ class AutomaticDataCollection():
         req.model_state.reference_frame = 'world'
 
         self.set_state_service(req.model_state)
-       
+    
+    def generateLights(self, n_steps, random):
+        lights = []
+        if random:
+            lights = [np.random.uniform(low=self.att_min, high=self.att_max) for _ in range(n_steps)]
+        else:
+            initial_light = self.att_initial
+            final_light = np.random.uniform(low=self.att_min, high=self.att_max)
+            
+            step_light = (final_light - initial_light) / n_steps
+            
+            for i in range(n_steps):
+                lights.append(initial_light + (i + 1) * step_light)
+        
+            self.att_initial = final_light
+        return lights
+                
+    def setLight(self, light):
+        
+        for name in self.light_names:
+            
+            my_str = f'name: "{name}" \nattenuation_quadratic: {light}'
+    
+            with open('/tmp/set_light.txt', 'w') as f:
+                f.write(my_str)
+            
+            os.system(f'gz topic -p /gazebo/my_room_024/light/modify -f /tmp/set_light.txt')
+                    
+        
     def saveFrame(self):
         self.save_dataset.saveFrame()
         

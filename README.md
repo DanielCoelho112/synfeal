@@ -43,7 +43,7 @@ Here we have to manually drag the interactive marker and click on another marker
 
 2.  **automatic_random**
 
-        rosrun localbot_core data_collector --mode automatic_random --seq seq110 -nf 1000
+        rosrun localbot_core data_collector --mode automatic_random --seq seq110 -nf 1000 -uvl 
 
 In this case, in each frame, it is generated a random pose. Here we do not have any movement between poses.
 
