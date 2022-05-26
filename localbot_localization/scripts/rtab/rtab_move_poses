@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+import json
+
+from regex import F
+
+# 3rd-party
+import rospy
+from colorama import Fore, Style
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.validate_dataset import ValidateDataset
+import numpy as np
+from localbot_core.src.utilities import *
+import shutil
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Validate dataset')
+    parser.add_argument('-f', '--folder', type=str,
+                        required=True, help='Name of the dataset')
+    parser.add_argument('-d', '--dataset', type=str,
+                        required=True, help='Name of the dataset')
+
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+
+    dataset = LocalBotDataset(path_seq=args['dataset'])
+    folder = f'/home/danc/datasets/localbot/rtab/output/{args["folder"]}'
+    
+    # remove poses from dataset
+    
+    for idx in range(len(dataset)):
+        os.remove(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt')
+    
+    # copy poses from folder to dataset
+    size_dataset = sum(f.endswith('.txt') for f in os.listdir(folder))
+    
+    for idx in range(size_dataset):
+        shutil.copy2(f'{folder}/frame-{idx:05d}.pose.txt', f'{dataset.path_seq}/frame-{idx:05d}.pose.txt')
+        
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+import os
+
+# 3rd-party
+import rospy
+from visualization_msgs.msg import *
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.validate_dataset import ValidateDataset
+import numpy as np
+import shutil
+from localbot_core.src.utilities import *
+
+def main():    
+    parser = argparse.ArgumentParser(description='Validate dataset')
+    parser.add_argument('-i', '--input', type=str, required=True, help='input folder')
+    parser.add_argument('-o', '--output', type=str, required=True, help='number of frames to copy')
+   
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+    
+    input_folder = f'/home/danc/datasets/localbot/rtab/input'
+    input_file = f'{input_folder}/{args["input"]}'
+    output_folder = f'/home/danc/datasets/localbot/rtab/output/{args["output"]}'
+    
+    if os.path.exists(output_folder):
+        shutil.rmtree(output_folder)
+        
+    os.makedirs(f'{output_folder}')
+       
+       
+    # read poses as txt
+    with open(input_file) as f:
+        txt = f.read()
+        
+    # replace , by .
+    txt = txt.replace(',','.')
+    print(txt)
+    
+    # remove first row
+    idx_n = txt.find('\n')    
+    txt = txt[idx_n+1:]
+    
+    # save to txt
+    with open(f'{input_file[:-4]}_c.txt', 'w') as f:
+        f.write(txt)
+    
+    poses = np.loadtxt(f'{input_file[:-4]}_c.txt',delimiter=' ')
+    
+    
+    for pose in poses:
+        
+        x = pose[1]
+        y = pose[2]
+        z = pose[3]
+        
+        qx = pose[4]
+        qy = pose[5]
+        qz = pose[6]
+        qw = pose[7]
+        
+        frame_idx = int(pose[8]-1)
+        
+        position = np.array([x,y,z])
+        quaternion = np.array([qx,qy,qz,qw])
+        
+        
+        matrix33 = quaternionToMatrix(quaternion)
+        
+        matrix44 = rotationAndpositionToMatrix44(matrix33, position)
+        
+        write_transformation(filename=f'{output_folder}/frame-{frame_idx:05d}.pose.txt', transformation=matrix44)
+        
+        
+        
+if __name__ == "__main__":
+    main()
+
+
+

@@ -1,7 +1,8 @@
 import numpy as np
 import torch
 from sklearn.metrics import mean_squared_error
-from localbot_core.src.utilities import poseToMatrix, matrixToRodrigues
+from localbot_core.src.utilities import *
+from scipy.spatial.transform import Rotation as R
 
 def normalize_quat(x, p=2, dim=1):
     """
@@ -100,3 +101,32 @@ def projectToCamera(intrinsic_matrix, distortion, width, height, pts):
     valid_ypix = np.logical_and(pixs[1, :] >= 0, pixs[1, :] < height)
     valid_pixs = np.logical_and(valid_z, np.logical_and(valid_xpix, valid_ypix))
     return pixs, valid_pixs, dists
+
+
+def synthesize_pose(pose1, pose2):
+    """
+    synthesize pose between pose1 and pose2
+    pose1: 4x4
+    pose2: 4x4
+    """
+    pos1 = pose1[:3,3]
+    rot1 = pose1[:3,:3]
+    
+    pos2 = pose2[:3,3]
+    rot2 = pose2[:3,:3]
+    
+    # rot3x3 to euler angles
+    rot1_euler = R.from_matrix(rot1).as_euler('xyz', degrees=False)
+    rot2_euler = R.from_matrix(rot2).as_euler('xyz', degrees=False)
+    
+    pos3 = (pos1 + pos2) / 2
+    rot3_euler = (rot1_euler + rot2_euler) / 2
+    
+    rot3 = R.from_euler('xyz', rot3_euler, degrees=False).as_matrix()
+    
+    pose3 = np.empty(shape=(4,4))
+    pose3[:3,:3] = rot3
+    pose3[:3,3] = pos3
+    
+    return pose3
+

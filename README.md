@@ -150,3 +150,24 @@ Run:
     python3 main.py
 
     run our scripts...
+
+
+## Using RTAB
+
+    run rtab...
+
+    rosrun localbot_localization rtab_convert_poses -i 'test_final.txt' -o 'seq17_rtab'
+
+    rosrun localbot_localization rtab_synthesize_poses -d 'seq17_rtab' -f 'seq17_rtab'
+
+    rosrun localbot_localization rtab_convert_to_initial_frame -f 'seq17_rtab'
+
+    rosrun localbot_localization rtab_scale_transformations -f 'seq17_rtab' -d 'seq17_rtab'
+
+    rosrun localbot_localization rtab_convert_to_world_frame -f 'seq17_rtab' -d 'seq17_rtab'
+
+    rosrun localbot_localization rtab_move_poses -f 'seq17_rtab' -d 'seq17_rtab'
+
+
+
+

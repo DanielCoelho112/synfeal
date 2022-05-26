@@ -9,7 +9,7 @@ import cv2
 #import tf
 #from geometry_msgs.msg import Pose
 from localbot_core.src.pypcd_no_ros import PointCloud
-
+from localbot_localization.src.utilities import *
 
 def write_pcd(filename, msg, mode='binary'):
     
@@ -85,5 +85,9 @@ def rotationAndpositionToMatrix44(rotation, position):
     return matrix44
 
     
-    
-
+def matrix44_to_pose(matrix44):
+    quaternion = matrixToQuaternion(matrix44)
+    quaternion = normalize_quat(quaternion)
+    xyz = matrixToXYZ(matrix44)
+    pose = np.append(xyz, quaternion) 
+    return pose
