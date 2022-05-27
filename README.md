@@ -154,7 +154,7 @@ Run:
 
 ## Using RTAB
 
-    run rtab...
+    rtabmap  (choose right database and choose dataset)
 
     rosrun localbot_localization rtab_convert_poses -i 'test_final.txt' -o 'seq17_rtab'
 

@@ -105,6 +105,32 @@ class SaveResults():
     def step(self):
         self.frame_idx+=1
         
+
+class SaveComparisonDatasets(SaveResults):
+    def __init__(self, output, gazebo_dataset, folder):
+        self.output_folder = f'/home/danc/datasets/localbot/rtab/comparison/{output}'
+        
+        if not os.path.exists(self.output_folder):
+            print(f'Creating folder {self.output_folder}')
+            os.makedirs(self.output_folder)
+        else:
+            print(f'{Fore.RED} {output} already exists... Aborting SaveComparisonDatasets initialization! {Fore.RESET}')
+            exit(0)
+            
+        dt_now = datetime.now() # current date and time
+        config = {'user'       : os.environ["USER"],
+                  'date'       : dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
+                  'gazebo_dataset' : gazebo_dataset,
+                  'folder'   : folder}
+        
+        with open(f'{self.output_folder}/config.yaml', 'w') as file:
+            yaml.dump(config, file)
+        
+        self.frame_idx = 0 # make sure to save as 00000
+        self.csv = pd.DataFrame(columns=('frame', 'position_error (m)', 'rotation_error (rads)'))
+        
+        print('SaveResults initialized properly')
+        
         
         
 
