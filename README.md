@@ -168,6 +168,9 @@ Run:
 
     rosrun localbot_localization rtab_move_poses -f 'seq17_rtab' -d 'seq17_rtab'
 
+    roslaunch localbot_localization compare_datasets.launch dataset1:='seq17' dataset2:='seq17_rtab' idx_min:=15 idx_max:=25
+
+
 
 
 

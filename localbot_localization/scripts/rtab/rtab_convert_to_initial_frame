@@ -36,9 +36,6 @@ def main():
   
     for idx in range(last_file+1):
         
-        if not exists(f'{folder}/frame-{idx:05d}.pose.txt'):
-            continue
-        
         matrix44 = np.loadtxt(f'{folder}/frame-{idx:05d}.pose.txt', delimiter=',')
         
         # transform matrix44 to be w.r.t. frame0
