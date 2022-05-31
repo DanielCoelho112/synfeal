@@ -21,99 +21,78 @@ def main():
     parser = argparse.ArgumentParser(description='Validate dataset')
     parser.add_argument('-d', '--dataset', type=str,
                         required=True, help='Name of the dataset')
-    parser.add_argument('-td', '--true_dataset', type=str,
+    parser.add_argument('-f', '--folder', type=str,
                         required=True, help='Name of the dataset')
 
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
 
     dataset = LocalBotDataset(path_seq=args['dataset'])
-    tdataset = LocalBotDataset(path_seq=args['true_dataset'])
+    
+    folder = f'/home/danc/datasets/localbot/vo/{args["folder"]}'
+    size_dataset = sum(f.endswith('.txt') for f in os.listdir(folder))
     
     
-    # transfs = [(2,i) for i in range(5,len(tdataset)-1)]
-    transfs = [(2,i) for i in range(3,20)]
-    #transfs = [(3,i) for i in range(5,9)]
-    #print(transfs)
-    #print(len(tdataset))
+    first_frame=0
+    transfs = [(first_frame,i) for i in range(first_frame,first_frame + size_dataset)]
    
-    
-    #transfs = [(2,3),(3,4),(4,5),(5,6),(6,7)]
-    scale_x = []
-    scale_y = []
-    scale_z = []
+
+    scale = []
     
     for transf in transfs:
         src = transf[0]
         tgt = transf[1]
-        
-        # vo dataset
+           
+        # true dataset
         matrix_src = np.loadtxt(f'{dataset.path_seq}/frame-{src:05d}.pose.txt', delimiter=',')
         matrix_tgt = np.loadtxt(f'{dataset.path_seq}/frame-{tgt:05d}.pose.txt', delimiter=',')
-        matrix44_vo = np.dot(np.linalg.inv(matrix_src), matrix_tgt)
-        d_vo = matrix44_vo[:3,3]
-        
-        
-        matrix_src = np.loadtxt(f'{tdataset.path_seq}/frame-{src:05d}.pose.txt', delimiter=',')
-        matrix_tgt = np.loadtxt(f'{tdataset.path_seq}/frame-{tgt:05d}.pose.txt', delimiter=',')
         matrix44_t = np.dot(np.linalg.inv(matrix_src), matrix_tgt)
-        d_t = matrix44_t[:3,3]
         
-        if any(abs(d_vo) < 0.01):
+        d_t = matrix44_t[:3,3]
+        d_t_e = np.linalg.norm(d_t)
+        
+        # sfm dataset
+        matrix_src = np.loadtxt(f'{folder}/frame-{src:05d}.pose.txt', delimiter=',')
+        matrix_tgt = np.loadtxt(f'{folder}/frame-{tgt:05d}.pose.txt', delimiter=',')
+        matrix44_sfm = np.dot(np.linalg.inv(matrix_src), matrix_tgt)
+        
+        d_sfm = matrix44_sfm[:3,3]
+        d_sfm_e = np.linalg.norm(d_sfm)
+        
+
+        if d_sfm_e < 0.1:
             print('ignoring indexs: ', transf)
             continue 
         
-        sx = d_t[0]/d_vo[0]
-        sy = d_t[1]/d_vo[1]
-        sz = d_t[2]/d_vo[2]
-        #scales.append((sx,sy,sz))
-        scale_x.append(round(sx,3))
-        scale_y.append(round(sy,3))
-        scale_z.append(round(sz,3))
-    
-    
-    
-    scale_x = sum(scale_x)/len(scale_x)
-    scale_y = sum(scale_y)/len(scale_y)
-    scale_z = sum(scale_z)/len(scale_z)
-        
-    
-    #print(scale_x)
-    #print(scale_y)
-    #print(scale_z)
-    
-    
-    #for idx in range(3,len(dataset)-1):
-    for idx in range(3,len(dataset)-1):
-        matrix44 = np.loadtxt(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt', delimiter=',')
+       
+        s = d_t_e/d_sfm_e
+        scale.append(s)
+
+    print(f'scale values: {scale}')
+    scale = sum(scale)/len(scale)
+   
+    print(f'applying scale of {scale}')
+
+    # #for idx in range(3,len(dataset)-1):
+    for idx in range(size_dataset):
+        idx2 = idx+first_frame
+        matrix44 = np.loadtxt(f'{folder}/frame-{idx2:05d}.pose.txt', delimiter=',')
         
         translation_old = matrix44[:3,3]
         #print(translation_old)
-        translation_new = translation_old * np.array([scale_x,scale_y,scale_z])
+        
+        #translation_new = translation_old * np.array([scale_x,scale_y,scale_z])
+        
+        translation_new = translation_old * scale
+        
         #print(translation_new)
         matrix44[:3,3] = translation_new
         
-        write_transformation(filename=f'{dataset.path_seq}/frame-{idx:05d}.pose.txt', transformation=matrix44)
-        
-    # load true dataset
-    # compute transforamtion from 2-3, 3-4, 4-5, 6-7, 7-8, 9-10
-    # print dx, dy, dz
-        
-    # load vo dataset
-    # compute transforamtion from 2-3, 3-4, 4-5, 6-7, 7-8, 9-10
-    # print dx, dy, dz
+        write_transformation(filename=f'{folder}/frame-{idx2:05d}.pose.txt', transformation=matrix44)
     
-    
-    # compute scale x, scale scale y, scale z
-    # see if there is a pattern, or if it is somehing random
-    
-    # if they are somehow close, average that and we have a scale factor to multiply all distances!
-    
-    # loop through each new pose, scale them, and save them
+if __name__ == "__main__":
+    main()
 
- 
-    # scaling transformations based on the different between ground truth (gazebo) and visual odometry
-        
         
     
     

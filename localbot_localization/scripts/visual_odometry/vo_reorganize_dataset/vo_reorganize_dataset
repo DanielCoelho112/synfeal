@@ -19,47 +19,52 @@ import shutil
 
 def main():
     parser = argparse.ArgumentParser(description='Validate dataset')
-    parser.add_argument('-d', '--dataset', type=str,
+    parser.add_argument('-f', '--folder', type=str,
                         required=True, help='Name of the dataset')
 
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
+    
+    print('hi')
 
-    dataset = LocalBotDataset(path_seq=args['dataset'])
-    size_dataset = sum(f.endswith('rgb.png') for f in os.listdir(dataset.path_seq))
+    #dataset = LocalBotDataset(path_seq=args['dataset'])
+    
+    folder = f'/home/danc/datasets/localbot/vo/{args["folder"]}'
+    
+    size_dataset = sum(f.endswith('txt') for f in os.listdir(folder))
     
     #for idx in range(len(dataset)):
-    #    os.remove(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt')
+    #    os.remove(f'{folder}/frame-{idx:05d}.pose.txt')
 
 
     # reorganize dataset - When we dont have frames, we assume the previous frame.
     for idx in range(size_dataset-1):
             print(idx)
-            if not exists(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt'):
+            if not exists(f'{folder}/frame-{idx:05d}.pose.txt'):
                 # idx does not exists, so we have to rename the close one.
                 print(f'{idx} is missing!!!')
                 new_idx = None
                 for idx2 in range(idx-1, -1, -1):
                     print(f'trying {idx2}')
-                    if exists(f'{dataset.path_seq}/frame-{idx2:05d}.pose.txt'):
+                    if exists(f'{folder}/frame-{idx2:05d}.pose.txt'):
                         new_idx = idx2
                         break
                 if not new_idx==None:    
                     print(f'copying idx {new_idx} to idx {idx}')
-                    shutil.copy2(f'{dataset.path_seq}/frame-{new_idx:05d}.pose.txt', f'{dataset.path_seq}/frame-{idx:05d}.pose.txt')
+                    shutil.copy2(f'{folder}/frame-{new_idx:05d}.pose.txt', f'{folder}/frame-{idx:05d}.pose.txt')
                     
                 else:
                     print(f'No candidate to replace {idx}')
     
 
     # compute all transformation w.r.t frame2 from the visual odometry
-    matrix44_frame2_vo =  np.loadtxt(f'{dataset.path_seq}/frame-00002.pose.txt', delimiter=',')
+    matrix44_frame2_vo =  np.loadtxt(f'{folder}/frame-00000.pose.txt', delimiter=',')
     for idx in range(size_dataset-1):
         print(idx)
-        matrix44 = np.loadtxt(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt', delimiter=',')
+        matrix44 = np.loadtxt(f'{folder}/frame-{idx:05d}.pose.txt', delimiter=',')
         matrix44_wrt_f2_vo = np.dot(np.linalg.inv(matrix44_frame2_vo), matrix44)
         
-        write_transformation(filename=f'{dataset.path_seq}/frame-{idx:05d}.pose.txt', transformation=matrix44_wrt_f2_vo)
+        write_transformation(filename=f'{folder}/frame-{idx:05d}.pose.txt', transformation=matrix44_wrt_f2_vo)
         
     
     # scaling transformations based on the different between ground truth (gazebo) and visual odometry
@@ -108,7 +113,7 @@ def main():
         
     #     # transform_matrix44_wrt0 to be w.r.t world
     #     matrix44_wrt_world = np.dot(matrix44_frame0_world, matrix44_wrt_0)
-    #     write_transformation(filename=f'{dataset.path_seq}/frame-{frame_id:05d}.pose.txt', transformation=matrix44_wrt_world)
+    #     write_transformation(filename=f'{folder}/frame-{frame_id:05d}.pose.txt', transformation=matrix44_wrt_world)
     
 if __name__ == "__main__":
     main()

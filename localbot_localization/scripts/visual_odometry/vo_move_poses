@@ -6,6 +6,8 @@ import argparse
 import copy
 import json
 
+from regex import F
+
 # 3rd-party
 import rospy
 from colorama import Fore, Style
@@ -13,8 +15,8 @@ from localbot_localization.src.dataset import LocalBotDataset
 from localbot_localization.src.validate_dataset import ValidateDataset
 import numpy as np
 from localbot_core.src.utilities import *
-from os.path import exists
 import shutil
+
 
 def main():
     parser = argparse.ArgumentParser(description='Validate dataset')
@@ -29,20 +31,17 @@ def main():
     dataset = LocalBotDataset(path_seq=args['dataset'])
     folder = f'/home/danc/datasets/localbot/vo/{args["folder"]}'
     
-    matrix44_frame0_world = np.loadtxt(f'{dataset.path_seq}/frame-00000.pose.txt', delimiter=',')
+    # remove poses from dataset
     
+    for idx in range(len(dataset)):
+        os.remove(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt')
+    
+    # copy poses from folder to dataset
     size_dataset = sum(f.endswith('.txt') for f in os.listdir(folder))
     
     for idx in range(size_dataset):
-        print(idx)
+        shutil.copy2(f'{folder}/frame-{idx:05d}.pose.txt', f'{dataset.path_seq}/frame-{idx:05d}.pose.txt')
         
-        matrix44 = np.loadtxt(f'{folder}/frame-{idx:05d}.pose.txt', delimiter=',')
-        
-        # transform matrix44 to be w.r.t. frame0
-        matrix44_wrt_world = np.dot(matrix44_frame0_world, matrix44)
-        
-        
-        write_transformation(filename=f'{folder}/frame-{idx:05d}.pose.txt', transformation=matrix44_wrt_world)
-    
+
 if __name__ == "__main__":
     main()
