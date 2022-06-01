@@ -43,7 +43,7 @@ def main():
         rospy.spin() 
     elif mode == 'automatic_random':
         rate = rospy.Rate(0.6) 
-        data_collector = AutomaticDataCollection(model_name='localbot', seq = seq)
+        data_collector = AutomaticDataCollection(model_name='localbot', seq = seq, uvl = args['use_variable_lights'])
         while not rospy.is_shutdown():    
             pose = data_collector.generateRandomPose()
             if args['use_variable_lights']:
@@ -57,8 +57,8 @@ def main():
             if data_collector.getFrameIdx() >= args['number_of_frames']:
                 break
     elif mode == 'automatic_path':
-        rate = rospy.Rate(0.6) 
-        data_collector = AutomaticDataCollection(model_name='localbot', seq = seq, dbf = distance_between_frames)
+        rate = rospy.Rate(0.4) 
+        data_collector = AutomaticDataCollection(model_name='localbot', seq = seq, dbf = distance_between_frames, uvl = args['use_variable_lights'])
         if destination_pose == 'x,y,z,rx,ry,rz': # use random poses
             while not rospy.is_shutdown():
                 step_poses = data_collector.generatePath(distance_between_frames)
@@ -68,7 +68,7 @@ def main():
                     data_collector.setPose(pose)
                     if args['use_variable_lights']:
                         data_collector.setLight(step_lights[idx])
-                    rospy.sleep(0.6)
+                    rospy.sleep(0.4)
                     data_collector.saveFrame()
                     rate.sleep() 
                 print('final destination arrived')
