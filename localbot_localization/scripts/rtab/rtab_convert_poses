@@ -19,6 +19,7 @@ def main():
     parser = argparse.ArgumentParser(description='Validate dataset')
     parser.add_argument('-i', '--input', type=str, required=True, help='input folder')
     parser.add_argument('-o', '--output', type=str, required=True, help='number of frames to copy')
+    parser.add_argument('-s', '--shift', type=int, default=0, help='shift')
    
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
@@ -26,6 +27,8 @@ def main():
     input_folder = f'/home/danc/datasets/localbot/rtab/input'
     input_file = f'{input_folder}/{args["input"]}'
     output_folder = f'/home/danc/datasets/localbot/rtab/output/{args["output"]}'
+    
+    shift = args['shift']
     
     if os.path.exists(output_folder):
         shutil.rmtree(output_folder)
@@ -63,7 +66,11 @@ def main():
         qz = pose[6]
         qw = pose[7]
         
+        # force it to begin in 0
         frame_idx = int(pose[8]-1)
+        
+        frame_idx = frame_idx + shift
+        
         
         position = np.array([x,y,z])
         quaternion = np.array([qx,qy,qz,qw])

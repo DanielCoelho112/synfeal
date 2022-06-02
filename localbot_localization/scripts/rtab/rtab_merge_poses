@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+import json
+
+# 3rd-party
+import numpy as np
+from localbot_core.src.utilities import *
+import shutil
+
+def main():
+    parser = argparse.ArgumentParser(description='Validate dataset')
+    parser.add_argument('-c', '--continuous', type=str,
+                        required=True, help='Name of the dataset')
+    parser.add_argument('-t', '--tmp', type=str,
+                        required=True, help='Name of the dataset')
+    
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+
+    continuous = f'/home/danc/datasets/localbot/rtab/output/{args["continuous"]}'
+    tmp = f'/home/danc/datasets/localbot/rtab/output/{args["tmp"]}'
+    
+    # remove  excess of continuous dataset
+    tmp_files = [f for f in os.listdir(tmp)]
+    size_tmp_files = sum(f.endswith('.txt') for f in os.listdir(tmp))
+    
+    continuous_files = [f for f in os.listdir(continuous)]
+    
+    first_frame_tmp = int(sorted(tmp_files, key= lambda x: int(x[6:11]))[0][6:11]) #1993
+    last_frame_continuous = int(sorted(continuous_files, key= lambda x: int(x[6:11]))[-1][6:11]) # 8500
+    
+    for i in range(first_frame_tmp + 1, last_frame_continuous + 1):
+        os.remove(f'{continuous}/frame-{i:05d}.pose.txt')
+    
+    
+    matrix44_last_frame_0 = np.loadtxt(f'{continuous}/frame-{first_frame_tmp:05d}.pose.txt', delimiter=',')
+    
+    size_countuous_files = sum(f.endswith('.txt') for f in os.listdir(continuous))
+    
+    
+    
+    continuous_new = f'/home/danc/datasets/localbot/rtab/output/{args["continuous"]}_new'
+    os.makedirs(continuous_new)
+    
+    
+    for idx in range(size_tmp_files):
+        idx2 = idx + int(first_frame_tmp)
+        
+        matrix44 = np.loadtxt(f'{tmp}/frame-{idx2:05d}.pose.txt', delimiter=',')
+        
+        matrix44_wrt_first_frame_0 = np.dot(matrix44_last_frame_0, matrix44)
+        
+        
+        write_transformation(filename=f'{tmp}/frame-{idx2:05d}.pose.txt', transformation=matrix44_wrt_first_frame_0)
+
+    
+    for idx in range(size_countuous_files):
+        shutil.copy2(f'{continuous}/frame-{idx:05d}.pose.txt', f'{continuous_new}/frame-{idx:05d}.pose.txt')
+    
+    for idx in range(size_tmp_files):
+        idx2 = idx + int(first_frame_tmp)
+        shutil.copy2(f'{tmp}/frame-{idx2:05d}.pose.txt', f'{continuous_new}/frame-{idx2:05d}.pose.txt')
+    
+    
+    
+if __name__ == "__main__":
+    main()

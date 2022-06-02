@@ -20,13 +20,16 @@ def main():
     parser = argparse.ArgumentParser(description='Validate dataset')
     parser.add_argument('-f', '--folder', type=str,
                         required=True, help='Name of the dataset')
+    parser.add_argument('-s', '--shift', type=int, default=0, help='shift')
 
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
 
+    shift = args['shift']
+
     folder = f'/home/danc/datasets/localbot/rtab/output/{args["folder"]}'
         
-    matrix44_frame0_rtab = np.loadtxt(f'{folder}/frame-{0:05d}.pose.txt', delimiter=',')
+    matrix44_frame0_rtab = np.loadtxt(f'{folder}/frame-{shift:05d}.pose.txt', delimiter=',')
         
     #size_dataset = sum(f.endswith('.txt') for f in os.listdir(folder))
     
@@ -34,7 +37,7 @@ def main():
     dataset_files = [f for f in os.listdir(folder)]
     last_file = int(sorted(dataset_files, key= lambda x: int(x[6:11]))[-1][6:11])
   
-    for idx in range(last_file+1):
+    for idx in range(shift,last_file+1):
         
         matrix44 = np.loadtxt(f'{folder}/frame-{idx:05d}.pose.txt', delimiter=',')
         

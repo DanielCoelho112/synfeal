@@ -23,6 +23,7 @@ def main():
     parser = argparse.ArgumentParser(description='Validate dataset')
     parser.add_argument('-f', '--folder', type=str, required=True, help='input folder')
     parser.add_argument('-d', '--dataset', type=str, required=True, help='input folder')
+    parser.add_argument('-s', '--shift', type=int, default=0, help='shift')
 
    
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
@@ -34,10 +35,12 @@ def main():
     
     dataset_files = [f for f in os.listdir(folder)]
     
+    shift = args['shift']
+    
     
     last_file = int(sorted(dataset_files, key= lambda x: int(x[6:11]))[-1][6:11])
            
-    for idx in range(last_file+1):
+    for idx in range(shift, last_file+1):
 
         if not exists(f'{folder}/frame-{idx:05d}.pose.txt'):
                 # idx does not exists, so we have to rename the closest one.
