@@ -111,6 +111,10 @@ Run:
 
     rosrun localbot_localization depth_training -c -fn model_depth -mn depthv0 -train_set 'seq_test0_d_v' -test_set 'seq_test0_d_v'
 
+**PoseNet**
+
+    ./localbot_localization/scripts/training/posenet_training -fn posenet_googlenet_no_trained_ADAM_wd5_lr4_randomcrop_new_images -mn posenetgooglenet -train_set seq3dpii_v2 -test_set seq4dpii_v2 -n_epochs 150 -batch_size 32  -loss 'DynamicLoss()' -c -im 'PoseNetGoogleNet(True,0.5)' -lr_step_size 60 -lr 1e-4 -lr_gamma 0.5 -wd 1e-5 -gpu 0
+
 
 # Producing the results
 
