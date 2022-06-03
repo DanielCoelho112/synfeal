@@ -68,6 +68,7 @@ def main():
     #depth_mean = config_stats['D']['mean']
     #depth_std = config_stats['D']['std']
     
+    
     rgb_transform_train = transforms.Compose([
         transforms.Resize(300),
         transforms.RandomCrop(299),
@@ -81,6 +82,9 @@ def main():
         transforms.ToTensor(),
         transforms.Normalize(rgb_mean, rgb_std)
     ])
+    
+    
+    print(f'rgb_transform_test is: {rgb_transform_test.transforms}')
     
     train_dataset = LocalBotDataset(path_seq=args['training_set'], rgb_transform = rgb_transform_train, depth_transform = None, inputs=['rgb_image'])
     test_dataset = LocalBotDataset(path_seq=args['testing_set'], rgb_transform = rgb_transform_test, depth_transform = None, inputs=['rgb_image'])
@@ -266,8 +270,10 @@ def main():
                     yaml.dump(config, file)
 
                 print(f'Saved model at epoch {epoch+1}')
+                stored_test_loss_epoch = test_loss_epoch
             else:
                 print('Current model is no better than the stored model. Ignoring saving.')
+        
 
 if __name__ == "__main__":
     main()

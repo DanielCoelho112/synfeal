@@ -35,11 +35,20 @@ def main():
         transforms.Normalize([0.20171, 0.18024, 0.18053], [0.07934, 0.06803, 0.06967])
     ])
     
+    folder_name = f'{os.environ["HOME"]}/models/localbot/seq21'
+    config_stats = LocalBotDataset(path_seq='seq21').getConfig()['statistics']
+    rgb_mean = [config_stats['R']['mean'], config_stats['G']['mean'], config_stats['B']['mean']]
+    rgb_std = [config_stats['R']['std'], config_stats['G']['std'], config_stats['B']['std']]
+    
+    
+    print(rgb_mean)
+    print(rgb_std)
+    
     rgb_transform_test = transforms.Compose([
         transforms.Resize(300),
         transforms.CenterCrop(299),
         transforms.ToTensor(),
-        transforms.Normalize([0.20171, 0.18024, 0.18053], [0.07934, 0.06803, 0.06967])
+        transforms.Normalize(rgb_mean, rgb_std)
     ])
     
     # Store data (serialize)
@@ -47,14 +56,16 @@ def main():
         pickle.dump(rgb_transform_test, handle, protocol=pickle.HIGHEST_PROTOCOL)
             
     # Load data (deserialize)
-    with open('filename.pickle', 'rb') as handle:
+    with open('rgb_transform_test.pickle', 'rb') as handle:
         unserialized_data = pickle.load(handle)
         
     
     
     depth_transform= {'resize':[299,299], 'normalize' : True}
 
-    dataset = LocalBotDataset('seq4dpii_v2',depth_transform=depth_transform ,rgb_transform=unserialized_data, inputs=['rgb_image'])
+    dataset = LocalBotDataset('seq20',rgb_transform=unserialized_data, inputs=['rgb_image'])
+    
+    print(unserialized_data.transforms)
     
     print(dataset[0][0].shape)
             
