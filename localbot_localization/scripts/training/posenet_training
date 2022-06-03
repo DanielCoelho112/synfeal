@@ -28,6 +28,7 @@ def main():
     parser = argparse.ArgumentParser(description='PointNet training')
     parser.add_argument('-v', '--visualize', action='store_true')
     parser.add_argument('-c', '--cuda', action='store_true')
+    parser.add_argument('-gpu', '--gpu', type=int, default=0)
     parser.add_argument('-sm', '--summarize_model', action='store_true')
     parser.add_argument('-fn', '--folder_name', type=str, required=True, help='folder name')
     parser.add_argument('-mn', '--model_name', type=str, required=True, help='model name')
@@ -55,6 +56,7 @@ def main():
             raise ValueError('Cuda is not available.')
         else:
             print(f'{Fore.GREEN} Cuda is available {Fore.RESET}')
+            torch.cuda.set_device(args['gpu'])
             
     folder_name = f'{os.environ["HOME"]}/models/localbot/{args["folder_name"]}'
     model_name = f'{folder_name}/{args["model_name"]}.pth'

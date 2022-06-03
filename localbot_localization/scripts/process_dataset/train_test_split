@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+
+# 3rd-party
+import rospy
+from colorama import Fore, Style
+from std_msgs.msg import Header
+from visualization_msgs.msg import *
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.validate_dataset import ValidateDataset
+import numpy as np
+import os
+import shutil
+import yaml
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Validate dataset')
+    parser.add_argument('-d', '--dataset', type=str,
+                        required=True, help='Name of the dataset')
+    parser.add_argument('-train', '--train', type=str,
+                        required=True, help='Name of the dataset')
+    parser.add_argument('-test', '--test', type=str,
+                        required=True, help='Name of the dataset')
+    parser.add_argument('-sb', '--split_by', type=int,
+                        required=True, help='Name of the dataset')
+
+
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+
+    dataset = LocalBotDataset(path_seq=args['dataset'])
+    path_root = dataset.root
+    
+    train_path = f'{path_root}/{args["train"]}'
+    test_path = f'{path_root}/{args["test"]}'
+    
+    if os.path.exists(train_path):
+        print(f'{train_path} already exits. Aborting train test spliting')
+        exit(0)
+    else:
+        os.makedirs(train_path)  # Create the new folder
+
+    if os.path.exists(test_path):
+        print(f'{test_path} already exits. Aborting train test spliting')
+        exit(0)
+    else:
+        os.makedirs(test_path)  # Create the new folder
+
+    # get config
+    config = dataset.getConfig()
+    config.pop('statistics')
+    
+    files_to_copy = ['.pcd', '.rgb.png', '.depth.png','.pose.txt']
+    
+    # copy intrinsics to both datasets
+    
+    for idx in range(len(dataset)):
+        print(f'original idx: {idx}')
+        
+        if idx <= args['split_by']:
+            print(f'copying {idx} to {idx} in {train_path}')
+            for file in files_to_copy:
+                shutil.copy2(f'{dataset.path_seq}/frame-{idx:05d}{file}', f'{train_path}/frame-{idx:05d}{file}')
+        if idx > args['split_by']:
+            idx2 = idx - (args['split_by'] + 1)  
+            print(f'copying {idx} to {idx2} in {test_path}')
+            for file in files_to_copy:
+                shutil.copy2(f'{dataset.path_seq}/frame-{idx:05d}{file}', f'{test_path}/frame-{idx2:05d}{file}')
+    
+    # copy intrinsics to both datasets
+    shutil.copy2(f'{dataset.path_seq}/depth_intrinsic.txt', f'{train_path}/depth_intrinsic.txt')  
+    shutil.copy2(f'{dataset.path_seq}/rgb_intrinsic.txt', f'{train_path}/rgb_intrinsic.txt')  
+    
+    shutil.copy2(f'{dataset.path_seq}/depth_intrinsic.txt', f'{test_path}/depth_intrinsic.txt')  
+    shutil.copy2(f'{dataset.path_seq}/rgb_intrinsic.txt', f'{test_path}/rgb_intrinsic.txt')  
+    
+    config['raw'] = args['train']
+    with open(f'{train_path}/config.yaml', 'w') as f:
+        yaml.dump(config, f)
+    
+    config['raw'] = args['test']
+    with open(f'{test_path}/config.yaml', 'w') as f:
+        yaml.dump(config, f)
+        
+
+if __name__ == "__main__":
+    main()
