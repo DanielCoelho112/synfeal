@@ -34,7 +34,7 @@ def main():
     
     # create results folder
     
-    folder = f'/home/danc/datasets/localbot/rtab/output/{args["folder"]}'
+    folder = f'/home/danc/datasets/localbot/rtab4/output/{args["folder"]}'
 
     results = SaveComparisonDatasets(output=args['results_folder'], gazebo_dataset=args['dataset'], folder = args['folder'])
 

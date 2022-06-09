@@ -31,7 +31,7 @@ def main():
     
     dataset = LocalBotDataset(path_seq=args['dataset'])
     
-    folder = f'/home/danc/datasets/localbot/rtab/output/{args["folder"]}'
+    folder = f'/home/danc/datasets/localbot/rtab4/output/{args["folder"]}'
     
     dataset_files = [f for f in os.listdir(folder)]
     

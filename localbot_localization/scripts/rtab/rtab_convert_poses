@@ -24,9 +24,9 @@ def main():
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     
-    input_folder = f'/home/danc/datasets/localbot/rtab/input'
+    input_folder = f'/home/danc/datasets/localbot/rtab4/input/rtab4_seq20_batches'
     input_file = f'{input_folder}/{args["input"]}'
-    output_folder = f'/home/danc/datasets/localbot/rtab/output/{args["output"]}'
+    output_folder = f'/home/danc/datasets/localbot/rtab4/output/{args["output"]}'
     
     shift = args['shift']
     
