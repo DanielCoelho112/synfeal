@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+import json
+
+# 3rd-party
+import rospy
+from colorama import Fore, Style
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.validate_dataset import ValidateDataset
+import numpy as np
+from localbot_core.src.utilities import *
+from os.path import exists
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Validate dataset')
+    parser.add_argument('-f', '--folder', type=str,
+                        required=True, help='Name of the dataset')
+    parser.add_argument('-s', '--shift', type=int, default=0, help='shift')
+
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+
+    shift = args['shift']
+
+    folder = f'/home/danc/Desktop/{args["folder"]}'
+        
+    matrix44_frame0_rtab = np.loadtxt(f'{folder}/frame-{shift:05d}.pose.txt', delimiter=',')
+        
+    #size_dataset = sum(f.endswith('.txt') for f in os.listdir(folder))
+    
+    
+    dataset_files = [f for f in os.listdir(folder)]
+    last_file = int(sorted(dataset_files, key= lambda x: int(x[6:11]))[-1][6:11])
+  
+    for idx in range(shift,last_file+1):
+        
+        matrix44 = np.loadtxt(f'{folder}/frame-{idx:05d}.pose.txt', delimiter=',')
+        
+        # transform matrix44 to be w.r.t. frame0
+        matrix44_wrt_0 = np.dot(np.linalg.inv(matrix44_frame0_rtab), matrix44)
+        
+        write_transformation(filename=f'{folder}/frame-{idx:05d}.pose.txt', transformation=matrix44_wrt_0)
+    
+if __name__ == "__main__":
+    main()

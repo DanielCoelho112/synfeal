@@ -1,0 +1,2 @@
+cd ~/PhD/localization/openMVG_Build/software/SfM
+python3 SfM_SequentialPipeline_localbot.py 

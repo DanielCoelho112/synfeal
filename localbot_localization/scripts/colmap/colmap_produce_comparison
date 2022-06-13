@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+
+import torch
+import torch.nn.parallel
+import torch.nn as nn
+import torch.utils.data
+
+from localbot_localization.src.save_results import SaveComparisonDatasets
+from localbot_localization.src.utilities import *
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_core.src.utilities import *
+import numpy as np
+from datetime import datetime
+import os
+import sys
+import argparse
+import yaml
+from yaml.loader import SafeLoader
+from colorama import Fore
+
+def main():
+    
+    parser = argparse.ArgumentParser(description='Producing results')
+    
+    parser.add_argument('-d', '--dataset', type=str, required=True, help='Name of the testing set')
+    parser.add_argument('-f', '--folder', type=str, required=True, help='Path of the model to evaluate')
+    parser.add_argument('-rf', '--results_folder', type=str, required=True, help='Batch size')
+    
+    
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+    
+    dataset = LocalBotDataset(path_seq=f'{args["dataset"]}')
+    
+    # create results folder
+    
+    folder = f'/home/danc/Desktop/{args["folder"]}'
+
+    results = SaveComparisonDatasets(output=args['results_folder'], gazebo_dataset=args['dataset'], folder = args['folder'])
+
+    
+    for idx in range(len(dataset)):
+        
+        # pose dataset
+        matrix_dataset = np.loadtxt(f'{dataset.path_seq}/frame-{idx:05d}.pose.txt', delimiter=',')
+        pose_dataset = matrix44_to_pose(matrix_dataset)
+        
+        # pose folder
+        matrix_folder = np.loadtxt(f'{folder}/frame-{idx:05d}.pose.txt', delimiter=',')
+        pose_folder = matrix44_to_pose(matrix_folder)
+        
+        
+        pos_error = compute_position_error(pose_folder, pose_dataset)  # RMSE
+        rot_error = compute_rotation_error(pose_folder, pose_dataset)
+            
+        results.updateCSV(pos_error, rot_error)
+        results.step()
+
+    results.saveCSV()
+    results.saveErrorsFig()
+    
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+    
+    
+    
+ 

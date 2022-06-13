@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+import json
+
+from regex import F, P
+
+# 3rd-party
+import rospy
+from colorama import Fore, Style
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.validate_dataset import ValidateDataset
+import numpy as np
+from localbot_core.src.utilities import *
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Validate dataset')
+    parser.add_argument('-f', '--filename', type=str,
+                        required=True, help='Name of the dataset')
+    parser.add_argument('-o', '--output', type=str,
+                        required=True, help='Name of the dataset')
+
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+
+    output = f'/home/danc/Desktop/{args["output"]}'
+    
+    os.makedirs(output)
+    
+    json_path = args['filename']
+    
+    #matrix44_frame0_world = np.loadtxt(f'{LocalBotDataset(dataset.getConfig()["raw"]).path_seq}/frame-00000.pose.txt', delimiter=',')
+    
+    # for each frame, we read the rotation, and translation. Transform into a 4x4 matrix and save it as txt.
+    file = json.load(open(json_path))
+    map_frame_poseid = {}
+    
+    
+    for idx_view in range(len(file['views'])):
+        
+        frame = file['views'][idx_view]['value']['ptr_wrapper']['data']['filename']
+        
+
+        frame_id = int(frame[:4])
+        pose_id = file['views'][idx_view]['value']['ptr_wrapper']['data']['id_pose']
+        
+        map_frame_poseid[pose_id] = frame_id
+        
+    for idx in range(len(file['extrinsics'])):
+        pose_id = file['extrinsics'][idx]['key']
+        
+        print(pose_id)
+        print(map_frame_poseid)
+        
+        frame_id = map_frame_poseid[pose_id]
+        
+        rotation = np.array(file['extrinsics'][idx]['value']['rotation'])
+        position = np.array(file['extrinsics'][idx]['value']['center'])
+        matrix44 = rotationAndpositionToMatrix44(rotation=rotation, position=position)
+        
+        
+        write_transformation(
+                filename=f'{output}/frame-{frame_id:05d}.pose.txt', transformation=matrix44)
+    
+if __name__ == "__main__":
+    main()
