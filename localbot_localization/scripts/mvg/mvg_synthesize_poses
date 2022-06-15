@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # stdlib
+from pickle import NONE
 import sys
 import argparse
 import copy
@@ -71,6 +72,8 @@ def main():
                     
                     write_transformation(filename=f'{folder}/frame-{idx:05d}.pose.txt', transformation=pose44)
                 
+                elif idx_prev == None and idx_post != None:
+                    shutil.copy2(f'{folder}/frame-{idx_post:05d}.pose.txt', f'{folder}/frame-{idx:05d}.pose.txt')
                 else:
                     print(f'no data no synthesize {idx}')
                      
@@ -78,6 +81,8 @@ def main():
     if last_file < len(dataset):
         for idx in range(last_file+1, len(dataset)):
             shutil.copy2(f'{folder}/frame-{last_file:05d}.pose.txt', f'{folder}/frame-{idx:05d}.pose.txt')
+            
+
         
     
 
