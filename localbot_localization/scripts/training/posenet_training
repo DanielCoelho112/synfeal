@@ -176,17 +176,25 @@ def main():
 
             model = model.train()  # Sets the module in training mode. For example, the dropout module can only be use in training mode.
 
-            pose_aux1, pose_aux2, pose = model(rgb_image)  # our model outputs the pose, and the transformations used
+            if model.aux_logits:
             
-            pose_aux1  = process_pose(pose_aux1)
-            pose_aux2  = process_pose(pose_aux2)
-            pose = process_pose(pose)
+                pose_aux1, pose_aux2, pose = model(rgb_image)  # our model outputs the pose, and the transformations used
+                
+                pose_aux1  = process_pose(pose_aux1)
+                pose_aux2  = process_pose(pose_aux2)
+                pose = process_pose(pose)
+                
+                loss_aux1 = criterion(pose_aux1, target_pose)
+                loss_aux2 = criterion(pose_aux2, target_pose)
+                loss_pose = criterion(pose, target_pose)
+                
+                loss = loss_pose + 0.3 * (loss_aux1 + loss_aux2) # https://arxiv.org/abs/1409.4842
             
-            loss_aux1 = criterion(pose_aux1, target_pose)
-            loss_aux2 = criterion(pose_aux2, target_pose)
-            loss_pose = criterion(pose, target_pose)
-            
-            loss = loss_pose + 0.3 * (loss_aux1 + loss_aux2) # https://arxiv.org/abs/1409.4842
+            else:
+                pose = model(rgb_image)
+                pose = process_pose(pose)
+                loss = criterion(pose, target_pose)
+                
 
     
             loss.backward()  # Computes the gradient of current tensor w.r.t. graph leaves.

@@ -164,11 +164,13 @@ class InceptionAux2(nn.Module):
         
     
 class PoseNetResNet(nn.Module): #https://github.com/youngguncho/PoseNet-Pytorch/blob/master/model.py
-    def __init__(self, pretrained, dropout_rate=0.0):
+    def __init__(self, pretrained, dropout_rate=0.0, aux_logits=False):
         super(PoseNetResNet, self).__init__()
         
         base_model = models.resnet34(pretrained=pretrained)
         feat_in = base_model.fc.in_features
+        
+        self.aux_logits = aux_logits
         
         self.dropout_rate = dropout_rate
         
