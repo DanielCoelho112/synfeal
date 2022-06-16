@@ -1,2 +1,6 @@
 cd ~/PhD/localization/openMVG_Build/software/SfM
-python3 SfM_SequentialPipeline_localbot.py 
+rosrun localbot_localization batch_images -f seq20_images -b 500
+python3 SfM_SequentialPipeline_localbot_v2.py    --> correr sh para correr todas as batchs
+
+A primeira batch correr os comandos manualmente porque não é preciso o merge
+mvg_run_merge.sh -- para cada batch -----> alterar manualmente o _c_new para _c

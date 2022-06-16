@@ -108,7 +108,7 @@ class SaveResults():
 
 class SaveComparisonDatasets(SaveResults):
     def __init__(self, output, gazebo_dataset, folder):
-        self.output_folder = f'/home/danc/datasets/localbot/rtab4/comparison/{output}'
+        self.output_folder = f'/home/danc/datasets/localbot/mvg/comparison/{output}'
         
         if not os.path.exists(self.output_folder):
             print(f'Creating folder {self.output_folder}')

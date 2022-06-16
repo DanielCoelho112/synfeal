@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+
+# 3rd-party
+import rospy
+from colorama import Fore, Style
+from std_msgs.msg import Header
+from visualization_msgs.msg import *
+import numpy as np
+import os
+import shutil
+import yaml
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Validate dataset')
+    parser.add_argument('-f', '--folder', type=str,
+                        required=True, help='Name of the dataset')
+    parser.add_argument('-b', '--batch_size', type=int,
+                        required=True, help='Name of the dataset')
+
+
+
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+
+    batch_size = int(args['batch_size'])
+
+    folder = f'/home/danc/datasets/localbot/{args["folder"]}'
+    folder_rgb = f'{folder}/rgb'
+    folder_batches = f'{folder}_b{batch_size}'
+    
+    if os.path.exists(folder_batches):
+        print(f'{folder_batches} already exits. Aborting train test spliting')
+        exit(0)
+    else:
+        os.makedirs(folder_batches)  # Create the new folder
+
+    size_dataset = sum(f.endswith('.png') for f in os.listdir(folder_rgb))
+    
+    idx_low = 0
+    idx_high = int(batch_size)
+    counter = 0
+    for idx in range(size_dataset):
+        if idx==0:
+            os.makedirs(f'{folder_batches}/b{idx_low}-{idx_high}')
+            
+        
+        if counter == batch_size:
+            shutil.copy2(f'{folder_rgb}/{idx:04d}.png', f'{folder_batches}/b{idx_low}-{idx_high}/{idx:04d}.png')
+            counter = 0
+            idx_low += batch_size
+            idx_high += batch_size
+            os.makedirs(f'{folder_batches}/b{idx_low}-{idx_high}')
+            #shutil.copy2(f'{folder_rgb}/{idx:04d}.png', f'{folder_batches}/b{idx_low}-{idx_high}/{idx:04d}.png')
+        
+        shutil.copy2(f'{folder_rgb}/{idx:04d}.png', f'{folder_batches}/b{idx_low}-{idx_high}/{idx:04d}.png')
+        
+        counter+=1
+if __name__ == "__main__":
+    main()

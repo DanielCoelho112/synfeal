@@ -27,7 +27,7 @@ def main():
     args = vars(parser.parse_args(args=arglist))
 
     dataset = LocalBotDataset(path_seq=args['dataset'])
-    folder = f'/home/danc/datasets/localbot/rtab4/output/{args["folder"]}'
+    folder = f'/home/danc/datasets/localbot/mvg/output/{args["folder"]}'
 
     # remove poses from dataset
 

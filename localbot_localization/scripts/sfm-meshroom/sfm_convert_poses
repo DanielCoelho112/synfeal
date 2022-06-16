@@ -18,36 +18,28 @@ from localbot_core.src.utilities import *
 
 def main():
     parser = argparse.ArgumentParser(description='sfm processing')
-    parser.add_argument('-d_sfm', '--dataset_sfm', type=str,
+    parser.add_argument('-f', '--folder', type=str,
                         required=True, help='Name of the dataset')
-    parser.add_argument('-p_sfm', '--poses_sfm', type=str,
+    parser.add_argument('-i', '--input', type=str,
                         required=True, help='Name of the dataset')
 
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
 
+    folder = f'/home/danc/datasets/localbot/meshroom/output/{args["folder"]}'
+    input_file = f'/home/danc/datasets/localbot/meshroom/input/{args["input"]}'
+    
+    os.makedirs(folder)
 
-    d_sfm = f'/home/danc/datasets/localbot/meshroom_batches/{args["dataset_sfm"]}'
-    p_sfm = f'/home/danc/datasets/localbot/meshroom_batches/{args["poses_sfm"]}'
 
     
     #TODO: CHANGE MANUALLY
     # find path
     
     #dirs =[i for i in os.walk(f"{p_sfm}")]
-    
-    path = f'{d_sfm}/MeshroomCache/GlobalSfM'
-    #path = f'{d_sfm}/MeshroomCache/StructureFromMotion'
-    
-    variable_folder = [item for item in os.listdir(path) if os.path.isdir(os.path.join(path, item))][0]
-    print(variable_folder)
-    
-    json_path = f'{d_sfm}/MeshroomCache/GlobalSfM/{variable_folder}/cameras.sfm'
-    #json_path = f'{d_sfm}/MeshroomCache/StructureFromMotion/{variable_folder}/cameras.sfm'
-    
-    
+
     # for each frame, we read the rotation, and translation. Transform into a 4x4 matrix and save it as txt.
-    file = json.load(open(json_path))
+    file = json.load(open(input_file))
     
     # create mappings betwenn frame idx and pose idx
     maps = {} # key: pose_id, value: frame id
@@ -59,8 +51,8 @@ def main():
     
     for pose in file['poses']:
         pose_id = pose['poseId']
-        frame_name = maps[pose_id].split('.')[0]
-        frame_name_txt = f'{frame_name}.pose.txt'
+        frame_idx = int(maps[pose_id].split('.')[0])
+        
         
         rotation = np.array(pose['pose']['transform']['rotation'])
         rotation33 = np.empty(shape=(3,3))
@@ -77,7 +69,8 @@ def main():
         
         matrix44 = rotationAndpositionToMatrix44(rotation33, translation)
         
-        write_transformation(filename=f'{p_sfm}/{frame_name_txt}', transformation=matrix44)
+        
+        write_transformation(filename=f'{folder}/frame-{frame_idx:05d}.pose.txt', transformation=matrix44)
     
     
 if __name__ == "__main__":

@@ -27,7 +27,7 @@ def main():
 
     shift = args['shift']
 
-    folder = f'/home/danc/datasets/localbot/mvg/output/{args["folder"]}'
+    folder = f'/home/danc/datasets/localbot/meshroom/output/{args["folder"]}'
         
     matrix44_frame0_rtab = np.loadtxt(f'{folder}/frame-{shift:05d}.pose.txt', delimiter=',')
         

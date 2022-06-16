@@ -19,7 +19,7 @@ from localbot_core.src.utilities import *
 
 def main():
     parser = argparse.ArgumentParser(description='Validate dataset')
-    parser.add_argument('-f', '--filename', type=str,
+    parser.add_argument('-f', '--folder', type=str,
                         required=True, help='Name of the dataset')
     parser.add_argument('-o', '--output', type=str,
                         required=True, help='Name of the dataset')
@@ -27,11 +27,11 @@ def main():
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
 
-    output = f'/home/danc/Desktop/{args["output"]}'
+    output = f'/home/danc/datasets/localbot/mvg/output/{args["output"]}'
     
     os.makedirs(output)
     
-    json_path = args['filename']
+    json_path = f'/home/danc/datasets/localbot/mvg/input/{args["folder"]}/reconstruction_sequential/sfm_data.json'
     
     #matrix44_frame0_world = np.loadtxt(f'{LocalBotDataset(dataset.getConfig()["raw"]).path_seq}/frame-00000.pose.txt', delimiter=',')
     
@@ -58,7 +58,7 @@ def main():
         
         frame_id = map_frame_poseid[pose_id]
         
-        rotation = np.array(file['extrinsics'][idx]['value']['rotation'])
+        rotation = np.transpose(np.array(file['extrinsics'][idx]['value']['rotation']))
         position = np.array(file['extrinsics'][idx]['value']['center'])
         matrix44 = rotationAndpositionToMatrix44(rotation=rotation, position=position)
         

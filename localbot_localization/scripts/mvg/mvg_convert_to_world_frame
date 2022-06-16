@@ -28,7 +28,7 @@ def main():
     args = vars(parser.parse_args(args=arglist))
 
     dataset = LocalBotDataset(path_seq=args['dataset'])
-    folder = f'/home/danc/Desktop/{args["folder"]}'
+    folder = f'/home/danc/datasets/localbot/mvg/output/{args["folder"]}'
     
     matrix44_frame0_world = np.loadtxt(f'{dataset.path_seq}/frame-00000.pose.txt', delimiter=',')
     

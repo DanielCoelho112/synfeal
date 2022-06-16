@@ -31,11 +31,11 @@ def main():
 
     dataset = LocalBotDataset(path_seq=args['dataset'])
 
-    folder = f'/home/danc/Desktop/{args["folder"]}'
+    folder = f'/home/danc/datasets/localbot/mvg/output/{args["folder"]}'
     size_dataset = sum(f.endswith('.txt') for f in os.listdir(folder))
 
     first_frame = args['shift']
-    transfs = [(first_frame, i) for i in range(first_frame, first_frame + 500)]
+    transfs = [(first_frame, i) for i in range(first_frame, first_frame + 44)]
 
     scale = []
 
@@ -63,7 +63,7 @@ def main():
         d_sfm = matrix44_sfm[:3, 3]
         d_sfm_e = np.linalg.norm(d_sfm)
 
-        if d_sfm_e < 0.1:
+        if d_sfm_e < 0.05:
             print('ignoring indexs: ', transf)
             continue
 
@@ -71,7 +71,13 @@ def main():
         scale.append(s)
 
     print(f'scale values: {scale}')
-    scale = sum(scale)/len(scale)
+    
+    if len(scale) != 0:
+        
+        scale = sum(scale)/len(scale)
+    else:
+        print('not enough scale values...')
+        scale = 1
 
     print(f'applying scale of {scale}')
 
