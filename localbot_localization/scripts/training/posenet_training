@@ -21,6 +21,7 @@ from localbot_localization.src.dataset import LocalBotDataset
 from localbot_localization.src.loss_functions import BetaLoss, DynamicLoss
 from localbot_localization.src.utilities import process_pose
 from localbot_localization.src.models.posenet import PoseNetGoogleNet, PoseNetResNet
+from localbot_localization.src.models.poselstm import PoseLSTM
 from localbot_localization.src.torch_utilities import summarizeModel, resumeTraining
 from torchvision import transforms
 
