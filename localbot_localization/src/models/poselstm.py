@@ -13,9 +13,10 @@ from torchvision import transforms, models
 # based on: https://github.com/hazirbas/poselstm-pytorch
 # paper: https://openaccess.thecvf.com/content_ICCV_2017/papers/Walch_Image-Based_Localization_Using_ICCV_2017_paper.pdf
 class PoseLSTM(nn.Module): 
-        def __init__(self, pretrained = True, aux_logits=True):
+        def __init__(self, hidden_size = 128, pretrained = True, aux_logits=True):
             super(PoseLSTM, self).__init__()
             
+            self.hidden_size = hidden_size
             self.aux_logits = aux_logits
 
             base_model = models.inception_v3(pretrained)
@@ -39,10 +40,10 @@ class PoseLSTM(nn.Module):
             self.Mixed_7c = base_model.Mixed_7c
             
             if aux_logits:
-                self.aux1 = InceptionAux(288, stride=7)
-                self.aux2 = InceptionAux(768, stride=3)
+                self.aux1 = InceptionAux(288, stride=7, hidden_size = self.hidden_size)
+                self.aux2 = InceptionAux(768, stride=3, hidden_size = self.hidden_size)
             
-            self.lstm_regression = LstmRegression(dropout_rate=0.5)
+            self.lstm_regression = LstmRegression(dropout_rate=0.5, hidden_size=self.hidden_size)
             
 
         def forward(self, x, verbose=False):  # this is where we pass the input into the module
@@ -110,14 +111,14 @@ class PoseLSTM(nn.Module):
         
 
 class InceptionAux(nn.Module):
-    def __init__(self, in_channels, stride):
+    def __init__(self, in_channels, stride, hidden_size):
         super(InceptionAux, self).__init__()
         
         self.conv = nn.Conv2d(in_channels=in_channels, out_channels=128, kernel_size=(1,1))
         self.fc = nn.Linear(3200, 2048)        
         self.relu = nn.ReLU()
         self.pool = nn.AvgPool2d(kernel_size=5, stride=stride)
-        self.lstm_regression = LstmRegression(dropout_rate=0.7)
+        self.lstm_regression = LstmRegression(dropout_rate=0.7, hidden_size=hidden_size)
     
     def forward(self, x):
         
@@ -131,7 +132,7 @@ class InceptionAux(nn.Module):
         return pose
 
 class LstmRegression(nn.Module):
-    def __init__(self, dropout_rate, hidden_size = 128):
+    def __init__(self, dropout_rate, hidden_size):
         super(LstmRegression, self).__init__()
         
         #TODO: try hidden_size = 32
