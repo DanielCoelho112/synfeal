@@ -7,6 +7,7 @@ import torch.utils.data
 from localbot_localization.src.models.depthnet import CNNDepth, CNNDepthLow, CNNDepthBatch, CNNDepthDropout, CNNDepthBatchLowL2Reg2, CNNDepthBatchLowL2RegLeaky, CNNDepthBatchDropout8,CNNDepthBatchDropoutVar,CNNDepthBatchK3,CNNDepthBatchLeaky,CNNDepthBatchLow,CNNDepthBatchDropout8Cont,CNNDepthBatchDropout8Kernel7
 from localbot_localization.src.models.posenet import PoseNetGoogleNet, PoseNetResNet
 from localbot_localization.src.models.poselstm import PoseLSTM
+from localbot_localization.src.models.hourglass import Hourglass
 from localbot_localization.src.save_results import SaveResults
 from localbot_localization.src.utilities import *
 from localbot_localization.src.dataset import LocalBotDataset
@@ -22,6 +23,8 @@ from colorama import Fore
 from torchvision import transforms
 import pickle
 
+
+
 def main():
     
     parser = argparse.ArgumentParser(description='Producing results')
@@ -30,6 +33,8 @@ def main():
     parser.add_argument('-mp', '--model_folder', type=str, required=True, help='Path of the model to evaluate')
     parser.add_argument('-rf', '--results_folder', type=str, required=True, help='Batch size')
     parser.add_argument('-ow', '--overwrite', action='store_true', help='Overwrite results folder')
+    parser.add_argument('-cs', '--crop_size', type=int, default=299,
+                        help='Size of the random and center crop. For PoseNet/LSTM use 299, for Hourglass use 224')
     
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
@@ -58,7 +63,7 @@ def main():
     # TODO: see why we cannot load from pickle!!!!! This is hardcoded for seq21.
     rgb_transform = transforms.Compose([
         transforms.Resize(300),
-        transforms.CenterCrop(299),
+        transforms.CenterCrop(args['crop_size']),
         transforms.ToTensor(),
         transforms.Normalize([0.25614, 0.2335, 0.23636], [0.10452, 0.09254, 0.09637])
     ])
@@ -75,6 +80,7 @@ def main():
     
     i = 0
     for rgb_image, target in test_dataloader:
+    
         print(i)
         rgb_image = rgb_image.cuda()  # move data into GPU
         
@@ -94,7 +100,7 @@ def main():
         results.updateCSV(pos_error, rot_error)
         results.step()
         i+=1
-        
+    
 
     results.saveCSV()
     results.saveErrorsFig()
