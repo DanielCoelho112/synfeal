@@ -8,7 +8,7 @@ pandas==0.25.3
 opencv_contrib_python==4.5.4.60
 colorama==0.4.3
 torchvision==0.12.0
-Pillow==9.1.0
+Pillow==9.1.1
 PyYAML==6.0
 scikit_learn==1.0.2
 torchsummary==1.5.1
