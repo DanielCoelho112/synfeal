@@ -93,7 +93,7 @@ class Hourglass(nn.Module):
 
 class HourglassBatch(nn.Module):
     def __init__(self, pretrained, dropout_rate=0.0, aux_logits=False):
-        super(Hourglass, self).__init__()
+        super(HourglassBatch, self).__init__()
 
         self.dropout_rate = dropout_rate
         self.aux_logits = aux_logits
