@@ -22,6 +22,7 @@ from localbot_localization.src.loss_functions import BetaLoss, DynamicLoss
 from localbot_localization.src.utilities import process_pose
 from localbot_localization.src.models.posenet import PoseNetGoogleNet, PoseNetResNet
 from localbot_localization.src.models.poselstm import PoseLSTM
+from localbot_localization.src.models.hourglass import Hourglass
 from localbot_localization.src.torch_utilities import summarizeModel, resumeTraining
 from torchvision import transforms
 
@@ -48,6 +49,8 @@ def main():
     parser.add_argument('-wd', '--weight_decay', type=float, default=0, help='L2 regularizer')
     parser.add_argument('-im', '--init_model', type=str, default='CNNDepth()',
                         help='Decay of the learning rate after step size')
+    parser.add_argument('-cs', '--crop_size', type=int, default=299,
+                        help='Size of the random and center crop. For PoseNet/LSTM use 299, for Hourglass use 224')
 
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
@@ -72,14 +75,14 @@ def main():
     
     rgb_transform_train = transforms.Compose([
         transforms.Resize(300),
-        transforms.RandomCrop(299),
+        transforms.RandomCrop(args['crop_size']),
         transforms.ToTensor(),
         transforms.Normalize(rgb_mean, rgb_std)
     ])
     
     rgb_transform_test = transforms.Compose([
         transforms.Resize(300),
-        transforms.CenterCrop(299),
+        transforms.CenterCrop(args['crop_size']),
         transforms.ToTensor(),
         transforms.Normalize(rgb_mean, rgb_std)
     ])
