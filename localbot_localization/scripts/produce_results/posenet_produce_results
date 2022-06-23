@@ -7,7 +7,7 @@ import torch.utils.data
 from localbot_localization.src.models.depthnet import CNNDepth, CNNDepthLow, CNNDepthBatch, CNNDepthDropout, CNNDepthBatchLowL2Reg2, CNNDepthBatchLowL2RegLeaky, CNNDepthBatchDropout8,CNNDepthBatchDropoutVar,CNNDepthBatchK3,CNNDepthBatchLeaky,CNNDepthBatchLow,CNNDepthBatchDropout8Cont,CNNDepthBatchDropout8Kernel7
 from localbot_localization.src.models.posenet import PoseNetGoogleNet, PoseNetResNet
 from localbot_localization.src.models.poselstm import PoseLSTM
-from localbot_localization.src.models.hourglass import Hourglass
+from localbot_localization.src.models.hourglass import Hourglass, HourglassBatch
 from localbot_localization.src.save_results import SaveResults
 from localbot_localization.src.utilities import *
 from localbot_localization.src.dataset import LocalBotDataset
