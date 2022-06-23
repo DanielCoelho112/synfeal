@@ -66,14 +66,14 @@
             <visual name='boiler_visual'>
               <geometry>
                 <mesh>
-                  <uri>model://boiler/boiler.dae</uri>
+                  <uri>file:///home/danc/models_3d/boiler/boiler.dae</uri>
                 </mesh>
               </geometry>
             </visual>
             <!-- <collision name='boiler_collision'>
               <geometry>
                 <mesh>
-                  <uri>model://boiler/boiler.dae</uri>
+                  <uri>file:///home/danc/models_3d/boiler/boiler.dae</uri>
                 </mesh>
               </geometry>
               <max_contacts>10</max_contacts>

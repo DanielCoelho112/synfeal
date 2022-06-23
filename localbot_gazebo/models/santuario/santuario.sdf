@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+  
+  <model name="santuario">
+    <static>1</static>
+    <link name="santuario_link">
+      <pose>0 0 0 0 0 0</pose>
+      <visual name="santuario_visual">
+        <geometry>
+          <mesh>
+            <uri>file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <!-- <collision name="santuario_collision">
+        <geometry>
+          <mesh>
+            <uri>file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae</uri>
+          </mesh>
+        </geometry>
+      </collision> -->
+    </link>
+  </model>
+</sdf>

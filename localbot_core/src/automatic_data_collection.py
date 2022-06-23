@@ -28,7 +28,7 @@ from colorama import Fore
 
 class AutomaticDataCollection():
     
-    def __init__(self, model_name, seq, dbf = None, usv = None):
+    def __init__(self, model_name, seq, dbf = None, uvl = None):
         self.set_state_service = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState) 
         self.menu_handler = MenuHandler()
         self.model_name = model_name # model_name = 'localbot'
@@ -37,7 +37,7 @@ class AutomaticDataCollection():
         self.get_model_state_service = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
         
         # create instance to save dataset
-        self.save_dataset = SaveDataset(f'{seq}', mode='automatic', dbf = dbf, usv = usv)
+        self.save_dataset = SaveDataset(f'{seq}', mode='automatic', dbf = dbf, uvl = uvl)
         
         # define minimum and maximum boundaries
         self.x_min = 1.5
