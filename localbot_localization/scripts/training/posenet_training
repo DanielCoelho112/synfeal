@@ -74,14 +74,14 @@ def main():
     
     
     rgb_transform_train = transforms.Compose([
-        transforms.Resize(300),
+        transforms.Resize(args['crop_size'] + 1),
         transforms.RandomCrop(args['crop_size']),
         transforms.ToTensor(),
         transforms.Normalize(rgb_mean, rgb_std)
     ])
     
     rgb_transform_test = transforms.Compose([
-        transforms.Resize(300),
+        transforms.Resize(args['crop_size'] + 1),
         transforms.CenterCrop(args['crop_size']),
         transforms.ToTensor(),
         transforms.Normalize(rgb_mean, rgb_std)
