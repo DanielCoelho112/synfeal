@@ -28,33 +28,40 @@ from colorama import Fore
 
 class AutomaticDataCollection():
     
-    def __init__(self, model_name, seq, dbf = None, uvl = None):
+    def __init__(self, model_name, seq, dbf = None, uvl = None, model3d_config = None):
         self.set_state_service = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState) 
         self.menu_handler = MenuHandler()
         self.model_name = model_name # model_name = 'localbot'
+        
+        self.dbf = dbf
         
         rospy.wait_for_service('/gazebo/get_model_state')
         self.get_model_state_service = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
         
         # create instance to save dataset
-        self.save_dataset = SaveDataset(f'{seq}', mode='automatic', dbf = dbf, uvl = uvl)
+        self.save_dataset = SaveDataset(f'{seq}', mode='automatic', dbf = dbf, uvl = uvl, model3d_config_name = model3d_config['name'])
         
         # define minimum and maximum boundaries
-        self.x_min = 1.5
-        self.x_max = 3.5
-        self.y_min = 1.5
-        self.y_max = 5.0
-        self.z_min = -0.5
-        self.z_max = 0.5
+        self.x_min = model3d_config['volume']['position']['xmin']
+        self.x_max = model3d_config['volume']['position']['xmax']
+        self.y_min = model3d_config['volume']['position']['ymin']
+        self.y_max = model3d_config['volume']['position']['ymax']
+        self.z_min = model3d_config['volume']['position']['zmin']
+        self.z_max = model3d_config['volume']['position']['zmax']
+        
+        self.rx_min = model3d_config['volume']['angles']['rxmin']
+        self.rx_max = model3d_config['volume']['angles']['rxmax']
+        self.ry_min = model3d_config['volume']['angles']['rymin']
+        self.ry_max = model3d_config['volume']['angles']['rymax']
+        self.rz_min = model3d_config['volume']['angles']['rzmin']
+        self.rz_max = model3d_config['volume']['angles']['rzmax']
         
         # define minimum and maximum light
-        self.att_min = 0.1
-        self.att_max = 1.0
+        self.att_min = model3d_config['light']['att_min']
+        self.att_max = model3d_config['light']['att_max']
+        self.att_initial = model3d_config['light']['att_initial']
         
-        self.light_names = ['user_point_light_0', 'user_point_light_1', 'user_point_light_2', 'user_point_light_3', 'user_point_light_4', 'user_point_light_5']
-        
-        self.att_initial = 1.0
-        
+        self.light_names = model3d_config['light']['light_names']
         
     def generateRandomPose(self):
         
@@ -62,9 +69,9 @@ class AutomaticDataCollection():
         y = random.uniform(self.y_min, self.y_max)
         z = random.uniform(self.z_min, self.z_max)
         
-        rx = random.uniform(-math.pi/6, math.pi/6)
-        ry = random.uniform(-math.pi/6, math.pi/6)
-        rz = random.uniform(0, 2*math.pi)
+        rx = random.uniform(self.rx_min, self.rx_max)
+        ry = random.uniform(self.ry_min, self.ry_max)
+        rz = random.uniform(self.rz_min, self.rz_max)
         
         quaternion = tf.transformations.quaternion_from_euler(rx, ry, rz)
         
@@ -80,7 +87,7 @@ class AutomaticDataCollection():
         
         return p
             
-    def generatePath(self, dbf,  final_pose = None):
+    def generatePath(self, final_pose = None):
         
         initial_pose = self.getPose().pose
         
@@ -100,7 +107,7 @@ class AutomaticDataCollection():
                 
                 
         # compute n_steps based on l2_dist
-        n_steps = int(l2_dst / dbf)
+        n_steps = int(l2_dst / self.dbf)
         
         print('using n_steps of: ', n_steps)
         
