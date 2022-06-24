@@ -1,8 +1,8 @@
 <launch>
     <arg name="name" default="localbot"/>
     <arg name="color" default="Grey"/>
-    <arg name="x_pos" default="2.0"/>
-    <arg name="y_pos" default="2.0"/>
+    <arg name="x_pos" default="0.0"/>
+    <arg name="y_pos" default="0.0"/>
     <arg name="z_pos" default="0.5"/>
     <arg name="rviz" default="true"/>
 
@@ -25,9 +25,9 @@
     </group>
 
     <!-- throttle because otherwise there are redundant tfs-->
-    <node name="throttle" pkg="topic_tools" type="throttle" args= "messages /gazebo/model_states 10 /gazebo/model_states_throttle" />
+    <node name="throttle" pkg="topic_tools" type="throttle" args= "messages /gazebo/model_states 10 /gazebo/model_states_throttle" output='screen' />
     <!-- Sleep 1 is to give time for the spawn to be finished-->
-    <node name="model_states_to_tf" pkg="localbot_gazebo" type="model_states_to_tf.py" launch-prefix="bash -c 'sleep 1; $0 $@' " /> 
+    <node name="model_states_to_tf" pkg="localbot_gazebo" type="model_states_to_tf.py" launch-prefix="bash -c 'sleep 1; $0 $@' " output = 'screen' /> 
     
     
 
