@@ -147,40 +147,43 @@ Run:
 
 
 # Extras:
-## Using SfM to collect data
+## Using SfM - MVG to collect data
 
-    rosrun localbot_localization create_images_sfm -d 'seq5_sfm' -s '_images'
+divide the dataset in batches
 
-    cd ~/PhD/localization/Meshroom-2021...
+    rosrun localbot_localization batch_images -f seq20_images -b 500
 
-    ./Meshroom
+    cd ~/PhD/localization/openMVG_Build/software/SfM
 
-## Using Visual Odometry to collect data
+change the file sfm_batches.sh and then
 
-    git clone https://github.com/FlagArihant2000/visual-odometry
-    cd /visual-odometry/code/
-    python3 main.py
+    ./sfm_batches.sh
 
-    run our scripts...
+    
+    roscd localbot_localization/scripts/mvg
+
+change the file mvg_run_merge.sh and then
+
+    ./mvg_run_merge.sh
 
 
-## Using RTAB
+Delete _tmp, and change _c_new to _c.
 
-    rtabmap  (choose right database and choose dataset)
+Then look into the results, and when the results are bad (really bad), start rtab from there.
+Do it all over again.
 
-    rosrun localbot_localization rtab_convert_poses -i 'test_final.txt' -o 'seq17_rtab'
 
-    rosrun localbot_localization rtab_synthesize_poses -d 'seq17_rtab' -f 'seq17_rtab'
+## Using RTAB and TORO
 
-    rosrun localbot_localization rtab_convert_to_initial_frame -f 'seq17_rtab'
+    rtabmap  (choose right database and choose dataset)  (0 for rtab default and 4 for toro)
 
-    rosrun localbot_localization rtab_scale_transformations -f 'seq17_rtab' -d 'seq17_rtab'
+    roscd localbot_localization/scripts/rtab
 
-    rosrun localbot_localization rtab_convert_to_world_frame -f 'seq17_rtab' -d 'seq17_rtab'
+change file rtab_run_merge and then
 
-    rosrun localbot_localization rtab_move_poses -f 'seq17_rtab' -d 'seq17_rtab'
+    ./rtab_run_merge.sh
 
-    roslaunch localbot_localization compare_datasets.launch dataset1:='seq17' dataset2:='seq17_rtab' idx_min:=15 idx_max:=25
+Delete _tmp, and change _c_new to _c.
 
 
 
