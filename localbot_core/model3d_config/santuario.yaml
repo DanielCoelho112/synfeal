@@ -1,11 +1,11 @@
 volume:
   position:
-    xmin: 1.5
+    xmin: -3.5
     xmax: 3.5
-    ymin: 1.5
-    ymax: 5.0
-    zmin: -0.5
-    zmax: 0.5
+    ymin: -5.0
+    ymax: 5.5
+    zmin: 1.5
+    zmax: -2.5
   angles:
     rxmin: -0.52
     rxmax: 0.52
@@ -24,4 +24,7 @@ light:
   att_initial: 1.0
   att_min: 0.1
   att_max: 1.0
+collision:
+  use: True
+  mesh: 'home/danc/models_3d/santuario_collision/Virtudes_Chapel.dae'
 
