@@ -56,19 +56,9 @@ def main():
         
     # load the testing dataset
     ## load transforms from config
-    with open(f'{folder_name}/rgb_transform_test.pickle', 'rb') as handle: # NOT WORKING PROPERLY!
+    with open(f'{folder_name}/rgb_transform_test.pickle', 'rb') as handle:
         rgb_transform = pickle.load(handle)
-        
-        
-    # TODO: see why we cannot load from pickle!!!!! This is hardcoded for seq21.
-    rgb_transform = transforms.Compose([
-        transforms.Resize(args['crop_size'] + 1),
-        transforms.CenterCrop(args['crop_size']),
-        transforms.ToTensor(),
-        transforms.Normalize([0.25614, 0.2335, 0.23636], [0.10452, 0.09254, 0.09637])
-    ])
-    
-    
+            
     test_dataset = LocalBotDataset(path_seq=f'{args["testing_set"]}', rgb_transform=rgb_transform, inputs=['rgb_image'])
     test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False)
     

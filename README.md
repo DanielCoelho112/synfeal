@@ -15,6 +15,14 @@
 export GAZEBO_MODEL_PATH="`rospack find localbot_gazebo`/models:${GAZEBO_MODEL_PATH}"
 ```
 
+# Requirements
+
+Due to the docker image used, you must use torchvision==0.7.0:
+
+    pip install torchvision==0.7.0
+
+
+
 # Running the simulation
 
 To launch the gazebo with the room_024.world run:
