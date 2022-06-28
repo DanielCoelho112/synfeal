@@ -1,3 +1,10 @@
+initial_pose:
+  x : 0
+  y : 0
+  z : 1
+  rx : 0
+  ry : 0
+  rz : 0 
 volume:
   position:
     xmin: -3.5
@@ -27,4 +34,5 @@ light:
 collision:
   use: True
   mesh: 'home/danc/models_3d/santuario_collision/Virtudes_Chapel.dae'
+  min_camera_distance: 1.2
 

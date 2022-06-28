@@ -70,7 +70,7 @@
         <sensor type="depth" name="${name}">
           <update_rate>20</update_rate>
           <camera>
-            <horizontal_fov>${60 * M_PI/180.0}</horizontal_fov>
+            <horizontal_fov>${60.0*pi/180.0}</horizontal_fov>
             <image>
               <format>B8G8R8</format>
               <width>640</width>
@@ -78,7 +78,7 @@
             </image>
             <clip>
               <near>0.10</near>
-              <far>8.0</far>
+              <far>15.0</far>
             </clip>
           </camera>
           <plugin name="${name}_camera_controller" filename="libgazebo_ros_openni_kinect.so">
@@ -108,7 +108,7 @@
                     </image>
                     <clip>
                         <near>0.10</near>
-                        <far>8.0</far>
+                        <far>15.0</far>
                     </clip>
                 </camera>
                 <plugin name="${name}}_rgb_camera_controller" filename="libgazebo_ros_camera.so">
