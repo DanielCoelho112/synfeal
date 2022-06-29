@@ -72,10 +72,10 @@ def main():
             quaternion_marker = R.from_matrix(matrix_quaternion_marker).as_quat()
             
             marker = Marker(header=Header(frame_id="map", stamp=rospy.Time.now()))
-            marker.type = marker.ARROW
+            marker.type = marker.CYLINDER
             marker.action = marker.ADD
-            marker.scale.x = 0.3
-            marker.scale.y = 0.05
+            marker.scale.x = 0.04
+            marker.scale.y = 0.04
             marker.scale.z = 0.05
             marker.color.a = 0.8
             marker.color.r = 0.3

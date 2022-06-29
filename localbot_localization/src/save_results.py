@@ -131,6 +131,31 @@ class SaveComparisonDatasets(SaveResults):
         
         print('SaveResults initialized properly')
         
+class CompareDatasets(SaveResults):
+    def __init__(self, dataset1, dataset2):
+       
+        self.output_folder = f'{os.environ["HOME"]}/datasets/localbot/dataset_comparison/{dataset1.seq}_and_{dataset2.seq}'
+        
+        if not os.path.exists(self.output_folder):
+            print(f'Creating folder {self.output_folder}')
+            os.makedirs(self.output_folder)
+        else:
+            print(f'{Fore.RED} {self.output_folder} already exists... Aborting SaveComparisonDatasets initialization! {Fore.RESET}')
+            exit(0)
+            
+        dt_now = datetime.now() # current date and time
+        config = {'user'       : os.environ["USER"],
+                  'date'       : dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
+                  'dataset1'   : dataset1.seq,
+                  'dataset2'   : dataset2.seq}
+        
+        with open(f'{self.output_folder}/config.yaml', 'w') as file:
+            yaml.dump(config, file)
+        
+        self.frame_idx = 0 # make sure to save as 00000
+        self.csv = pd.DataFrame(columns=('frame', 'position_error (m)', 'rotation_error (rads)'))
+        
+        print('CompareDatasets initialized properly')
         
         
 

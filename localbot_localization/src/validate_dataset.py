@@ -1,7 +1,7 @@
 from turtle import st
 from cv2 import TermCriteria_COUNT
 import torch.utils.data as data
-from localbot_localization.src.utilities import normalize_quat, projectToCamera
+from localbot_localization.src.utilities import projectToCamera
 import numpy as np
 import torch
 import os
