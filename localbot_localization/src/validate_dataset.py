@@ -292,6 +292,7 @@ class ValidateDataset():
         # loop through all point clouds
         config = dataset.getConfig()
         
+        
         config['statistics'] = {'B' : {'max'  : np.empty((len(dataset))),
                                        'min'  : np.empty((len(dataset))),
                                        'mean' : np.empty((len(dataset))),
@@ -348,8 +349,12 @@ class ValidateDataset():
             
             
             # Load Depth image
-            depth_image = cv2.imread(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', cv2.IMREAD_UNCHANGED)
-            depth_image = depth_image.astype(np.float32) / 1000.0  # to meters
+            
+            if not config['fast']:                    
+                depth_image = cv2.imread(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', cv2.IMREAD_UNCHANGED)
+                depth_image = depth_image.astype(np.float32) / 1000.0  # to meters
+            else:
+                depth_image = -1
             
             ## D channel
             config['statistics']['D']['max'][idx] = np.max(depth_image)

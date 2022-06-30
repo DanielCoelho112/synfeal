@@ -53,9 +53,13 @@ def main():
 
     # get config
     config = dataset.getConfig()
-    config.pop('statistics')
+    if 'statistics' in config:
+        config.pop('statistics')
     
-    files_to_copy = ['.pcd', '.rgb.png', '.depth.png','.pose.txt']
+    if not config['fast']:
+        files_to_copy = ['.pcd', '.rgb.png', '.depth.png','.pose.txt']
+    else:
+        files_to_copy = ['.rgb.png','.pose.txt']
     
     # copy intrinsics to both datasets
     
