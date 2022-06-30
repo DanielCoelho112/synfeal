@@ -29,7 +29,7 @@ from scipy.spatial.transform import Rotation as R
 
 class AutomaticDataCollection():
 
-    def __init__(self, model_name, seq, dbf=None, uvl=None, model3d_config=None):
+    def __init__(self, model_name, seq, dbf=None, uvl=None, model3d_config=None, fast=None):
         self.set_state_service = rospy.ServiceProxy(
             '/gazebo/set_model_state', SetModelState)
         self.menu_handler = MenuHandler()
@@ -43,7 +43,7 @@ class AutomaticDataCollection():
 
         # create instance to save dataset
         self.save_dataset = SaveDataset(
-            f'{seq}', mode='automatic', dbf=dbf, uvl=uvl, model3d_config=model3d_config)
+            f'{seq}', mode='automatic', dbf=dbf, uvl=uvl, model3d_config=model3d_config, fast=fast)
 
         # define minimum and maximum boundaries
         self.x_min = model3d_config['volume']['position']['xmin']
@@ -90,6 +90,7 @@ class AutomaticDataCollection():
         p.orientation.z = quaternion[2]
         p.orientation.w = quaternion[3]
         self.setPose(p)
+        rospy.sleep(1)
         
         
 
