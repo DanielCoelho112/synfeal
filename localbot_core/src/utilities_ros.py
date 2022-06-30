@@ -9,7 +9,9 @@ import cv2
 import tf
 from geometry_msgs.msg import Pose
 from localbot_core.src.pypcd import PointCloud
-
+from visualization_msgs.msg import *
+import rospy
+from std_msgs.msg import Header
 
     
 def data2pose(data):
@@ -113,3 +115,38 @@ def rotationAndpositionToMatrix44(rotation, position):
     matrix44[3,3] = 1
     
     return matrix44
+
+
+def createArrowMarker(pose, color):
+        
+    pose_marker = copy.deepcopy(pose)
+    matrix_quaternion_marker = pose_marker[3:]
+    #matrix_quaternion_marker = R.from_quat(pose_marker[3:]).as_matrix()
+    # rotate_y90 = R.from_euler('y', -90, degrees=True).as_matrix()
+    # matrix_quaternion_marker = np.dot(
+    #     matrix_quaternion_marker, rotate_y90)
+    # quaternion_marker = R.from_matrix(
+    #     matrix_quaternion_marker).as_quat()
+
+    marker = Marker(header=Header(
+        frame_id="world", stamp=rospy.Time.now()))
+    marker.type = marker.ARROW
+    marker.action = marker.ADD
+    marker.scale.x = 0.3
+    marker.scale.y = 0.05
+    marker.scale.z = 0.05
+    marker.color.a = color[-1]
+    marker.color.r = color[0]
+    marker.color.g = color[1]
+    marker.color.b = color[2]
+    marker.pose.orientation.x = matrix_quaternion_marker[0]
+    marker.pose.orientation.y = matrix_quaternion_marker[1]
+    marker.pose.orientation.z = matrix_quaternion_marker[2]
+    marker.pose.orientation.w = matrix_quaternion_marker[3]
+    marker.pose.position.x = pose[0]
+    marker.pose.position.y = pose[1]
+    marker.pose.position.z = pose[2]
+    marker.ns = 'final_pose'
+    marker.id = 1
+    
+    return marker

@@ -9,7 +9,6 @@ import random
 import math
 
 
-
 # 3rd-party
 import rospy
 from geometry_msgs.msg import Point, Pose, Quaternion
@@ -29,7 +28,7 @@ from scipy.spatial.transform import Rotation as R
 
 class AutomaticDataCollection():
 
-    def __init__(self, model_name, seq, dbf=None, uvl=None, model3d_config=None, fast=None):
+    def __init__(self, model_name, seq, dbf=None, uvl=None, model3d_config=None, fast=None, save_dataset=True):
         self.set_state_service = rospy.ServiceProxy(
             '/gazebo/set_model_state', SetModelState)
         self.menu_handler = MenuHandler()
@@ -42,8 +41,9 @@ class AutomaticDataCollection():
             '/gazebo/get_model_state', GetModelState)
 
         # create instance to save dataset
-        self.save_dataset = SaveDataset(
-            f'{seq}', mode='automatic', dbf=dbf, uvl=uvl, model3d_config=model3d_config, fast=fast)
+        if save_dataset:
+            self.save_dataset = SaveDataset(
+                f'{seq}', mode='automatic', dbf=dbf, uvl=uvl, model3d_config=model3d_config, fast=fast)
 
         # define minimum and maximum boundaries
         self.x_min = model3d_config['volume']['position']['xmin']
@@ -70,8 +70,7 @@ class AutomaticDataCollection():
         self.use_collision = model3d_config['collision']['use']
         self.mesh_collision = model3d_config['collision']['mesh']
         self.min_cam_dist = model3d_config['collision']['min_camera_distance']
-        
-        
+
         # set initial pose
         print('setting initial pose...')
         x = model3d_config['initial_pose']['x']
@@ -91,8 +90,6 @@ class AutomaticDataCollection():
         p.orientation.w = quaternion[3]
         self.setPose(p)
         rospy.sleep(1)
-        
-        
 
     def generateRandomPose(self):
 
@@ -267,7 +264,7 @@ class AutomaticDataCollection():
             ray_directions=ray_directions)
 
         closest_collision_to_p1 = self.getClosestCollision(collisions, p1_xyz)
-        
+
         # compare the closest collision with the position of p2
         if closest_collision_to_p1 < dist_p1_to_p2:
             # collision
@@ -280,34 +277,157 @@ class AutomaticDataCollection():
             orientation = R.from_quat(p2_quat).as_matrix()[:, 0]
             norm_orientation = np.linalg.norm(orientation)
             orientation = orientation / norm_orientation
-            
+
             ray_origins = np.array([p2_xyz])
             ray_directions = np.array([orientation])
 
             collisions, _, _ = mesh.ray.intersects_location(
                 ray_origins=ray_origins,
                 ray_directions=ray_directions)
-            
-            closest_collision_to_p2 = self.getClosestCollision(collisions, p2_xyz)
-            
+
+            closest_collision_to_p2 = self.getClosestCollision(
+                collisions, p2_xyz)
+
             if closest_collision_to_p2 < self.min_cam_dist:
-            
-                print(f'{Fore.YELLOW} Final Pose is too close to a obstacle. {Fore.RESET}')
+
+                print(
+                    f'{Fore.YELLOW} Final Pose is too close to a obstacle. {Fore.RESET}')
                 return True
             else:
                 print(f'{Fore.GREEN} NO Collision Detected {Fore.RESET}')
                 return False
-        
-    
+
+    def checkCollisionVis(self, initial_pose, final_pose):
+        if self.use_collision is False:
+            print('not using COLLISIONS.')
+            return False
+        # load mesh
+        mesh = trimesh.load(
+            '/home/danc/models_3d/santuario_collision/Virtudes_Chapel.dae', force='mesh')
+
+        initial_pose.position.x
+
+        p1_xyz = np.array(
+            [initial_pose.position.x, initial_pose.position.y, initial_pose.position.z])
+        p1_quat = np.array([initial_pose.orientation.x, initial_pose.orientation.y,
+                           initial_pose.orientation.z, initial_pose.orientation.w])
+
+        p2_xyz = np.array(
+            [final_pose.position.x, final_pose.position.y, final_pose.position.z])
+        p2_quat = np.array([final_pose.orientation.x, final_pose.orientation.y,
+                           final_pose.orientation.z, final_pose.orientation.w])
+
+        dist_p1_to_p2 = np.linalg.norm(p2_xyz-p1_xyz)
+
+        print(
+            f' {Fore.BLUE} Checking collision... {Fore.RESET} between {p1_xyz} and {p2_xyz}')
+
+        orientation = p2_xyz - p1_xyz
+        norm_orientation = np.linalg.norm(orientation)
+        orientation = orientation / norm_orientation
+
+        ray_origins = np.array([p1_xyz])
+        ray_directions = np.array([orientation])
+
+        collisions, _, _ = mesh.ray.intersects_location(
+            ray_origins=ray_origins,
+            ray_directions=ray_directions)
+
+        closest_collision_to_p1 = self.getClosestCollision(collisions, p1_xyz)
+
+        # compare the closest collision with the position of p2
+        if closest_collision_to_p1 < dist_p1_to_p2:
+            # collision
+            print(f'{Fore.RED} Collision Detected. {Fore.RESET}')
+            return 1
+        else:
+            # no collision
+
+            # check if p2 camera viewpoint if close to a obstacle.
+            orientation = R.from_quat(p2_quat).as_matrix()[:, 0]
+            norm_orientation = np.linalg.norm(orientation)
+            orientation = orientation / norm_orientation
+
+            ray_origins = np.array([p2_xyz])
+            ray_directions = np.array([orientation])
+
+            collisions, _, _ = mesh.ray.intersects_location(
+                ray_origins=ray_origins,
+                ray_directions=ray_directions)
+
+            closest_collision_to_p2 = self.getClosestCollision(
+                collisions, p2_xyz)
+
+            if closest_collision_to_p2 < self.min_cam_dist:
+
+                print(
+                    f'{Fore.YELLOW} Final Pose is too close to a obstacle. {Fore.RESET}')
+                return 0.5
+            else:
+                print(f'{Fore.GREEN} NO Collision Detected {Fore.RESET}')
+                return 0
+
+    def generatePathViz(self, final_pose):
+
+        initial_pose = self.getPose().pose
+
+        xyz_initial = np.array(
+            [initial_pose.position.x, initial_pose.position.y, initial_pose.position.z])
+        xyz_final = np.array(
+            [final_pose.position.x, final_pose.position.y, final_pose.position.z])
+        l2_dst = np.linalg.norm(xyz_final - xyz_initial)
+
+        # compute n_steps based on l2_dist
+        n_steps = int(l2_dst / self.dbf)
+
+        print('using n_steps of: ', n_steps)
+
+        step_poses = []  # list of tuples
+        rx, ry, rz = tf.transformations.euler_from_quaternion(
+            [initial_pose.orientation.x, initial_pose.orientation.y, initial_pose.orientation.z, initial_pose.orientation.w])
+        pose_initial_dct = {'x': initial_pose.position.x,
+                            'y': initial_pose.position.y,
+                            'z': initial_pose.position.z,
+                            'rx': rx,
+                            'ry': ry,
+                            'rz': rz}
+
+        rx, ry, rz = tf.transformations.euler_from_quaternion(
+            [final_pose.orientation.x, final_pose.orientation.y, final_pose.orientation.z, final_pose.orientation.w])
+        pose_final_dct = {'x': final_pose.position.x,
+                          'y': final_pose.position.y,
+                          'z': final_pose.position.z,
+                          'rx': rx,
+                          'ry': ry,
+                          'rz': rz}
+
+        x_step_var = (pose_final_dct['x'] - pose_initial_dct['x']) / n_steps
+        y_step_var = (pose_final_dct['y'] - pose_initial_dct['y']) / n_steps
+        z_step_var = (pose_final_dct['z'] - pose_initial_dct['z']) / n_steps
+        rx_step_var = (pose_final_dct['rx'] - pose_initial_dct['rx']) / n_steps
+        ry_step_var = (pose_final_dct['ry'] - pose_initial_dct['ry']) / n_steps
+        rz_step_var = (pose_final_dct['rz'] - pose_initial_dct['rz']) / n_steps
+
+        for i in range(n_steps):
+            dct = {'x': pose_initial_dct['x'] + (i + 1) * x_step_var,
+                   'y': pose_initial_dct['y'] + (i + 1) * y_step_var,
+                   'z': pose_initial_dct['z'] + (i + 1) * z_step_var,
+                   'rx': pose_initial_dct['rx'] + (i + 1) * rx_step_var,
+                   'ry': pose_initial_dct['ry'] + (i + 1) * ry_step_var,
+                   'rz': pose_initial_dct['rz'] + (i + 1) * rz_step_var}
+            pose = data2pose(dct)
+            step_poses.append(pose)
+
+        return step_poses
+
     def getClosestCollision(self, collisions, p1_xyz):
         closest_collision_to_p1 = np.inf
-        
+
         for position_collision in collisions:
             dist_collision_p1 = np.linalg.norm(position_collision - p1_xyz)
             if dist_collision_p1 < closest_collision_to_p1:
                 closest_collision_to_p1 = dist_collision_p1
         return closest_collision_to_p1
-        
 
     def saveFrame(self):
         self.save_dataset.saveFrame()
