@@ -47,7 +47,7 @@ def main():
                         type=Marker.MESH_RESOURCE, action=Marker.ADD, lifetime=rospy.Duration(0),
                         pose=Pose(position=Point(x=0, y=0, z=0), orientation=Quaternion(x=0, y=0, z=0, w=1)),
                         scale=Vector3(x=1.0, y=1.0, z=1.0))
-        #marker.mesh_resource = 'package://localbot_gazebo/models/room_024/room_024.dae'
+        #marker.mesh_resource = 'file:///home/danc/models_3d/room_024/room_024.dae'
         marker.mesh_resource = 'file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae'
         marker.mesh_use_embedded_materials = True
         markers.markers.append(marker)
@@ -56,7 +56,7 @@ def main():
         for idx in range(len(train_dataset)):
             print(idx)
             
-            if idx > 20000:
+            if idx > 200000:
                 continue
         
             # publish markers
