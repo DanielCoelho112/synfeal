@@ -17,9 +17,9 @@ import numpy as np
 
 def main():    
     parser = argparse.ArgumentParser(description='Validate dataset')
-    parser.add_argument('-dataset1', '--dataset1', type=str, required=True, help='Name of the dataset 1')
-    parser.add_argument('-dataset2', '--dataset2', type=str, required=True, help='Name of the dataset 2')
-    parser.add_argument('-merged_dataset', '--merged_dataset', type=str, required=True, help='Name of the merged dataset')
+    parser.add_argument('-d1', '--dataset1', type=str, required=True, help='Name of the dataset 1')
+    parser.add_argument('-d2', '--dataset2', type=str, required=True, help='Name of the dataset 2')
+    parser.add_argument('-md', '--merged_dataset', type=str, required=True, help='Name of the merged dataset')
     
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))

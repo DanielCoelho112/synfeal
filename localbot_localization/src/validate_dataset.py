@@ -230,6 +230,12 @@ class ValidateDataset():
         #     print(f'{Fore.RED} Property scaled is different! {Fore.RESET}')
         #     return False
         
+        config = dataset1.getConfig()
+        if config['fast']:
+            files = ['.rgb.png','.pose.txt']
+        else:
+            files = self.files
+        
         size_dataset1 = len(dataset1)
         
         shutil.copytree(dataset1.path_seq, f'{dataset1.root}/{dataset3_name}')
@@ -239,7 +245,7 @@ class ValidateDataset():
         dataset2_tmp = LocalBotDataset(path_seq=f'{dataset2.seq}_tmp')
         
         for idx in range(len(dataset2_tmp)):
-            for file in self.files:
+            for file in files:
                 os.rename(f'{dataset2_tmp.path_seq}/frame-{idx:05d}{file}', f'{dataset3.path_seq}/frame-{idx+size_dataset1:05d}{file}')
                 
         shutil.rmtree(dataset2_tmp.path_seq)
