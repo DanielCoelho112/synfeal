@@ -6,7 +6,6 @@
     
     <node name="rviz" pkg="rviz" type="rviz" args="--display-config $(find localbot_localization)/config/visualize_results.rviz" required="false">
     </node>
-
     
     <node name="compare_datasets" pkg="localbot_localization" type="compare_datasets" args="--dataset1 $(arg dataset1) --dataset2 $(arg dataset2) --idx_max $(arg idx_max) --idx_min $(arg idx_min)" output='screen'/> 
     

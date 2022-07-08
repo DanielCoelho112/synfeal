@@ -1,28 +1,10 @@
 import numpy as np
 import torch
-from sklearn.metrics import mean_squared_error
-#from localbot_core.src.utilities import 
-from scipy.spatial.transform import Rotation as R
 
-def normalize_quat(x, p=2, dim=1):
-    """
-    Divides a tensor along a certain dim by the Lp norm
-    :param x: 
-    :param p: Lp norm
-    :param dim: Dimension to normalize along
-    :return: 
-    """
-    
-    if torch.is_tensor(x):
-        # x.shape = (N,4)
-        xn = x.norm(p=p, dim=dim) # computes the norm: 1xN
-        x = x / xn.unsqueeze(dim=dim)
-    
-    else: # numpy
-        xn = np.linalg.norm(x)
-        x = x/xn
-        
-    return x
+from localbot_core.src.utilities import matrixToXYZ, matrixToQuaternion, rotationAndpositionToMatrix44, normalize_quat
+from scipy.spatial.transform import Rotation as R
+import math
+
 
 def process_pose(pose):
     quat_unit = normalize_quat(pose[:,3:])
@@ -103,3 +85,21 @@ def synthesize_pose(pose1, pose2):
     
     return pose3
 
+def applyNoise(matrix44, pos_error, rot_error):
+    
+    xyz = matrixToXYZ(matrix44)
+    euler = R.from_quat(matrixToQuaternion(matrix44)).as_euler('xyz', 'degrees')
+    
+    # adapted from ATOM
+    v = np.random.uniform(-1.0, 1.0, 3)
+    v = v / np.linalg.norm(v)
+    new_xyz = xyz + v * (pos_error*math.sqrt(3))
+
+    v = np.random.choice([-1.0, 1.0], 3) * (rot_error/math.sqrt(3))
+    new_euler = euler + v
+    
+    rotation_angles = R.from_euler('xyz', new_euler, degrees=True).as_matrix()
+    
+    new_matrix44 = rotationAndpositionToMatrix44(rotation=rotation_angles, position=new_xyz)
+    
+    return new_matrix44

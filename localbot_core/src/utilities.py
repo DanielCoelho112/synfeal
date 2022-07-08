@@ -9,7 +9,9 @@ import cv2
 #import tf
 #from geometry_msgs.msg import Pose
 from localbot_core.src.pypcd_no_ros import PointCloud
-from localbot_localization.src.utilities import *
+# from localbot_localization.src.utilities import 
+import torch
+from sklearn.metrics import mean_squared_error
 
 def write_pcd(filename, msg, mode='binary'):
     
@@ -118,4 +120,23 @@ def compute_rotation_error(pred, targ):
     deltaR = matrixToRodrigues(delta[0:3, 0:3])
     
     return np.linalg.norm(deltaR)
+
+def normalize_quat(x, p=2, dim=1):
+    """
+    Divides a tensor along a certain dim by the Lp norm
+    :param x: 
+    :param p: Lp norm
+    :param dim: Dimension to normalize along
+    :return: 
+    """
     
+    if torch.is_tensor(x):
+        # x.shape = (N,4)
+        xn = x.norm(p=p, dim=dim) # computes the norm: 1xN
+        x = x / xn.unsqueeze(dim=dim)
+    
+    else: # numpy
+        xn = np.linalg.norm(x)
+        x = x/xn
+        
+    return x

@@ -1,5 +1,5 @@
-from localbot_core.src.utilities import matrixToXYZ, matrixToQuaternion
-from localbot_localization.src.utilities import normalize_quat
+from localbot_core.src.utilities import matrixToXYZ, matrixToQuaternion, normalize_quat
+
 import numpy as np
 import pandas as pd
 import os

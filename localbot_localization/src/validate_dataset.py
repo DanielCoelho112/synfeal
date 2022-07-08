@@ -1,7 +1,7 @@
 from turtle import st
 from cv2 import TermCriteria_COUNT
 import torch.utils.data as data
-from localbot_localization.src.utilities import normalize_quat, projectToCamera
+from localbot_localization.src.utilities import projectToCamera
 import numpy as np
 import torch
 import os
@@ -230,6 +230,12 @@ class ValidateDataset():
         #     print(f'{Fore.RED} Property scaled is different! {Fore.RESET}')
         #     return False
         
+        config = dataset1.getConfig()
+        if config['fast']:
+            files = ['.rgb.png','.pose.txt']
+        else:
+            files = self.files
+        
         size_dataset1 = len(dataset1)
         
         shutil.copytree(dataset1.path_seq, f'{dataset1.root}/{dataset3_name}')
@@ -239,7 +245,7 @@ class ValidateDataset():
         dataset2_tmp = LocalBotDataset(path_seq=f'{dataset2.seq}_tmp')
         
         for idx in range(len(dataset2_tmp)):
-            for file in self.files:
+            for file in files:
                 os.rename(f'{dataset2_tmp.path_seq}/frame-{idx:05d}{file}', f'{dataset3.path_seq}/frame-{idx+size_dataset1:05d}{file}')
                 
         shutil.rmtree(dataset2_tmp.path_seq)
@@ -291,6 +297,7 @@ class ValidateDataset():
         
         # loop through all point clouds
         config = dataset.getConfig()
+        
         
         config['statistics'] = {'B' : {'max'  : np.empty((len(dataset))),
                                        'min'  : np.empty((len(dataset))),
@@ -348,8 +355,12 @@ class ValidateDataset():
             
             
             # Load Depth image
-            depth_image = cv2.imread(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', cv2.IMREAD_UNCHANGED)
-            depth_image = depth_image.astype(np.float32) / 1000.0  # to meters
+            
+            if not config['fast']:                    
+                depth_image = cv2.imread(f'{dataset.path_seq}/frame-{idx:05d}.depth.png', cv2.IMREAD_UNCHANGED)
+                depth_image = depth_image.astype(np.float32) / 1000.0  # to meters
+            else:
+                depth_image = -1
             
             ## D channel
             config['statistics']['D']['max'][idx] = np.max(depth_image)

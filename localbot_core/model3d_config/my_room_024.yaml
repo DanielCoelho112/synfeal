@@ -1,3 +1,10 @@
+initial_pose:
+  x : 1
+  y : 1
+  z : 0.5
+  rx : 0
+  ry : 0
+  rz : 0 
 volume:
   position:
     xmin: 1.5
@@ -24,4 +31,7 @@ light:
   att_initial: 1.0
   att_min: 0.1
   att_max: 1.0
-
+collision:
+  use: False
+  mesh: Null
+  min_camera_distance: 1.2

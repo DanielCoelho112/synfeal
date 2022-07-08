@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+
+
+import torch
+import torch.nn.parallel
+import torch.nn as nn
+import torch.utils.data
+
+from localbot_localization.src.save_results import CompareDatasets
+from localbot_localization.src.utilities import *
+from localbot_localization.src.dataset import LocalBotDataset
+from localbot_core.src.utilities import *
+import numpy as np
+from datetime import datetime
+import os
+import sys
+import argparse
+
+
+def main():
+    
+    parser = argparse.ArgumentParser(description='Comparing datasets')
+    
+    parser.add_argument('-d1', '--dataset1', type=str, required=True, help='Name of the testing set')
+    parser.add_argument('-d2', '--dataset2', type=str, required=True, help='Path of the model to evaluate')
+    
+    
+    
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+    
+    dataset1 = LocalBotDataset(path_seq=f'{args["dataset1"]}')
+    dataset2 = LocalBotDataset(path_seq=f'{args["dataset2"]}')
+    
+    # create results folder
+    compare_datasets = CompareDatasets(dataset1=dataset1, dataset2=dataset2)
+
+    for idx in range(len(dataset1)):
+        
+        # pose dataset1
+        matrix_dataset1 = np.loadtxt(f'{dataset1.path_seq}/frame-{idx:05d}.pose.txt', delimiter=',')
+        pose_dataset1 = matrix44_to_pose(matrix_dataset1)
+        
+        # pose folder
+        matrix_dataset2 = np.loadtxt(f'{dataset2.path_seq}/frame-{idx:05d}.pose.txt', delimiter=',')
+        pose_dataset2 = matrix44_to_pose(matrix_dataset2)
+        
+        pos_error = compute_position_error(pose_dataset1, pose_dataset2)  # RMSE
+        rot_error = compute_rotation_error(pose_dataset1, pose_dataset2)
+            
+        compare_datasets.updateCSV(pos_error, rot_error)
+        compare_datasets.step()
+
+    compare_datasets.saveCSV()
+    compare_datasets.saveErrorsFig()
+    
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+    
+    
+    
+ 

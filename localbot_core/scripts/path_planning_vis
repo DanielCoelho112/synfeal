@@ -1,0 +1,139 @@
+#!/usr/bin/env python3
+
+# stdlib
+from dataclasses import dataclass
+import sys
+import argparse
+from numpy import save
+
+# 3rd-party
+import rospkg
+from localbot_core.src.utilities_ros import data2pose
+import rospy
+import rospkg
+from colorama import Fore, Style
+from std_msgs.msg import Header, ColorRGBA
+from geometry_msgs.msg import Point
+from gazebo_msgs.msg import ModelState, ModelStates
+from geometry_msgs.msg import Point, Pose, Vector3, Quaternion
+from localbot_core.src.automatic_data_collection import AutomaticDataCollection
+from os.path import exists
+import yaml
+from yaml.loader import SafeLoader
+from geometry_msgs.msg import Point, Pose, Vector3, Quaternion, TransformStamped, Transform
+from visualization_msgs.msg import *
+from localbot_localization.src.dataset import LocalBotDataset
+import numpy as np
+import tf2_ros
+from localbot_core.src.utilities_ros import createArrowMarker
+from scipy.spatial.transform import Rotation as R
+from tf.transformations import *
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Data Collector')
+    parser.add_argument('-m', '--mode', type=str, default='interactive',
+                        help='interactive/automatic_random_path/automatic_path')
+    parser.add_argument('-dbf', '--distance_between_frames',
+                        type=float, default=0.01, help='Distance between frames in m')
+    parser.add_argument('-mc', '--model3d_config', type=str,
+                        required=True, help='model3d config to use')
+
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+
+    rospy.init_node('path_planning_viz')
+    rate = rospy.Rate(10)
+
+    distance_between_frames = args['distance_between_frames']
+
+    # check if model3d file exists.
+    localbot_core_path = rospkg.RosPack().get_path('localbot_core')
+    model3d_config_path = f'{localbot_core_path}/model3d_config/{args["model3d_config"]}'
+    if exists(model3d_config_path):
+        with open(model3d_config_path) as f:
+            model3d_config = yaml.load(f, Loader=SafeLoader)
+            model3d_config['name'] = args["model3d_config"]
+    else:
+        print(f'{Fore.RED} model3d config path ({model3d_config_path}) does not exist! \n Aborting... {Fore.RESET}')
+        exit(0)
+
+    marker_pub = rospy.Publisher("/marker_array", MarkerArray, queue_size=10)
+    tf_broadcaster = tf2_ros.TransformBroadcaster()
+    #colormap = cm.tab20(np.linspace(0, 1, len(train_dataset)))
+
+    rate = rospy.Rate(100)
+
+    data_collector = AutomaticDataCollection(
+        model_name='localbot', dbf=distance_between_frames, seq='no_saving', save_dataset=False, model3d_config=model3d_config)
+
+    while not rospy.is_shutdown():
+        markers = MarkerArray()
+
+        marker = Marker(header=Header(frame_id="world", stamp=rospy.Time.now()),
+                        id=0, frame_locked=False,
+                        type=Marker.MESH_RESOURCE, action=Marker.ADD, lifetime=rospy.Duration(
+                            0),
+                        pose=Pose(position=Point(x=0, y=0, z=0),
+                                  orientation=Quaternion(x=0, y=0, z=0, w=1)),
+                        scale=Vector3(x=1.0, y=1.0, z=1.0))
+        #marker.mesh_resource = 'package://localbot_gazebo/models/room_024/room_024.dae'
+        marker.mesh_resource = 'file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae'
+        marker.mesh_use_embedded_materials = True
+        markers.markers.append(marker)
+
+        initial_pose = data_collector.getPose().pose
+
+        while True:
+            final_pose = data_collector.generateRandomPose()
+            xyz_initial = np.array(
+                [initial_pose.position.x, initial_pose.position.y, initial_pose.position.z])
+            xyz_final = np.array(
+                [final_pose.position.x, final_pose.position.y, final_pose.position.z])
+            l2_dst = np.linalg.norm(xyz_final - xyz_initial)
+
+            # if final pose is close to the initial or there is collision, choose another final pose
+            if l2_dst < 1.5:
+                continue
+
+            collision = data_collector.checkCollisionVis(
+                initial_pose=initial_pose, final_pose=final_pose)
+
+            final_pose_np = np.array([final_pose.position.x, final_pose.position.y, final_pose.position.z,
+                                     final_pose.orientation.x, final_pose.orientation.y, final_pose.orientation.z, final_pose.orientation.w])
+
+            if collision == 0:
+                marker = createArrowMarker(
+                    pose=final_pose_np, color=[0, 1, 0, 0.8])
+                markers.markers.append(marker)
+                marker_pub.publish(markers)
+                break
+
+            elif collision == 0.5:
+                marker = createArrowMarker(
+                    pose=final_pose_np, color=[1, 1, 0, 0.8])
+                markers.markers.append(marker)
+                marker_pub.publish(markers)
+                rospy.sleep(2)
+                continue
+            elif collision == 1:
+                marker = createArrowMarker(
+                    pose=final_pose_np, color=[1, 0, 0, 0.8])
+                markers.markers.append(marker)
+                marker_pub.publish(markers)
+                rospy.sleep(2)
+                continue
+        marker_pub.publish(markers)
+
+        step_poses = data_collector.generatePathViz(final_pose=final_pose)
+
+        for idx, pose in enumerate(step_poses):
+            data_collector.setPose(pose)
+            rate.sleep()
+        print('final destination arrived')
+
+        rate.sleep()
+
+
+if __name__ == "__main__":
+    main()

@@ -26,7 +26,7 @@ def main():
     p2 = np.array([4,0,0])
     dp1p2 = np.linalg.norm(p2-p1)
     ori = p2 - p1
-    norm_ori =norm = np.linalg.norm(ori)
+    norm_ori = np.linalg.norm(ori)
     ori = ori / norm_ori
     
     

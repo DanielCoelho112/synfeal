@@ -17,7 +17,7 @@ class SaveDataset():
     class to save datasets
     once initialized, we can call the method 'saveFrame' to save to disk the image, point cloud w.r.t frame frame and rgb_frame transformation.
     """    
-    def __init__(self, output, mode, dbf = None, uvl = None, model3d_config_name = None):
+    def __init__(self, output, mode, dbf = None, uvl = None, model3d_config = None, fast=False):
         
         self.output_folder = f'{os.environ["HOME"]}/datasets/localbot/{output}'
         
@@ -39,8 +39,10 @@ class SaveDataset():
                   'distance_between_frames'  : dbf,
                   'raw'      : output,
                   'variable_lights' : uvl,
-                  'model3d_config' : model3d_config_name}
+                  'model3d_config' : model3d_config['name'],
+                  'fast' : fast}
         
+        self.fast = fast
         self.frame_idx = 0 
         self.world_link = 'world'
         self.depth_frame = 'kinect_depth_optical_frame'
@@ -89,6 +91,9 @@ class SaveDataset():
         with open(f'{self.output_folder}/config.yaml', 'w') as file:
             yaml.dump(config, file)
         
+        with open(f'{self.output_folder}/model3d_config.yaml', 'w') as file:
+            yaml.dump(model3d_config, file)
+        
         
         print('SaveDataset initialized properly')
 
@@ -97,12 +102,16 @@ class SaveDataset():
         
         transformation = self.getTransformation()
         image = self.getImage()
-        pc_msg = self.getPointCloud()
+        
         
         filename = f'frame-{self.frame_idx:05d}'
-        write_transformation(f'{self.output_folder}/{filename}.pose.txt', transformation)
-        write_pcd(f'{self.output_folder}/{filename}.pcd', pc_msg)
+                
+        write_transformation(f'{self.output_folder}/{filename}.pose.txt', transformation)    
         write_img(f'{self.output_folder}/{filename}.rgb.png', image)
+        
+        if not self.fast:
+            pc_msg = self.getPointCloud()
+            write_pcd(f'{self.output_folder}/{filename}.pcd', pc_msg)
         
         print(f'frame-{self.frame_idx:05d} saved successfully')
         

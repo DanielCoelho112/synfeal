@@ -40,6 +40,8 @@ def main():
                         action='store_true', help='use random lights')
     parser.add_argument('-mc', '--model3d_config', type=str,
                         required=True, help='model3d config to use')
+    parser.add_argument('-f', '--fast', action='store_true',
+                        help='fast data collection. Only rgb images and pose are captured.')
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
 
@@ -67,7 +69,7 @@ def main():
     elif mode == 'automatic_random':
         rate = rospy.Rate(0.6)
         data_collector = AutomaticDataCollection(
-            model_name='localbot', seq=seq, uvl=args['use_variable_lights'], model3d_config=args['model3d_config'])
+            model_name='localbot', seq=seq, uvl=args['use_variable_lights'], model3d_config=args['model3d_config'], fast=args['fast'])
         while not rospy.is_shutdown():
             pose = data_collector.generateRandomPose()
             if args['use_variable_lights']:
@@ -81,9 +83,13 @@ def main():
             if data_collector.getFrameIdx() >= args['number_of_frames']:
                 break
     elif mode == 'automatic_path':
-        rate = rospy.Rate(0.4)
+        if args['fast']:
+            rate = rospy.Rate(3)
+        else:
+            rate = rospy.Rate(0.4)
         data_collector = AutomaticDataCollection(
-            model_name='localbot', seq=seq, dbf=distance_between_frames, uvl=args['use_variable_lights'], model3d_config= model3d_config)
+            model_name='localbot', seq=seq, dbf=distance_between_frames, uvl=args['use_variable_lights'], model3d_config= model3d_config, fast=args['fast'])
+        rospy.sleep(1)
         if destination_pose == 'x,y,z,rx,ry,rz':  # use random poses
             while not rospy.is_shutdown():
                 step_poses = data_collector.generatePath()
@@ -94,7 +100,10 @@ def main():
                     data_collector.setPose(pose)
                     if args['use_variable_lights']:
                         data_collector.setLight(step_lights[idx])
-                    rospy.sleep(0.4)
+                    if not args['fast']:
+                        rospy.sleep(0.4)
+                    else:
+                        rospy.sleep(0.001)
                     data_collector.saveFrame()
                     rate.sleep()
                 print('final destination arrived')
