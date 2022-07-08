@@ -4,21 +4,173 @@
 import sys
 import argparse
 import copy
+from re import I
+from zlib import Z_NO_COMPRESSION
+
+import trimesh
 
 # 3rd-party
 import rospy
-from colorama import Fore, Style
-from std_msgs.msg import Header
-from geometry_msgs.msg import Point, Pose, Vector3, Quaternion, TransformStamped, Transform
-from visualization_msgs.msg import *
-from localbot_localization.src.dataset import LocalBotDataset
 import numpy as np
 import tf2_ros
-
+from colorama import Fore, Style
+from std_msgs.msg import Header, ColorRGBA
+from geometry_msgs.msg import Point, Pose, Vector3, Quaternion, TransformStamped, Transform
+from visualization_msgs.msg import *
 from scipy.spatial.transform import Rotation as R
 from tf.transformations import *
 from matplotlib import cm
 
+from localbot_localization.src.dataset import LocalBotDataset
+
+
+def getFrustumMarkerArray(w, h, f_x, f_y, Z_near, Z_far, frame_id, ns, color):
+    # big help from https: // github.com/ros-visualization/rviz/issues/925
+    marker_array = MarkerArray()
+
+    # ------------------------------------
+    # Define view frustum points
+    # ------------------------------------
+    fov_x = 2 * math.atan2(w, (2 * f_x))
+    fov_y = 2 * math.atan2(h, (2 * f_y))
+
+    x_n = math.tan(fov_x / 2) * Z_near
+    y_n = math.tan(fov_y / 2) * Z_near
+
+    x_f = math.tan(fov_x / 2) * Z_far
+    y_f = math.tan(fov_y / 2) * Z_far
+
+    points = [Point(-x_n, y_n, Z_near),
+              Point(x_n, y_n, Z_near),
+              Point(x_n, -y_n, Z_near),
+              Point(-x_n, -y_n, Z_near),
+              Point(-x_f, y_f, Z_far),
+              Point(x_f, y_f, Z_far),
+              Point(x_f, -y_f, Z_far),
+              Point(-x_f, -y_f, Z_far)]
+
+    # ------------------------------------
+    # Define wireframe
+    # ------------------------------------
+
+    color_rviz = ColorRGBA(r=color[0]/2, g=color[1]/2, b=color[2]/2, a=1.0)
+    marker = Marker(ns=ns+'_wireframe', type=Marker.LINE_LIST, action=Marker.ADD, header=Header(frame_id=frame_id),
+                    color=color_rviz)
+
+    marker.scale.x = 0.005  # line width
+    marker.pose.orientation.w = 1.0
+
+    # marker line points
+    marker.points.append(points[0])
+    marker.points.append(points[1])
+
+    marker.points.append(points[1])
+    marker.points.append(points[2])
+
+    marker.points.append(points[2])
+    marker.points.append(points[3])
+
+    marker.points.append(points[3])
+    marker.points.append(points[0])
+
+    marker.points.append(points[0])
+    marker.points.append(points[4])
+
+    marker.points.append(points[1])
+    marker.points.append(points[5])
+
+    marker.points.append(points[2])
+    marker.points.append(points[6])
+
+    marker.points.append(points[3])
+    marker.points.append(points[7])
+
+    marker.points.append(points[4])
+    marker.points.append(points[5])
+
+    marker.points.append(points[5])
+    marker.points.append(points[6])
+
+    marker.points.append(points[6])
+    marker.points.append(points[7])
+
+    marker.points.append(points[7])
+    marker.points.append(points[4])
+
+    marker_array.markers.append(copy.deepcopy(marker))
+
+    # ------------------------------------
+    # Define filled
+    # ------------------------------------
+    color_rviz = ColorRGBA(r=color[0], g=color[1], b=color[2], a=0.5)
+    marker = Marker(ns=ns+'_filled', type=Marker.TRIANGLE_LIST, action=Marker.ADD, header=Header(frame_id=frame_id),
+                    color=color_rviz)
+
+    marker.scale.x = 1  # line width
+    marker.scale.y = 1  # line width
+    marker.scale.z = 1  # line width
+    marker.pose.orientation.w = 1.0
+
+    # marker triangles of the lateral face of the frustum pyramid
+    marker.points.append(points[1])
+    marker.points.append(points[2])
+    marker.points.append(points[6])
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+
+    marker.points.append(points[1])
+    marker.points.append(points[6])
+    marker.points.append(points[5])
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+
+    marker.points.append(points[0])
+    marker.points.append(points[4])
+    marker.points.append(points[3])
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+
+    marker.points.append(points[3])
+    marker.points.append(points[4])
+    marker.points.append(points[7])
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+
+    marker.points.append(points[0])
+    marker.points.append(points[1])
+    marker.points.append(points[5])
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+
+    marker.points.append(points[0])
+    marker.points.append(points[4])
+    marker.points.append(points[5])
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+
+    marker.points.append(points[3])
+    marker.points.append(points[2])
+    marker.points.append(points[6])
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+
+    marker.points.append(points[3])
+    marker.points.append(points[6])
+    marker.points.append(points[7])
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+    marker.colors.append(color_rviz)
+
+    marker_array.markers.append(copy.deepcopy(marker))
+
+    return marker_array
 
 
 def main():
@@ -34,6 +186,10 @@ def main():
     rospy.init_node('visualize_dataset')
     rate = rospy.Rate(10) 
     
+
+    
+
+
     marker_pub = rospy.Publisher("/marker_array", MarkerArray, queue_size=10)
     tf_broadcaster=tf2_ros.TransformBroadcaster()
     #colormap = cm.tab20(np.linspace(0, 1, len(train_dataset)))
@@ -43,66 +199,209 @@ def main():
         markers = MarkerArray()
         
         marker = Marker(header=Header(frame_id="map", stamp=rospy.Time.now()),
-                        id=0, frame_locked=False,
+                        id=0, frame_locked=False, ns='textured_mesh',
                         type=Marker.MESH_RESOURCE, action=Marker.ADD, lifetime=rospy.Duration(0),
                         pose=Pose(position=Point(x=0, y=0, z=0), orientation=Quaternion(x=0, y=0, z=0, w=1)),
                         scale=Vector3(x=1.0, y=1.0, z=1.0))
         #marker.mesh_resource = 'file:///home/danc/models_3d/room_024/room_024.dae'
-        marker.mesh_resource = 'file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae'
+        # marker.mesh_resource = 'file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae'
+        marker.mesh_resource = 'file:///home/mike/models_3d/santuario/Virtudes_Chapel.dae'
         marker.mesh_use_embedded_materials = True
         markers.markers.append(marker)
+
+        # Mesh without color and low res for collision 
+        marker = Marker(header=Header(frame_id="map", stamp=rospy.Time.now()),
+                        id=0, frame_locked=False, ns='nocolor_mesh',
+                        type=Marker.MESH_RESOURCE, action=Marker.ADD, lifetime=rospy.Duration(0),
+                        pose=Pose(position=Point(x=0, y=0, z=0), orientation=Quaternion(x=0, y=0, z=0, w=1)),
+                        scale=Vector3(x=1.0, y=1.0, z=1.0))
+        marker.color.r = 0.7
+        marker.color.g = 0.7
+        marker.color.b = 0.7
+        marker.color.a = 1
+
+       
+
+        marker.mesh_resource = 'file:///home/mike/models_3d/santuario_collision/Virtudes_Chapel.dae'
+        marker.mesh_use_embedded_materials = False
+        markers.markers.append(marker)
+ 
         
         
-        for idx in range(len(train_dataset)):
-            print(idx)
+        step = round(len(train_dataset)/3)
+
+        import tf
+        br = tf.TransformBroadcaster()
+        # colormap = cm.Pastel2(np.linspace(0, 1, round(len(train_dataset)/step)))
+        colormap = cm.hsv(np.linspace(0, 1, round(len(train_dataset)/step)))
+
+
+        collections = []
+        for idx in range(0, len(train_dataset), step):
+            _, pose = train_dataset[idx]
+            collections.append({'pose_idx':idx, 'pose':pose})
+
+
+         # test collision and highlight collision triangle 
+        mesh = trimesh.load('/home/mike/models_3d/santuario_collision/Virtudes_Chapel.dae', force='mesh')
+
+        home_point = (0,0,0)
+       
+
+        for idx, collection in enumerate(collections):
+
+            pose = collection['pose']
+            pose_idx = collection['pose_idx']
             
             if idx > 200000:
                 continue
         
-            # publish markers
-            _, pose = train_dataset[idx]
-            
             ######  REAL ########
+            stamp = rospy.Time.now()
             
             # Rotate orientation because the arrow points to the X-axis! (it must point to Z-axis)
-            pose_marker = copy.deepcopy(pose)
-            matrix_quaternion_marker =R.from_quat(pose_marker[3:]).as_matrix()
-            rotate_y90 = R.from_euler('y', -90, degrees=True).as_matrix()
-            matrix_quaternion_marker = np.dot(matrix_quaternion_marker,rotate_y90)
-            quaternion_marker = R.from_matrix(matrix_quaternion_marker).as_quat()
-            
-            marker = Marker(header=Header(frame_id="map", stamp=rospy.Time.now()))
+            # pose_marker = copy.deepcopy(pose)
+            # matrix_quaternion_marker =R.from_quat(pose_marker[3:]).as_matrix()
+            # rotate_y90 = R.from_euler('y', -90, degrees=True).as_matrix()
+            # matrix_quaternion_marker = np.dot(matrix_quaternion_marker,rotate_y90)
+            # quaternion_marker = R.from_matrix(matrix_quaternion_marker).as_quat()
+
+            pose_frame_id = "pose" + str(pose_idx)
+
+            marker = Marker(header=Header(frame_id=pose_frame_id, stamp=stamp))
             marker.type = marker.ARROW
             marker.action = marker.ADD
             marker.scale.x = 0.3
-            marker.scale.y = 0.05
-            marker.scale.z = 0.05
+            marker.scale.y = 0.01
+            marker.scale.z = 0.01
             marker.color.a = 0.8
             marker.color.r = 0.3
             marker.color.g = 0.6
             marker.color.b = 0.3
-            marker.pose.orientation.x = quaternion_marker[0]
-            marker.pose.orientation.y = quaternion_marker[1]
-            marker.pose.orientation.z = quaternion_marker[2]
-            marker.pose.orientation.w = quaternion_marker[3]
-            marker.pose.position.x = pose[0]
-            marker.pose.position.y = pose[1]
-            marker.pose.position.z = pose[2]
+            quat = R.from_euler('y', -90, degrees=True).as_quat()
+            marker.pose.orientation.x = quat[0]
+            marker.pose.orientation.y = quat[1]
+            marker.pose.orientation.z = quat[2]
+            marker.pose.orientation.w = quat[3]
+            marker.pose.position.x = 0
+            marker.pose.position.y = 0
+            marker.pose.position.z = 0
             marker.ns = 'real'
             marker.id = idx
             
             markers.markers.append(marker)
             
-            ######  PREDICTED  ########
+
+            translation = tuple(pose[0:3])
+            quaternion = tuple(pose[3:])
+            br.sendTransform(translation,quaternion,stamp, pose_frame_id, 'map')
+
+           
+            # add frustum to marker array
+            config = train_dataset.getConfig()
+            w = config['rgb']['width']
+            h = config['rgb']['height']
+            #TODO get intrinsics from dataset
+            f_x = 554.25469
+            f_y = 554.25469
+            z_near = 0.1
+            z_far = 0.5
+
+            color = (colormap[idx, 2], colormap[idx, 1], colormap[idx, 0])
+
+
+            frustum_marker_array = getFrustumMarkerArray(w, h, f_x, f_y, z_near, z_far, pose_frame_id, pose_frame_id, color)
+
+            markers.markers.extend(frustum_marker_array.markers)
+
+            # Add dslr camera marker array
+            marker = Marker(header=Header(frame_id=pose_frame_id, stamp=stamp),
+                            id=0, frame_locked=False, ns=pose_frame_id,
+                            type=Marker.MESH_RESOURCE, action=Marker.ADD, lifetime=rospy.Duration(0),
+                            pose=Pose(position=Point(x=0, y=0, z=0), orientation=Quaternion(x=0, y=0, z=0, w=1)),
+                            scale=Vector3(x=0.001, y=0.001, z=0.001))
+            marker.mesh_resource = "package://localbot_description/meshes/dslr_camera/dslr_camera.dae" 
+            marker.color.r = 1
+            marker.color.g = 1
+            marker.color.b = 0
+            marker.color.a = 1
+            marker.mesh_use_embedded_materials = True
+            markers.markers.append(marker)
+ 
+            # test collision to "home" point
+            p1_xyz = np.array([0,0,0])
+
+            p2_xyz = np.array([translation[0], translation[1], translation[2]])
+
+            dist_p1_to_p2 = np.linalg.norm(p2_xyz-p1_xyz)
+
+            print(
+                f' {Fore.BLUE} Checking collision... {Fore.RESET} between {p1_xyz} and {p2_xyz}')
+
+            orientation = p2_xyz - p1_xyz
+            norm_orientation = np.linalg.norm(orientation)
+            orientation = orientation / norm_orientation
+
+            ray_origins = np.array([p1_xyz])
+            ray_directions = np.array([orientation])
+
+            collisions, _, idx_face = mesh.ray.intersects_location(
+                ray_origins=ray_origins,
+                ray_directions=ray_directions)
+
+
+            print('collisions ' + str(collisions))
+            print('idx_face ' + str(idx_face))
+
+            idx_vertices = mesh.faces[idx_face]
+
+            print('idx_vertices ' + str(idx_vertices))
+
+            print('idx_vertices[0] ' + str(idx_vertices[0][0]))
+
+            v1 = mesh.vertices[idx_vertices[0][0]]
+            v2 = mesh.vertices[idx_vertices[0][1]]
+            v3 = mesh.vertices[idx_vertices[0][2]]
+
+
+            def fromVerticeToPoint(v):
+                return Point(v[0], v[1], v[2])
+
+            # Highlight triangle of collision
+            marker = Marker(header=Header(frame_id='map', stamp=stamp))
+            # marker.type = marker.SPHERE_LIST
+            marker.type = marker.TRIANGLE_LIST
+            marker.action = marker.ADD
+            marker.scale.x = 1
+            marker.scale.y = 1
+            marker.scale.z = 1
+            marker.color.a = 1
+            marker.color.r = 1
+            marker.color.g = 0
+            marker.color.b = 0
+            marker.pose.orientation.x = 0
+            marker.pose.orientation.y = 0
+            marker.pose.orientation.z = 0
+            marker.pose.orientation.w = 1
+            marker.ns = 'collision_triangle_' + str(idx)
+            marker.id = 0
             
-            ## DEBUG
-            # if idx==0:
-            #     transform = TransformStamped(header=Header(frame_id="map", stamp=rospy.Time.now()),
-            #                                         child_frame_id=f'frame{idx}',
-            #                                         transform=Transform(translation=Vector3(x=pose[0], y=pose[1], z=pose[2]),
-            #                                                             rotation=Quaternion(x=pose[3], y=pose[4], z=pose[5], w=pose[6])))
-            #     tf_broadcaster.sendTransform(transform)
-            
+            marker.points.append(fromVerticeToPoint(v1))
+            marker.points.append(fromVerticeToPoint(v2))
+            marker.points.append(fromVerticeToPoint(v3))
+            marker.colors.append(ColorRGBA(1,0,0,1))
+            marker.colors.append(ColorRGBA(1,0,0,1))
+            marker.colors.append(ColorRGBA(1,0,0,1))
+
+            marker.points.append(fromVerticeToPoint(v3))
+            marker.points.append(fromVerticeToPoint(v2))
+            marker.points.append(fromVerticeToPoint(v1))
+            marker.colors.append(ColorRGBA(1,0,0,1))
+            marker.colors.append(ColorRGBA(1,0,0,1))
+            marker.colors.append(ColorRGBA(1,0,0,1))
+
+
+            markers.markers.append(marker)
        
         marker_pub.publish(markers)       
         rate.sleep()
