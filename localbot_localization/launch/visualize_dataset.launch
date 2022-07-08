@@ -5,6 +5,6 @@
     </node>
 
     <!-- Sleep 1 is to give time for the spawn to be finished-->
-    <node name="visualize_results" pkg="localbot_localization" type="visualize_dataset" args="--dataset $(arg dataset)" output='screen'/> 
+    <node name="visualize_dataset" pkg="localbot_localization" type="visualize_dataset" args="--dataset $(arg dataset)" output='screen'/> 
     
 </launch>

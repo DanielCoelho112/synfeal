@@ -8,22 +8,22 @@ import copy
 import random
 import math
 
-
 # 3rd-party
 import rospy
+import tf
+import numpy as np
+import trimesh
 from geometry_msgs.msg import Point, Pose, Quaternion
 from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 from gazebo_msgs.srv import SetModelState, GetModelState, GetModelStateRequest, SetModelStateRequest
+from colorama import Fore
+from scipy.spatial.transform import Rotation as R
+
 from localbot_core.src.save_dataset import SaveDataset
-import tf
-import numpy as np
 from localbot_core.src.utilities import *
 from localbot_core.src.utilities_ros import *
-from colorama import Fore
-import trimesh
-from scipy.spatial.transform import Rotation as R
 
 
 class AutomaticDataCollection():
@@ -302,6 +302,7 @@ class AutomaticDataCollection():
             print('not using COLLISIONS.')
             return False
         # load mesh
+        #TODO #83 this should not be hardcoded
         mesh = trimesh.load(
             '/home/danc/models_3d/santuario_collision/Virtudes_Chapel.dae', force='mesh')
 
