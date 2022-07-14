@@ -1,21 +1,22 @@
 import copy
 import functools
 import json
-import numpy as np
 import os
-from scipy.spatial.transform import Rotation as R
-from colorama import Fore, Style
+import math
+
+import numpy as np
 import cv2
 import tf
-from geometry_msgs.msg import Pose
-from localbot_core.src.pypcd import PointCloud
-from visualization_msgs.msg import *
 import rospy
-from std_msgs.msg import Header
-from geometry_msgs.msg import Point, Pose, Vector3, Quaternion, TransformStamped, Transform
-import math
+from scipy.spatial.transform import Rotation as R
+from colorama import Fore, Style
+from geometry_msgs.msg import Pose, Point, Vector3, Quaternion, TransformStamped, Transform
+from visualization_msgs.msg import *
 from std_msgs.msg import Header, ColorRGBA
-    
+
+from localbot_core.src.pypcd import PointCloud
+
+
 def data2pose(data):
     
     if type(data) is str:
@@ -153,7 +154,7 @@ def createArrowMarker(pose, color):
     
     return marker
 
-def getFrustumMarkerArray(w, h, f_x, f_y, Z_near, Z_far, frame_id, ns, color):
+def getFrustumMarkerArray(w, h, f_x, f_y, Z_near, Z_far, frame_id, ns, color, alpha=0.9, thickness=0.005):
     # big help from https: // github.com/ros-visualization/rviz/issues/925
     marker_array = MarkerArray()
 
@@ -185,7 +186,7 @@ def getFrustumMarkerArray(w, h, f_x, f_y, Z_near, Z_far, frame_id, ns, color):
     marker = Marker(ns=ns+'_wireframe', type=Marker.LINE_LIST, action=Marker.ADD, header=Header(frame_id=frame_id),
                     color=color_rviz)
 
-    marker.scale.x = 0.005  # line width
+    marker.scale.x = thickness  # line width
     marker.pose.orientation.w = 1.0
 
     # marker line points
@@ -230,7 +231,7 @@ def getFrustumMarkerArray(w, h, f_x, f_y, Z_near, Z_far, frame_id, ns, color):
     # ------------------------------------
     # Define filled
     # ------------------------------------
-    color_rviz = ColorRGBA(r=color[0], g=color[1], b=color[2], a=0.9)
+    color_rviz = ColorRGBA(r=color[0], g=color[1], b=color[2], a=alpha)
     marker = Marker(ns=ns+'_filled', type=Marker.TRIANGLE_LIST, action=Marker.ADD, header=Header(frame_id=frame_id),
                     color=color_rviz)
 

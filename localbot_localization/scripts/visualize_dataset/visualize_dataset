@@ -205,7 +205,8 @@ def main():
                         scale=Vector3(x=1.0, y=1.0, z=1.0))
         #marker.mesh_resource = 'file:///home/danc/models_3d/room_024/room_024.dae'
         # marker.mesh_resource = 'file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae'
-        marker.mesh_resource = 'file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae'
+        # marker.mesh_resource = 'file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae'
+        marker.mesh_resource = 'file:///home/mike/models_3d/santuario/Virtudes_Chapel.dae'
         marker.mesh_use_embedded_materials = True
         markers.markers.append(marker)
 
@@ -222,7 +223,8 @@ def main():
 
        
 
-        marker.mesh_resource = 'file:///home/danc/models_3d/santuario_collision/Virtudes_Chapel.dae'
+        # marker.mesh_resource = 'file:///home/danc/models_3d/santuario_collision/Virtudes_Chapel.dae'
+        marker.mesh_resource = 'file:///home/mike/models_3d/santuario_collision/Virtudes_Chapel.dae'
         marker.mesh_use_embedded_materials = False
         markers.markers.append(marker)
  
@@ -243,7 +245,8 @@ def main():
 
 
          # test collision and highlight collision triangle 
-        mesh = trimesh.load('/home/danc/models_3d/santuario_collision/Virtudes_Chapel.dae', force='mesh')
+        # mesh = trimesh.load('/home/danc/models_3d/santuario_collision/Virtudes_Chapel.dae', force='mesh')
+        mesh = trimesh.load('/home/mike/models_3d/santuario_collision/Virtudes_Chapel.dae', force='mesh')
 
         home_point = (0,0,0)
        

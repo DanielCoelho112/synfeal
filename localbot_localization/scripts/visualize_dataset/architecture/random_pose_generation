@@ -13,6 +13,7 @@ import trimesh
 import rospy
 import numpy as np
 import tf2_ros
+import tf
 from colorama import Fore, Style
 from std_msgs.msg import Header, ColorRGBA
 from geometry_msgs.msg import Point, Pose, Vector3, Quaternion, TransformStamped, Transform
@@ -20,9 +21,10 @@ from visualization_msgs.msg import *
 from scipy.spatial.transform import Rotation as R
 from tf.transformations import *
 from matplotlib import cm
+
 from localbot_core.src.utilities_ros import getFrustumMarkerArray
 from localbot_localization.src.dataset import LocalBotDataset
-import tf
+
 
 def main():
     
@@ -59,7 +61,8 @@ def main():
                         type=Marker.MESH_RESOURCE, action=Marker.ADD, lifetime=rospy.Duration(0),
                         pose=Pose(position=Point(x=0, y=0, z=0), orientation=Quaternion(x=0, y=0, z=0, w=1)),
                         scale=Vector3(x=1.0, y=1.0, z=1.0))
-        marker.mesh_resource = 'file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae'
+        # marker.mesh_resource = 'file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae'
+        marker.mesh_resource = 'file:///home/mike/models_3d/santuario/Virtudes_Chapel.dae'
         marker.mesh_use_embedded_materials = True
         markers.markers.append(marker)
 
@@ -79,8 +82,27 @@ def main():
             collections.append({'pose_idx':idx, 'pose':pose})
 
 
+        # Hardcoding the poses
+        del collections
+        collections = []
+
+        q = R.from_euler('xyz', [-135, 90, 0], degrees=True).as_quat()
+        collections.append({'pose_idx':0, 'pose':[1, 0.5, 0.9, q[0], q[1], q[2], q[3]]})
+
+        q = R.from_euler('zyx', [0, 40, -80], degrees=True).as_quat()
+        collections.append({'pose_idx':1, 'pose':[2.17, 4.25, 0.85, q[0], q[1], q[2], q[3]]})
+
+
+        # q = R.from_euler('zyx', [0, 180, -90], degrees=True).as_quat()
+        # collections.append({'pose_idx':2, 'pose':[1.80, -3.91, 0.91, q[0], q[1], q[2], q[3]]})
+
+        q = R.from_euler('zyx', [0, 115, -90], degrees=True).as_quat()
+        collections.append({'pose_idx':2, 'pose':[1.20, -3, 0.5, q[0], q[1], q[2], q[3]]})
+
+
         # test collision and highlight collision triangle 
-        mesh = trimesh.load('/home/danc/models_3d/santuario_collision/Virtudes_Chapel.dae', force='mesh')
+        # mesh = trimesh.load('/home/danc/models_3d/santuario_collision/Virtudes_Chapel.dae', force='mesh')
+        mesh = trimesh.load('/home/mike/models_3d/santuario_collision/Virtudes_Chapel.dae', force='mesh')
 
         home_point = (0,0,0)
        
@@ -98,7 +120,7 @@ def main():
             # Rotate orientation because the arrow points to the X-axis! (it must point to Z-axis)
             pose_marker = copy.deepcopy(pose)
             matrix_quaternion_marker =R.from_quat(pose_marker[3:]).as_matrix()
-            rotate_y90 = R.from_euler('y', +90, degrees=True).as_matrix()
+            rotate_y90 = R.from_euler('y', 0, degrees=True).as_matrix()
             matrix_quaternion_marker = np.dot(matrix_quaternion_marker,rotate_y90)
             quaternion_marker = R.from_matrix(matrix_quaternion_marker).as_quat()
 
@@ -133,13 +155,13 @@ def main():
             color = colors_dict[idx]
 
 
-            frustum_marker_array = getFrustumMarkerArray(w, h, f_x, f_y, z_near, z_far, pose_frame_id, pose_frame_id, color)
+            frustum_marker_array = getFrustumMarkerArray(w, h, f_x, f_y, z_near, z_far, pose_frame_id, pose_frame_id, color, alpha=0.5, thickness=0.05)
 
             markers.markers.extend(frustum_marker_array.markers)
 
             if idx==0:
                 
-                rotate_y90 = R.from_euler('z', 90, degrees=True).as_quat()
+                rotate_y90 = R.from_euler('z', 0, degrees=True).as_quat()
             
                 # Add dslr camera marker array
                 marker = Marker(header=Header(frame_id=pose_frame_id, stamp=stamp),
