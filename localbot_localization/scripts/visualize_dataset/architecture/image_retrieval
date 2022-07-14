@@ -1,0 +1,152 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+from re import I
+from zlib import Z_NO_COMPRESSION
+
+import trimesh
+
+# 3rd-party
+import rospy
+import numpy as np
+import tf2_ros
+from colorama import Fore, Style
+from std_msgs.msg import Header, ColorRGBA
+from geometry_msgs.msg import Point, Pose, Vector3, Quaternion, TransformStamped, Transform
+from visualization_msgs.msg import *
+from scipy.spatial.transform import Rotation as R
+from tf.transformations import *
+from matplotlib import cm
+from localbot_core.src.utilities_ros import getFrustumMarkerArray
+from localbot_localization.src.dataset import LocalBotDataset
+import tf
+
+def fromVerticeToPoint(v):
+    return Point(v[0], v[1], v[2])
+
+def main():
+    
+    parser = argparse.ArgumentParser(description='Visualizing dataset')
+    parser.add_argument('-dataset', '--dataset', type=str, required=True, help='Name of the training set')
+    
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+    
+    dataset = LocalBotDataset(path_seq=args['dataset'], inputs='rgb_image')
+    
+    rospy.init_node('visualize_dataset')
+    rate = rospy.Rate(10) 
+    
+
+    marker_pub = rospy.Publisher("/marker_array", MarkerArray, queue_size=10)
+    
+    br = tf.TransformBroadcaster()  
+
+    
+    
+    while not rospy.is_shutdown():
+        markers = MarkerArray()
+        
+        
+        # colormap = cm.Pastel2(np.linspace(0, 1, round(len(train_dataset)/step)))
+        colormap = cm.hsv(np.linspace(0, 1, 7))
+
+        step = 13
+        collections = []
+        for idx in range(2, len(dataset), step):
+            print(idx)
+            _, pose = dataset[idx]
+            collections.append({'pose_idx':idx, 'pose':pose})
+                
+                
+        colormap = cm.Greens(np.linspace(0, 1, round(len(dataset)/step)+4))
+        
+        marker = Marker(header=Header(frame_id="map", stamp=rospy.Time.now()),
+                        id=0, frame_locked=False, ns='textured_mesh',
+                        type=Marker.MESH_RESOURCE, action=Marker.ADD, lifetime=rospy.Duration(0),
+                        pose=Pose(position=Point(x=0, y=0, z=0), orientation=Quaternion(x=0, y=0, z=0, w=1)),
+                        scale=Vector3(x=1.0, y=1.0, z=1.0))
+        marker.mesh_resource = 'file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae'
+        marker.mesh_use_embedded_materials = True
+        markers.markers.append(marker)
+
+        
+        for idx, collection in enumerate(collections):
+
+            pose = collection['pose']
+            pose_idx = collection['pose_idx']
+            
+           
+            stamp = rospy.Time.now()
+            
+            # Rotate orientation because the arrow points to the X-axis! (it must point to Z-axis)
+            pose_marker = copy.deepcopy(pose)
+            matrix_quaternion_marker =R.from_quat(pose_marker[3:]).as_matrix()
+            rotate_y90 = R.from_euler('y', +90, degrees=True).as_matrix()
+            matrix_quaternion_marker = np.dot(matrix_quaternion_marker,rotate_y90)
+            quaternion_marker = R.from_matrix(matrix_quaternion_marker).as_quat()
+
+            pose_frame_id = "pose" + str(pose_idx)
+        
+            translation = tuple(pose[0:3])
+            quaternion = tuple(pose[3:])
+            #quaternion = quaternion_marker
+            br.sendTransform(translation,quaternion,stamp, pose_frame_id, 'map')
+
+           
+            # add frustum to marker array
+            config = dataset.getConfig()
+            w = config['rgb']['width']
+            h = config['rgb']['height']
+            #TODO get intrinsics from dataset
+            f_x = 554.25469
+            f_y = 554.25469
+            z_near = 0.1
+            z_far = 0.5
+
+            
+            color = (colormap[idx, 0], colormap[idx, 1], colormap[idx, 2])
+            
+
+            frustum_marker_array = getFrustumMarkerArray(w, h, f_x, f_y, z_near, z_far, pose_frame_id, pose_frame_id, color)
+
+            markers.markers.extend(frustum_marker_array.markers)
+
+           
+            
+            rotate_y90 = R.from_euler('z', 180, degrees=True).as_quat()
+        
+            # Add dslr camera marker array
+            marker = Marker(header=Header(frame_id=pose_frame_id, stamp=stamp),
+                            id=0, frame_locked=False, ns=pose_frame_id,
+                            type=Marker.MESH_RESOURCE, action=Marker.ADD, lifetime=rospy.Duration(0),
+                            pose=Pose(position=Point(x=0, y=0, z=0), orientation=Quaternion(x=rotate_y90[0], y=rotate_y90[1], z=rotate_y90[2], w=rotate_y90[3])),
+                            scale=Vector3(x=0.0015, y=0.0015, z=0.0015))
+            marker.mesh_resource = "package://localbot_description/meshes/dslr_camera/dslr_camera.dae" 
+            marker.color.r = color[0]
+            marker.color.g = color[1]
+            marker.color.b = color[2]
+            marker.color.a = 1
+            marker.mesh_use_embedded_materials = False
+            markers.markers.append(marker)
+
+    
+                
+
+            
+       
+        marker_pub.publish(markers)       
+        rate.sleep()
+        
+        
+        
+    
+    
+if __name__ == "__main__":
+    main()
+
+
+

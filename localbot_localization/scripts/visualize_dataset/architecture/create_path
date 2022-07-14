@@ -1,0 +1,148 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+from re import I
+from zlib import Z_NO_COMPRESSION
+
+import trimesh
+
+# 3rd-party
+import rospy
+import numpy as np
+import tf2_ros
+from colorama import Fore, Style
+from std_msgs.msg import Header, ColorRGBA
+from geometry_msgs.msg import Point, Pose, Vector3, Quaternion, TransformStamped, Transform
+from visualization_msgs.msg import *
+from scipy.spatial.transform import Rotation as R
+from tf.transformations import *
+from matplotlib import cm
+from localbot_core.src.utilities_ros import getFrustumMarkerArray
+from localbot_localization.src.dataset import LocalBotDataset
+import tf
+from os.path import exists
+import rospkg
+import yaml
+from yaml.loader import SafeLoader
+from localbot_core.src.automatic_data_collection import AutomaticDataCollection
+from localbot_core.src.utilities import *
+from localbot_core.src.utilities_ros import *
+
+def main():
+    
+    parser = argparse.ArgumentParser(description='Visualizing dataset')
+    parser.add_argument('-dataset', '--dataset', type=str, required=True, help='Name of the training set')
+    parser.add_argument('-mc', '--model3d_config', type=str,
+                        required=True, help='model3d config to use')
+    
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+    
+    dataset = LocalBotDataset(path_seq=args['dataset'], inputs='rgb_image')
+    
+    rospy.init_node('create_path')
+    rate = rospy.Rate(10) 
+    
+    localbot_core_path = rospkg.RosPack().get_path('localbot_core')
+    model3d_config_path = f'{localbot_core_path}/model3d_config/{args["model3d_config"]}'
+    
+    if exists(model3d_config_path):
+        with open(model3d_config_path) as f:
+            model3d_config = yaml.load(f, Loader=SafeLoader)
+            model3d_config['name'] = args["model3d_config"]
+    data_collector = AutomaticDataCollection(
+            model_name='localbot', seq='dataset_arch_updated_path', dbf=0.05, uvl=False, model3d_config= model3d_config, fast= True)
+    
+    
+    _, pose_initial_dataset = dataset[0]
+    _, pose_final_dataset = dataset[1]
+    
+    
+    
+    initial_pose = Pose()
+    initial_pose.position.x =    pose_initial_dataset[0]
+    initial_pose.position.y =    pose_initial_dataset[1]
+    initial_pose.position.z =    pose_initial_dataset[2]
+    initial_pose.orientation.x = pose_initial_dataset[3]
+    initial_pose.orientation.y = pose_initial_dataset[4]
+    initial_pose.orientation.z = pose_initial_dataset[5]
+    initial_pose.orientation.w = pose_initial_dataset[6]
+    
+    final_pose = Pose()
+    final_pose.position.x =    pose_final_dataset[0]
+    final_pose.position.y =    pose_final_dataset[1]
+    final_pose.position.z =    pose_final_dataset[2]
+    final_pose.orientation.x = pose_final_dataset[3]
+    final_pose.orientation.y = pose_final_dataset[4]
+    final_pose.orientation.z = pose_final_dataset[5]
+    final_pose.orientation.w = pose_final_dataset[6]
+    
+    xyz_initial = np.array(
+                    [initial_pose.position.x, initial_pose.position.y, initial_pose.position.z])
+    xyz_final = np.array(
+                    [final_pose.position.x, final_pose.position.y, final_pose.position.z])
+    l2_dst = np.linalg.norm(xyz_final - xyz_initial)
+    
+    # compute n_steps based on l2_dist
+    n_steps = int(l2_dst / 0.05)
+
+    print('using n_steps of: ', n_steps)
+
+    step_poses = []  # list of tuples
+    rx, ry, rz = tf.transformations.euler_from_quaternion(
+        [initial_pose.orientation.x, initial_pose.orientation.y, initial_pose.orientation.z, initial_pose.orientation.w])
+    pose_initial_dct = {'x': initial_pose.position.x,
+                        'y': initial_pose.position.y,
+                        'z': initial_pose.position.z,
+                        'rx': rx,
+                        'ry': ry,
+                        'rz': rz}
+
+    rx, ry, rz = tf.transformations.euler_from_quaternion(
+    [final_pose.orientation.x, final_pose.orientation.y, final_pose.orientation.z, final_pose.orientation.w])
+    pose_final_dct = {'x': final_pose.position.x,
+                        'y': final_pose.position.y,
+                        'z': final_pose.position.z,
+                        'rx': rx,
+                        'ry': ry,
+                        'rz': rz}
+
+    x_step_var = (pose_final_dct['x'] - pose_initial_dct['x']) / n_steps
+    y_step_var = (pose_final_dct['y'] - pose_initial_dct['y']) / n_steps
+    z_step_var = (pose_final_dct['z'] - pose_initial_dct['z']) / n_steps
+    rx_step_var = (pose_final_dct['rx'] - pose_initial_dct['rx']) / n_steps
+    ry_step_var = (pose_final_dct['ry'] - pose_initial_dct['ry']) / n_steps
+    rz_step_var = (pose_final_dct['rz'] - pose_initial_dct['rz']) / n_steps
+
+    for i in range(n_steps):
+        dct = {'x': pose_initial_dct['x'] + (i + 1) * x_step_var,
+                'y': pose_initial_dct['y'] + (i + 1) * y_step_var,
+                'z': pose_initial_dct['z'] + (i + 1) * z_step_var,
+                'rx': pose_initial_dct['rx'] + (i + 1) * rx_step_var,
+                'ry': pose_initial_dct['ry'] + (i + 1) * ry_step_var,
+                'rz': pose_initial_dct['rz'] + (i + 1) * rz_step_var}
+        pose = data2pose(dct)
+        step_poses.append(pose)
+    
+    print(step_poses)
+
+    for idx, pose in enumerate(step_poses):
+        data_collector.setPose(pose)
+        rospy.sleep(0.001)
+        data_collector.saveFrame()
+        rate.sleep()
+    print('final destination arrived')
+
+    
+        
+        
+    
+    
+if __name__ == "__main__":
+    main()
+
+
+

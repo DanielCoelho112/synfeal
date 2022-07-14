@@ -1,0 +1,285 @@
+#!/usr/bin/env python3
+
+# stdlib
+import sys
+import argparse
+import copy
+from re import I
+from zlib import Z_NO_COMPRESSION
+
+import trimesh
+
+# 3rd-party
+import rospy
+import numpy as np
+import tf2_ros
+from colorama import Fore, Style
+from std_msgs.msg import Header, ColorRGBA
+from geometry_msgs.msg import Point, Pose, Vector3, Quaternion, TransformStamped, Transform
+from visualization_msgs.msg import *
+from scipy.spatial.transform import Rotation as R
+from tf.transformations import *
+from matplotlib import cm
+from localbot_core.src.utilities_ros import getFrustumMarkerArray
+from localbot_localization.src.dataset import LocalBotDataset
+import tf
+
+def fromVerticeToPoint(v):
+    return Point(v[0], v[1], v[2])
+
+def main():
+    
+    parser = argparse.ArgumentParser(description='Visualizing dataset')
+    parser.add_argument('-dataset', '--dataset', type=str, required=True, help='Name of the training set')
+    
+    arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
+    args = vars(parser.parse_args(args=arglist))
+    
+    train_dataset = LocalBotDataset(path_seq=args['dataset'], inputs='rgb_image')
+    
+    rospy.init_node('visualize_dataset')
+    rate = rospy.Rate(10) 
+    
+
+    marker_pub = rospy.Publisher("/marker_array", MarkerArray, queue_size=10)
+    colormap = cm.hsv(np.linspace(0, 1, 7))
+    br = tf.TransformBroadcaster()  
+    
+    colors_dict = {0 : [1,1,1],
+                   1 : [0,1,0],
+                   2 : [0,1,0],
+                   3 : [1,0,0],
+                   4 : [1,0,0],
+                   5 : [1,1,0]}
+    
+    
+    while not rospy.is_shutdown():
+        
+        markers = MarkerArray()
+        
+        # Mesh without color and low res for collision 
+        marker = Marker(header=Header(frame_id="map", stamp=rospy.Time.now()),
+                        id=0, frame_locked=False, ns='nocolor_mesh',
+                        type=Marker.MESH_RESOURCE, action=Marker.ADD, lifetime=rospy.Duration(0),
+                        pose=Pose(position=Point(x=0, y=0, z=0), orientation=Quaternion(x=0, y=0, z=0, w=1)),
+                        scale=Vector3(x=1.0, y=1.0, z=1.0))
+        marker.color.r = 0.5
+        marker.color.g = 0.5
+        marker.color.b = 0.5
+        marker.color.a = 1
+        marker.mesh_resource = 'file:///home/danc/models_3d/santuario_collision/Virtudes_Chapel.dae'
+        marker.mesh_use_embedded_materials = False
+        markers.markers.append(marker)
+        
+        # colormap = cm.Pastel2(np.linspace(0, 1, round(len(train_dataset)/step)))
+        colormap = cm.hsv(np.linspace(0, 1, 7))
+
+
+        collections = []
+        for idx in range(0, len(train_dataset)):
+            _, pose = train_dataset[idx]
+            collections.append({'pose_idx':idx, 'pose':pose})
+            if idx==0:
+                # test collision to "home" point
+                p1_xyz = np.array(pose[0:3])
+
+
+        # test collision and highlight collision triangle 
+        mesh = trimesh.load('/home/danc/models_3d/santuario_collision/Virtudes_Chapel.dae', force='mesh')
+
+        
+        for idx, collection in enumerate(collections):
+
+            pose = collection['pose']
+            pose_idx = collection['pose_idx']
+            
+           
+            stamp = rospy.Time.now()
+            
+            # Rotate orientation because the arrow points to the X-axis! (it must point to Z-axis)
+            pose_marker = copy.deepcopy(pose)
+            matrix_quaternion_marker =R.from_quat(pose_marker[3:]).as_matrix()
+            rotate_y90 = R.from_euler('y', +90, degrees=True).as_matrix()
+            matrix_quaternion_marker = np.dot(matrix_quaternion_marker,rotate_y90)
+            quaternion_marker = R.from_matrix(matrix_quaternion_marker).as_quat()
+
+            pose_frame_id = "pose" + str(pose_idx)
+        
+            translation = tuple(pose[0:3])
+            #quaternion = tuple(pose[3:])
+            quaternion = quaternion_marker
+            br.sendTransform(translation,quaternion,stamp, pose_frame_id, 'map')
+
+           
+            # add frustum to marker array
+            config = train_dataset.getConfig()
+            w = config['rgb']['width']
+            h = config['rgb']['height']
+            #TODO get intrinsics from dataset
+            f_x = 554.25469
+            f_y = 554.25469
+            z_near = 0.1
+            z_far = 0.5
+
+            
+            color = colors_dict[idx]
+            
+            # if idx == 0:
+            #     color = (1,1,1)
+            # else:
+            #     color = (colormap[idx, 0], colormap[idx, 1], colormap[idx, 2])
+
+
+            frustum_marker_array = getFrustumMarkerArray(w, h, f_x, f_y, z_near, z_far, pose_frame_id, pose_frame_id, color)
+
+            markers.markers.extend(frustum_marker_array.markers)
+
+            if idx==0:
+                
+                rotate_y90 = R.from_euler('z', 90, degrees=True).as_quat()
+            
+                # Add dslr camera marker array
+                marker = Marker(header=Header(frame_id=pose_frame_id, stamp=stamp),
+                                id=0, frame_locked=False, ns=pose_frame_id,
+                                type=Marker.MESH_RESOURCE, action=Marker.ADD, lifetime=rospy.Duration(0),
+                                pose=Pose(position=Point(x=0, y=0, z=0), orientation=Quaternion(x=rotate_y90[0], y=rotate_y90[1], z=rotate_y90[2], w=rotate_y90[3])),
+                                scale=Vector3(x=0.0015, y=0.0015, z=0.0015))
+                marker.mesh_resource = "package://localbot_description/meshes/dslr_camera/dslr_camera.dae" 
+                marker.color.r = 1
+                marker.color.g = 1
+                marker.color.b = 1
+                marker.color.a = 1
+                marker.mesh_use_embedded_materials = False
+                markers.markers.append(marker)
+ 
+        
+            p2_xyz = np.array([translation[0], translation[1], translation[2]])
+
+            # checking colisions:
+            if idx == 3 or idx == 4:
+            
+                print(
+                    f' {Fore.BLUE} Checking collision... {Fore.RESET} between {p1_xyz} and {p2_xyz}')
+
+                orientation = p2_xyz - p1_xyz
+                
+                norm_orientation = np.linalg.norm(orientation)
+                orientation = orientation / norm_orientation
+
+                ray_origins = np.array([p1_xyz])
+                
+                ray_directions = np.array([orientation])
+
+                collisions, _, idx_face = mesh.ray.intersects_location(
+                    ray_origins=ray_origins,
+                    ray_directions=ray_directions)
+
+
+                print('collisions ' + str(collisions))
+                print('idx_face ' + str(idx_face))
+
+                idx_vertices = mesh.faces[idx_face]
+
+                print('idx_vertices ' + str(idx_vertices))
+
+                print('idx_vertices[0] ' + str(idx_vertices[0][0]))
+
+                v1 = mesh.vertices[idx_vertices[0][0]]
+                v2 = mesh.vertices[idx_vertices[0][1]]
+                v3 = mesh.vertices[idx_vertices[0][2]]
+
+                # Highlight triangle of collision
+                marker = Marker(header=Header(frame_id='map', stamp=stamp))
+                # marker.type = marker.SPHERE_LIST
+                marker.type = marker.TRIANGLE_LIST
+                marker.action = marker.ADD
+                
+                marker.scale.x = 1
+                marker.scale.y = 1
+                marker.scale.z = 1
+                marker.color.a = 1
+                marker.color.r = 1
+                marker.color.g = 0
+                marker.color.b = 0
+                marker.pose.orientation.x = 0
+                marker.pose.orientation.y = 0
+                marker.pose.orientation.z = 0
+                marker.pose.orientation.w = 1
+                marker.ns = 'collision_triangle_' + str(idx)
+                marker.id = 0
+                
+                marker.points.append(fromVerticeToPoint(v1))
+                marker.points.append(fromVerticeToPoint(v2))
+                marker.points.append(fromVerticeToPoint(v3))
+                #marker.colors.append(ColorRGBA(1,0,0,1))
+                #marker.colors.append(ColorRGBA(1,0,0,1))
+                #marker.colors.append(ColorRGBA(1,0,0,1))
+
+
+                markers.markers.append(marker)
+                
+                marker = Marker(header=Header(frame_id='map', stamp=stamp))
+                # marker.type = marker.SPHERE_LIST
+                marker.type = marker.TRIANGLE_LIST
+                marker.action = marker.ADD
+                
+                marker.scale.x = 1
+                marker.scale.y = 1
+                marker.scale.z = 1
+                marker.color.a = 1
+                marker.color.r = 1
+                marker.color.g = 0
+                marker.color.b = 0
+                marker.pose.orientation.x = 0
+                marker.pose.orientation.y = 0
+                marker.pose.orientation.z = 0
+                marker.pose.orientation.w = 1
+                marker.ns = 'collision_triangle_back_' + str(idx)
+                marker.id = 0
+                
+                marker.points.append(fromVerticeToPoint(v3))
+                marker.points.append(fromVerticeToPoint(v2))
+                marker.points.append(fromVerticeToPoint(v1))
+                #marker.colors.append(ColorRGBA(1,0,0,1))
+                #marker.colors.append(ColorRGBA(1,0,0,1))
+                #marker.colors.append(ColorRGBA(1,0,0,1))
+                markers.markers.append(marker)
+            
+            if idx != 0:
+                marker = Marker(header=Header(frame_id='map', stamp=stamp))
+                # marker.type = marker.SPHERE_LIST
+                marker.type = marker.ARROW
+                marker.action = marker.ADD
+                marker.scale.x = 0.03
+                marker.scale.y = 0.1
+                marker.scale.z = 0.1
+                marker.color.a = 0.9
+                marker.color.r = color[0]
+                marker.color.g = color[1]
+                marker.color.b = color[2]
+                marker.pose.orientation.x = 0
+                marker.pose.orientation.y = 0
+                marker.pose.orientation.z = 0
+                marker.pose.orientation.w = 1
+                marker.ns = 'line_' + str(idx)
+                marker.id = 0
+                
+                marker.points.append(fromVerticeToPoint(p1_xyz))
+                marker.points.append(fromVerticeToPoint(p2_xyz))
+                markers.markers.append(marker)
+                
+
+            
+       
+        marker_pub.publish(markers)       
+        rate.sleep()
+        
+        
+        
+    
+    
+if __name__ == "__main__":
+    main()
+
+
+

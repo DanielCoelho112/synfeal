@@ -1,0 +1,9 @@
+roslaunch localbot_localization visualize_dataset.launch dataset:=dataset_arch_updated
+
+rosnode kill /visualize_dataset
+
+rosrun localbot_localization random_pose_generation -d dataset_arch_updated
+rosrun localbot_localization collision_detection -d dataset_arch_updated
+rosrun localbot_localization image_retrieval -d dataset_arch_updated_path
+
+rosrun localbot_localization output -d seq 52
