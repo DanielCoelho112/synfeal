@@ -1,5 +1,9 @@
 # Synfeal: Data-Driven Simulator for Camera Localization
 
+<p align="center">
+<img src="docs/img/logo.png" data-canonical-src="docs/img/logo.png" width="507" height="209" />
+</p>
+
 
 <p align="center">
 <img src="docs/img/synfeal.png" data-canonical-src="docs/img/synfeal.png" width="422" height="1100" />
