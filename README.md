@@ -2,7 +2,7 @@
 
 
 <p align="center">
-<img src="docs/img/synfeal.png" data-canonical-src="docs/img/synfeal.png" width="211" height="550" />
+<img src="docs/img/synfeal.png" data-canonical-src="docs/img/synfeal.png" width="422" height="1100" />
 </p>
 
 
