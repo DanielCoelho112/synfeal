@@ -6,6 +6,7 @@ import math
 
 import numpy as np
 import cv2
+from genpy import Duration
 import tf
 import rospy
 from scipy.spatial.transform import Rotation as R
@@ -154,7 +155,7 @@ def createArrowMarker(pose, color):
     
     return marker
 
-def getFrustumMarkerArray(w, h, f_x, f_y, Z_near, Z_far, frame_id, ns, color, alpha=0.9, thickness=0.005):
+def getFrustumMarkerArray(w, h, f_x, f_y, Z_near, Z_far, frame_id, ns, color, alpha=0.9, thickness=0.005, lifetime=False):
     # big help from https: // github.com/ros-visualization/rviz/issues/925
     marker_array = MarkerArray()
 
@@ -185,6 +186,8 @@ def getFrustumMarkerArray(w, h, f_x, f_y, Z_near, Z_far, frame_id, ns, color, al
     color_rviz = ColorRGBA(r=color[0]/2, g=color[1]/2, b=color[2]/2, a=1.0)
     marker = Marker(ns=ns+'_wireframe', type=Marker.LINE_LIST, action=Marker.ADD, header=Header(frame_id=frame_id),
                     color=color_rviz)
+    if lifetime:
+        marker.lifetime=rospy.Duration(0)
 
     marker.scale.x = thickness  # line width
     marker.pose.orientation.w = 1.0
@@ -234,6 +237,8 @@ def getFrustumMarkerArray(w, h, f_x, f_y, Z_near, Z_far, frame_id, ns, color, al
     color_rviz = ColorRGBA(r=color[0], g=color[1], b=color[2], a=alpha)
     marker = Marker(ns=ns+'_filled', type=Marker.TRIANGLE_LIST, action=Marker.ADD, header=Header(frame_id=frame_id),
                     color=color_rviz)
+    if lifetime:
+        marker.lifetime=rospy.Duration(0)
 
     marker.scale.x = 1  # line width
     marker.scale.y = 1  # line width

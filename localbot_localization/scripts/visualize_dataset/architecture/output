@@ -54,15 +54,20 @@ def main():
         #colormap = cm.Pastel2(np.linspace(0, 1, round(len(dataset)/step)))
         # colormap = cm.summer(np.linspace(0, 1, 7))
 
-        step = 25
+        step = 100
         collections = []
-        for idx in range(2, len(dataset), step):
+        for idx in range(1, len(dataset), step):
             print(idx)
             _, pose = dataset[idx]
             collections.append({'pose_idx':idx, 'pose':pose})
                 
-                
+        
+        
+        
         colormap = cm.Greens(np.linspace(0, 1, round(len(dataset)/step)))
+        
+        green = [0., 0.267, 0.106]
+        white = [1., 1., 1.]
         
         marker = Marker(header=Header(frame_id="map", stamp=rospy.Time.now()),
                         id=0, frame_locked=False, ns='textured_mesh',
@@ -85,7 +90,7 @@ def main():
             # Rotate orientation because the arrow points to the X-axis! (it must point to Z-axis)
             pose_marker = copy.deepcopy(pose)
             matrix_quaternion_marker =R.from_quat(pose_marker[3:]).as_matrix()
-            rotate_y90 = R.from_euler('y', +90, degrees=True).as_matrix()
+            rotate_y90 = R.from_euler('yxz', [90, -90, 0], degrees=True).as_matrix()
             matrix_quaternion_marker = np.dot(matrix_quaternion_marker,rotate_y90)
             quaternion_marker = R.from_matrix(matrix_quaternion_marker).as_quat()
 
@@ -108,16 +113,21 @@ def main():
             z_far = 0.5
 
             
-            color = (colormap[idx, 0], colormap[idx, 1], colormap[idx, 2])
+            if idx < 0.80* round(len(dataset)/step):
+                color = white
+            else:
+                color = green
+            
+            #color = (colormap[idx, 0], colormap[idx, 1], colormap[idx, 2])
             
 
-            frustum_marker_array = getFrustumMarkerArray(w, h, f_x, f_y, z_near, z_far, pose_frame_id, pose_frame_id, color)
+            frustum_marker_array = getFrustumMarkerArray(w, h, f_x, f_y, z_near, z_far, pose_frame_id, pose_frame_id, color, alpha=0.6, thickness=0.03)
 
             markers.markers.extend(frustum_marker_array.markers)
 
            
             
-            rotate_y90 = R.from_euler('z', 180, degrees=True).as_quat()
+            rotate_y90 = R.from_euler('z', 0, degrees=True).as_quat()
         
             # Add dslr camera marker array
             marker = Marker(header=Header(frame_id=pose_frame_id, stamp=stamp),
@@ -139,7 +149,7 @@ def main():
             
        
         marker_pub.publish(markers)       
-        rate.sleep()
+        # rate.sleep()
         
         
         

@@ -54,11 +54,18 @@ def main():
             model3d_config = yaml.load(f, Loader=SafeLoader)
             model3d_config['name'] = args["model3d_config"]
     data_collector = AutomaticDataCollection(
-            model_name='localbot', seq='dataset_arch_updated_path', dbf=0.05, uvl=False, model3d_config= model3d_config, fast= True)
+            model_name='localbot', seq='dataset_arch_updated_path_v2', dbf=0.05, uvl=False, model3d_config= model3d_config, fast= True)
     
     
-    _, pose_initial_dataset = dataset[0]
-    _, pose_final_dataset = dataset[1]
+
+    q = R.from_euler('xyz', [0, 10, 0], degrees=True).as_quat()
+    pose_initial_dataset = [0, 0.51, 1.6, q[0], q[1], q[2], q[3]]
+
+    q = R.from_euler('zyx', [-20, 0, 0], degrees=True).as_quat()
+    pose_final_dataset = [1.5, -3.5, 0.5, q[0], q[1], q[2], q[3]]
+    
+    #_, pose_initial_dataset = dataset[0]
+    #_, pose_final_dataset = dataset[1]
     
     
     
@@ -87,7 +94,9 @@ def main():
     l2_dst = np.linalg.norm(xyz_final - xyz_initial)
     
     # compute n_steps based on l2_dist
-    n_steps = int(l2_dst / 0.05)
+    #n_steps = int(l2_dst / 0.05)
+
+    n_steps = 5
 
     print('using n_steps of: ', n_steps)
 
@@ -117,25 +126,26 @@ def main():
     ry_step_var = (pose_final_dct['ry'] - pose_initial_dct['ry']) / n_steps
     rz_step_var = (pose_final_dct['rz'] - pose_initial_dct['rz']) / n_steps
 
-    for i in range(n_steps):
-        dct = {'x': pose_initial_dct['x'] + (i + 1) * x_step_var,
-                'y': pose_initial_dct['y'] + (i + 1) * y_step_var,
-                'z': pose_initial_dct['z'] + (i + 1) * z_step_var,
-                'rx': pose_initial_dct['rx'] + (i + 1) * rx_step_var,
-                'ry': pose_initial_dct['ry'] + (i + 1) * ry_step_var,
-                'rz': pose_initial_dct['rz'] + (i + 1) * rz_step_var}
+    for i in range(n_steps+1):
+        dct = {'x': pose_initial_dct['x'] + (i) * x_step_var,
+                'y': pose_initial_dct['y'] + (i) * y_step_var,
+                'z': pose_initial_dct['z'] + (i) * z_step_var,
+                'rx': pose_initial_dct['rx'] + (i) * rx_step_var,
+                'ry': pose_initial_dct['ry'] + (i) * ry_step_var,
+                'rz': pose_initial_dct['rz'] + (i) * rz_step_var}
         pose = data2pose(dct)
         step_poses.append(pose)
     
-    print(step_poses)
+    
 
     for idx, pose in enumerate(step_poses):
         data_collector.setPose(pose)
-        rospy.sleep(0.001)
+        rospy.sleep(1)
         data_collector.saveFrame()
-        rate.sleep()
+        rospy.sleep(1)
+        
     print('final destination arrived')
-
+    print(pose)
     
         
         

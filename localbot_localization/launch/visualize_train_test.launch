@@ -1,0 +1,11 @@
+<launch>
+    <arg name="train"/>
+    <arg name="test"/>
+
+    <node name="rviz" pkg="rviz" type="rviz" args="--display-config $(find localbot_localization)/config/visualize_train_test_dataset.rviz" required="false">
+    </node>
+
+    <!-- Sleep 1 is to give time for the spawn to be finished-->
+    <node name="visualize_dataset" pkg="localbot_localization" type="visualize_train_test_dataset" args="--train $(arg train) --test $(arg test)" output='screen'/> 
+    
+</launch>
