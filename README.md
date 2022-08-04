@@ -1,7 +1,10 @@
 # Synfeal: Data-Driven Simulator for Camera Localization
 
 
-![localbot_gazebo](docs/img/synfeal.png)
+<p align="center">
+<img src="docs/img/synfeal.png" data-canonical-src="docs/img/synfeal.png" width="211" height="550" />
+</p>
+
 
 
 **Synfeal** synthesizes large localization datasets free of inconsistencies based on realistic 3D reconstructions of the environment.
