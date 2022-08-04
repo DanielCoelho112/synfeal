@@ -7,7 +7,7 @@
 
 
 
-**Synfeal** synthesizes large localization datasets free of inconsistencies based on realistic 3D reconstructions of the environment.
+**Synfeal** (*Synthetic from Real*) synthesizes large localization datasets free of inconsistencies based on realistic 3D reconstructions of the environment.
 For instructions on how to install and use, **check the documentation** (work in progress).
 
 For a demonstration of the data collection procedure, see the following video:
