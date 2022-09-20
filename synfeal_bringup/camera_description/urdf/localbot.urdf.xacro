@@ -16,13 +16,13 @@
   <!-- Include other files-->
   <xacro:include filename="$(find hector_xacro_tools)/urdf/inertia_tensors.urdf.xacro" />
   <xacro:include filename="$(find hector_xacro_tools)/urdf/joint_macros.urdf.xacro" />
-  <xacro:include filename="$(find localbot_description)/urdf/localbot_kinect_camera.urdf.xacro" />
-  <!-- <xacro:include filename="$(find localbot_description)/urdf/atom_astra.urdf.xacro" /> -->
+  <xacro:include filename="$(find synfeal_bringup)/camera_description/urdf/localbot_kinect_camera.urdf.xacro" />
+  <!-- <xacro:include filename="$(find synfeal_bringup)/camera_description/urdf/atom_astra.urdf.xacro" /> -->
   <xacro:property name="M_PI" value="3.14159265359"/>
 
 
 
-  <xacro:include filename="$(find localbot_description)/urdf/localbot.gazebo.macro.xacro"/>
+  <xacro:include filename="$(find synfeal_bringup)/camera_description/urdf/localbot.gazebo.macro.xacro"/>
   <xacro:gazebo_macro color="$(arg color)" laser_visual="false" camera_visual="false" imu_visual="true"/>
 
 

@@ -1,0 +1,5 @@
+<launch>
+        <!-- Launch rviz, loading configuration file -->
+        <node name="rviz" pkg="rviz" type="rviz" args="--display-config $(find synfeal_bringup)/config/visualize.rviz" required="false">
+        </node>
+</launch>

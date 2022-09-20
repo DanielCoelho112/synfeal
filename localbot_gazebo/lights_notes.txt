@@ -1,3 +1,0 @@
-gz topic -e /gazebo/my_room_024/light/modify
-
-gz topic -p /gazebo/my_room_024/light/modify -f light_msg.txt

@@ -1,39 +1,29 @@
 #!/usr/bin/env python3
 
-# stdlib
 import sys
 import argparse
-
-# 3rd-party
 import rospkg
-from localbot_core.src.utilities_ros import data2pose
 import rospy
 import rospkg
-from colorama import Fore, Style
-from std_msgs.msg import Header, ColorRGBA
-from geometry_msgs.msg import Point
-from gazebo_msgs.msg import ModelState, ModelStates
-from geometry_msgs.msg import Point, Pose, Vector3, Quaternion
-from visualization_msgs.msg import *
+import yaml
+from os.path import exists
+from yaml.loader import SafeLoader
+from colorama import Fore
+#from visualization_msgs.msg import *
+
 from localbot_core.src.interactive_data_collection import InteractiveDataCollection
 from localbot_core.src.automatic_data_collection import AutomaticDataCollection
-from os.path import exists
-import yaml
-from yaml.loader import SafeLoader
-
 
 def main():
     parser = argparse.ArgumentParser(description='Data Collector')
-    parser.add_argument('-m', '--mode', type=str, default='interactive',
-                        help='interactive/automatic_random_path/automatic_path')
+    parser.add_argument('-m', '--mode', type=str, default='path',
+                        help='interactive/random/path')
     parser.add_argument('-s', '--seq', type=str,
-                        required=True, help='sequence number')
-    parser.add_argument('-dp', '--destination_pose', type=str,
-                        default='x,y,z,rx,ry,rz', help='destination pose')
+                        required=True, help='name of the dataset to be created')
     parser.add_argument('-nf', '--number_of_frames', type=int,
                         required=True, help='number of frames')
     parser.add_argument('-dbf', '--distance_between_frames',
-                        type=float, default=0.03, help='Distance between frames in m')
+                        type=float, default=0.03, help='Distance between frames in meters')
     parser.add_argument('-uvl', '--use_variable_lights',
                         action='store_true', help='use variable lights')
     parser.add_argument('-rl', '--random_lights',
@@ -42,90 +32,85 @@ def main():
                         required=True, help='model3d config to use')
     parser.add_argument('-f', '--fast', action='store_true',
                         help='fast data collection. Only rgb images and pose are captured.')
+    
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
 
+    # get argparse information.
     mode = args['mode']
     seq = args['seq']
     distance_between_frames = args['distance_between_frames']
-    destination_pose = args['destination_pose']
 
     # check if model3d file exists.
-    localbot_core_path = rospkg.RosPack().get_path('localbot_core')
+    localbot_core_path = rospkg.RosPack().get_path('localbot_core') # get absolute path of localbot_core.
     model3d_config_path = f'{localbot_core_path}/model3d_config/{args["model3d_config"]}'
     if exists(model3d_config_path):
         with open(model3d_config_path) as f:
             model3d_config = yaml.load(f, Loader=SafeLoader)
-            model3d_config['name'] = args["model3d_config"]
+            model3d_config['name'] = args["model3d_config"] # important to associate with the dataset to be created.
     else:
         print(f'{Fore.RED} model3d config path ({model3d_config_path}) does not exist! \n Aborting... {Fore.RESET}')
         exit(0)
 
+    # init ros node.
     rospy.init_node(f"{mode}_data_collection")
 
+    ############################################################
+    #################     interative      ######################
+    ############################################################
     if mode == 'interactive':
         InteractiveDataCollection(model_name='localbot', seq=seq)
         rospy.spin()
-    elif mode == 'automatic_random':
+        
+    ############################################################
+    ###################      random      #######################
+    ############################################################    
+    elif mode == 'random':  ################# TODO: PASS RANDOM INTO THE SAVE DATASET. RATHER THAN AUTOMATIC!
         rate = rospy.Rate(0.6)
         data_collector = AutomaticDataCollection(
-            model_name='localbot', seq=seq, uvl=args['use_variable_lights'], model3d_config=args['model3d_config'], fast=args['fast'])
+            model_name='localbot', seq=seq, uvl=args['use_variable_lights'], model3d_config=model3d_config, fast=args['fast'])
         while not rospy.is_shutdown():
             pose = data_collector.generateRandomPose()
             if args['use_variable_lights']:
                 light = data_collector.generateLights(n_steps=1, random=True)
                 data_collector.setLight(light)
             data_collector.setPose(pose)
-            rospy.sleep(0.6)
+            rospy.sleep(0.6) # todo: use getmodelstate from gazebo instead of waiting... 
             data_collector.saveFrame()
             rate.sleep()
 
             if data_collector.getFrameIdx() >= args['number_of_frames']:
                 break
-    elif mode == 'automatic_path':
+            
+    ############################################################
+    ######################     path      #######################
+    ############################################################         
+    elif mode == 'path':
         if args['fast']:
             rate = rospy.Rate(3)
         else:
             rate = rospy.Rate(0.4)
         data_collector = AutomaticDataCollection(
-            model_name='localbot', seq=seq, dbf=distance_between_frames, uvl=args['use_variable_lights'], model3d_config= model3d_config, fast=args['fast'])
+            model_name='localbot', seq=seq, dbf=distance_between_frames, uvl=args['use_variable_lights'], model3d_config=model3d_config, fast=args['fast'])
         rospy.sleep(1)
-        if destination_pose == 'x,y,z,rx,ry,rz':  # use random poses
-            while not rospy.is_shutdown():
-                step_poses = data_collector.generatePath()
+        while not rospy.is_shutdown():
+            step_poses = data_collector.generatePath()
+            if args['use_variable_lights']:
+                step_lights = data_collector.generateLights(
+                    n_steps=len(step_poses), random=args['random_lights'])
+            for idx, pose in enumerate(step_poses):
+                data_collector.setPose(pose)
                 if args['use_variable_lights']:
-                    step_lights = data_collector.generateLights(
-                        n_steps=len(step_poses), random=args['random_lights'])
-                for idx, pose in enumerate(step_poses):
-                    data_collector.setPose(pose)
-                    if args['use_variable_lights']:
-                        data_collector.setLight(step_lights[idx])
-                    if not args['fast']:
-                        rospy.sleep(0.4)
-                    else:
-                        rospy.sleep(0.001)
-                    data_collector.saveFrame()
-                    rate.sleep()
-                print('final destination arrived')
-                if data_collector.getFrameIdx() >= args['number_of_frames']:
-                    break
-        else:
-            final_pose = data2pose(destination_pose)
-            while not rospy.is_shutdown():
-                step_poses = data_collector.generatePath(final_pose=final_pose)
-                if args['use_variable_lights']:
-                    step_lights = data_collector.generateLights(
-                        n_steps=len(step_poses), random=True)
-                for idx, pose in enumerate(step_poses):
-                    data_collector.setPose(pose)
-                    if args['use_variable_lights']:
-                        data_collector.setLight(step_lights[idx])
-                    rospy.sleep(0.6)
-                    data_collector.saveFrame()
-                    rate.sleep()
-                print('final destination arrived')
+                    data_collector.setLight(step_lights[idx])
+                if not args['fast']:
+                    rospy.sleep(0.4)
+                else:
+                    rospy.sleep(0.001)
+                data_collector.saveFrame()
+                rate.sleep()
+            print('final destination arrived')
+            if data_collector.getFrameIdx() >= args['number_of_frames']:
                 break
-
     else:
         print('invalid mode')
 

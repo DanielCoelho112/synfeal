@@ -29,6 +29,8 @@ class SaveDataset():
             print(f'{Fore.RED} {self.output_folder} already exists... Aborting SaveDataset initialization! {Fore.RESET}')
             exit(0)
         
+        name_model3d_config = model3d_config if model3d_config is not None else None 
+         
         dt_now = datetime.now() # current date and time
         config = {'user'     : os.environ["USER"],
                   'date'     : dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
@@ -39,7 +41,7 @@ class SaveDataset():
                   'distance_between_frames'  : dbf,
                   'raw'      : output,
                   'variable_lights' : uvl,
-                  'model3d_config' : model3d_config['name'],
+                  'model3d_config' : name_model3d_config,
                   'fast' : fast}
         
         self.fast = fast

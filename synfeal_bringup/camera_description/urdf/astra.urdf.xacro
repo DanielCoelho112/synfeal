@@ -17,7 +17,7 @@
       <visual>
         <origin xyz="-0.03 -0.06 0" rpy="${pi} 0 ${pi/2}"/>
         <geometry>
-          <mesh filename="package://localbot_description/meshes/astra2/astra2.dae" scale="1 1 1"/>
+          <mesh filename="package://synfeal_bringup/camera_description/meshes/astra2/astra2.dae" scale="1 1 1"/>
         </geometry>
       </visual>
       <collision>
