@@ -1,4 +1,4 @@
-# Synfeal: Data-Driven Simulator for Camera Localization
+# Synfeal: A Data-Driven Simulator for Camera Localization
 
 <p align="center">
 <img src="docs/img/logo.png" data-canonical-src="docs/img/logo.png" width="507" height="209" />
@@ -17,5 +17,5 @@ For instructions on how to install and use, **check the documentation** (work in
 For a demonstration of the data collection procedure, see the following video:
 
 <p align="center">
-<a href="https://www.youtube.com/watch?v=bgjwSO7uYgs/">https://www.youtube.com/watch?v=bgjwSO7uYgs/</a>
+<a href="https://www.youtube.com/watch?v=sRxalb6BoFs&ab/">https://www.youtube.com/watch?v=sRxalb6BoFs&ab/</a>
 </p> 
