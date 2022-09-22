@@ -18,9 +18,9 @@ from gazebo_msgs.srv import SetModelState, GetModelState, SetModelStateRequest
 from colorama import Fore
 from scipy.spatial.transform import Rotation as R
 
-from localbot_core.src.save_dataset import SaveDataset
-from localbot_core.src.utilities import *
-from localbot_core.src.utilities_ros import *
+from synfeal_collection.src.save_dataset import SaveDataset
+from utils import *
+from utils_ros import *
 
 
 class AutomaticDataCollection():
@@ -67,8 +67,6 @@ class AutomaticDataCollection():
         self.use_collision = model3d_config['collision']['use']
         self.min_cam_dist = model3d_config['collision']['min_camera_distance']
 
-        print(
-            f'{os.environ["HOME"]}/models_3d/localbot/{name_model3d_config}/{name_model3d_config}_collision.dae')
 
         if self.use_collision:
             self.mesh_collision = trimesh.load(

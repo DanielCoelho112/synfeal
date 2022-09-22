@@ -5,7 +5,8 @@ import os
 from visualization_msgs.msg import *
 from cv_bridge import CvBridge
 from tf.listener import TransformListener
-from localbot_core.src.utilities_ros import *
+# from localbot_core.src.utilities_ros import *
+from utils import *
 from sensor_msgs.msg import PointCloud2, Image, PointField, CameraInfo
 from colorama import Fore
 from datetime import datetime
@@ -159,7 +160,6 @@ class SaveDataset():
         self.frame_idx+=1
             
         
-#SaveDataset('q', 'automatic')
         
 
     

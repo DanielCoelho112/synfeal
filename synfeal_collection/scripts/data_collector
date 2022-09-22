@@ -9,10 +9,9 @@ import yaml
 from os.path import exists
 from yaml.loader import SafeLoader
 from colorama import Fore
-#from visualization_msgs.msg import *
 
-from localbot_core.src.interactive_data_collection import InteractiveDataCollection
-from localbot_core.src.automatic_data_collection import AutomaticDataCollection
+from synfeal_collection.src.interactive_data_collection import InteractiveDataCollection
+from synfeal_collection.src.automatic_data_collection import AutomaticDataCollection
 
 
 def main():
@@ -44,8 +43,8 @@ def main():
 
     # check if model3d file exists.
     # get absolute path of localbot_core.
-    localbot_core_path = rospkg.RosPack().get_path('localbot_core')
-    model3d_config_path = f'{localbot_core_path}/model3d_config/{args["model3d_config"]}'
+    synfeal_collection_path = rospkg.RosPack().get_path('synfeal_collection')
+    model3d_config_path = f'{synfeal_collection_path}/model3d_config/{args["model3d_config"]}'
     if exists(model3d_config_path):
         with open(model3d_config_path) as f:
             model3d_config = yaml.load(f, Loader=SafeLoader)

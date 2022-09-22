@@ -8,7 +8,7 @@ from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 from gazebo_msgs.srv import SetModelState, GetModelState, SetModelStateRequest
-from localbot_core.src.save_dataset import SaveDataset
+from synfeal_collection.src.save_dataset import SaveDataset
 
 
 class InteractiveDataCollection():
