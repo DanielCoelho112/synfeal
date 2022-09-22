@@ -8,7 +8,7 @@
         <geometry>
           <mesh>
             <!-- <uri>file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae</uri> -->
-            <uri>file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae</uri>
+            <uri>file:///home/danc/models_3d/santuario/santuario.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -16,7 +16,7 @@
         <geometry>
           <mesh>
             <!-- <uri>file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae</uri> -->
-            <uri>file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae</uri>
+            <uri>file:///home/danc/models_3d/santuario/santuario.dae</uri>
           </mesh>
         </geometry>
       </collision>

@@ -19,3 +19,23 @@ For a demonstration of the data collection procedure, see the following video:
 <p align="center">
 <a href="https://www.youtube.com/watch?v=sRxalb6BoFs&ab/">https://www.youtube.com/watch?v=sRxalb6BoFs&ab/</a>
 </p> 
+
+
+# Documentation
+
+## Requirements
+
+## How to collect data?
+
+First launch the texture mesh:
+
+    roslaunch synfeal_bringup bringup_mesh.launch world:=santuario.world
+
+Then launch the virtual camera:
+
+    roslaunch synfeal_bringup bringup_camera.launch
+
+
+## How to train the algorithms?
+
+## How to visualize the results?

@@ -1,18 +1,18 @@
 initial_pose:
-  x : 0
-  y : 0
-  z : 1
+  x : 1
+  y : 1
+  z : 0.5
   rx : 0
   ry : 0
   rz : 0 
 volume:
   position:
-    xmin: -3.5
+    xmin: 1.5
     xmax: 3.5
-    ymin: -5.0
-    ymax: 5.5
-    zmin: 1.5
-    zmax: -2.5
+    ymin: 1.5
+    ymax: 5.0
+    zmin: -0.5
+    zmax: 0.5
   angles:
     rxmin: -0.52
     rxmax: 0.52
@@ -34,4 +34,3 @@ light:
 collision:
   use: True
   min_camera_distance: 1.2
-

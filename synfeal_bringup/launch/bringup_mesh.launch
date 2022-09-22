@@ -4,7 +4,7 @@
     <arg name="gui" default="true"/>
     <arg name="debug" default="false"/>
     <arg name="verbose" default="true"/>
-    <arg name="world" default="my_room_024_lights.world"/>
+    <arg name="world" default="room_024_lights.world"/>
 
     <!-- Create gazebo world -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">

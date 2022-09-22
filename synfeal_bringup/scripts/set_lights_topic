@@ -32,7 +32,7 @@ def main():
     with open('/tmp/set_light.txt', 'w') as f:
         f.write(my_str)
     
-    os.system(f'gz topic -p /gazebo/my_room_024/light/modify -f /tmp/set_light.txt')
+    os.system(f'gz topic -p /gazebo/room_024/light/modify -f /tmp/set_light.txt')
     
 
 

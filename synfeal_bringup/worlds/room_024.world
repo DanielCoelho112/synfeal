@@ -1,5 +1,5 @@
 <sdf version='1.7'>
-  <world name='my_room_024'>
+  <world name='room_024'>
     <scene>
       <ambient>1 1 1 1</ambient>
       <background>1 1 1 1</background>

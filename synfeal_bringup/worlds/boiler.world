@@ -1,5 +1,5 @@
 <sdf version='1.7'>
-  <world name='my_boiler'>
+  <world name='boiler'>
     <scene>
       <ambient>1 1 1 1</ambient>
       <background>1 1 1 1</background>
@@ -66,7 +66,7 @@
             <visual name='boiler_visual'>
               <geometry>
                 <mesh>
-                  <uri>file:///home/danc/models_3d/boiler/boiler.dae</uri>
+                  <uri>file:///home/danc/models_3d/localbot/boiler/boiler.dae</uri>
                 </mesh>
               </geometry>
             </visual>

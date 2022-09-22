@@ -1,5 +1,5 @@
 <sdf version='1.7'>
-  <world name='my_room_024'>
+  <world name='room_024'>
     <scene>
       <ambient>1 1 1 1</ambient>
       <background>1 1 1 1</background>
@@ -30,7 +30,7 @@
       <elevation>0</elevation>
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
-    <state world_name='my_room_024'>
+    <state world_name='room_024'>
       <sim_time>6018 296000000</sim_time>
       <real_time>1480 310291761</real_time>
       <wall_time>1653296425 762040965</wall_time>

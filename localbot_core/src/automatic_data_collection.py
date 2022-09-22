@@ -2,22 +2,19 @@
 
 # stdlib
 
-import sys
-import argparse
-import copy
 import random
-import math
-
+import os
+from xml.parsers.expat import model
 # 3rd-party
 import rospy
 import tf
 import numpy as np
 import trimesh
-from geometry_msgs.msg import Point, Pose, Quaternion
-from interactive_markers.interactive_marker_server import *
-from interactive_markers.menu_handler import *
+from geometry_msgs.msg import Pose
+#from interactive_markers.interactive_marker_server import *
+#from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
-from gazebo_msgs.srv import SetModelState, GetModelState, GetModelStateRequest, SetModelStateRequest
+from gazebo_msgs.srv import SetModelState, GetModelState, SetModelStateRequest
 from colorama import Fore
 from scipy.spatial.transform import Rotation as R
 
@@ -28,12 +25,10 @@ from localbot_core.src.utilities_ros import *
 
 class AutomaticDataCollection():
 
-    def __init__(self, model_name, seq, dbf=None, uvl=None, model3d_config=None, fast=None, save_dataset=True):
+    def __init__(self, model_name, seq, dbf=None, uvl=None, model3d_config=None, fast=None, save_dataset=True, mode=None):
         self.set_state_service = rospy.ServiceProxy(
             '/gazebo/set_model_state', SetModelState)
-        self.menu_handler = MenuHandler()
         self.model_name = model_name  # model_name = 'localbot'
-
         self.dbf = dbf
 
         rospy.wait_for_service('/gazebo/get_model_state')
@@ -43,8 +38,10 @@ class AutomaticDataCollection():
         # create instance to save dataset
         if save_dataset:
             self.save_dataset = SaveDataset(
-                f'{seq}', mode='automatic', dbf=dbf, uvl=uvl, model3d_config=model3d_config, fast=fast)
+                f'{seq}', mode=mode, dbf=dbf, uvl=uvl, model3d_config=model3d_config, fast=fast)
 
+        name_model3d_config = model3d_config['name'].split('.')[0]
+        print(name_model3d_config)
         # define minimum and maximum boundaries
         self.x_min = model3d_config['volume']['position']['xmin']
         self.x_max = model3d_config['volume']['position']['xmax']
@@ -68,8 +65,16 @@ class AutomaticDataCollection():
         self.light_names = model3d_config['light']['light_names']
 
         self.use_collision = model3d_config['collision']['use']
-        self.mesh_collision = model3d_config['collision']['mesh']
         self.min_cam_dist = model3d_config['collision']['min_camera_distance']
+
+        print(
+            f'{os.environ["HOME"]}/models_3d/localbot/{name_model3d_config}/{name_model3d_config}_collision.dae')
+
+        if self.use_collision:
+            self.mesh_collision = trimesh.load(
+                f'{os.environ["HOME"]}/models_3d/localbot/{name_model3d_config}/{name_model3d_config}_collision.dae', force='mesh')
+        else:
+            self.mesh_collision = False
 
         # set initial pose
         print('setting initial pose...')
@@ -225,15 +230,12 @@ class AutomaticDataCollection():
                 f.write(my_str)
 
             os.system(
-                f'gz topic -p /gazebo/my_room_024/light/modify -f /tmp/set_light.txt')
+                f'gz topic -p /gazebo/room_024/light/modify -f /tmp/set_light.txt')
 
     def checkCollision(self, initial_pose, final_pose):
         if self.use_collision is False:
             print('not using COLLISIONS.')
             return False
-        # load mesh
-        mesh = trimesh.load(
-            '/home/danc/models_3d/santuario_collision/Virtudes_Chapel.dae', force='mesh')
 
         initial_pose.position.x
 
@@ -259,7 +261,7 @@ class AutomaticDataCollection():
         ray_origins = np.array([p1_xyz])
         ray_directions = np.array([orientation])
 
-        collisions, _, _ = mesh.ray.intersects_location(
+        collisions, _, _ = self.mesh_collision.ray.intersects_location(
             ray_origins=ray_origins,
             ray_directions=ray_directions)
 
@@ -281,7 +283,7 @@ class AutomaticDataCollection():
             ray_origins = np.array([p2_xyz])
             ray_directions = np.array([orientation])
 
-            collisions, _, _ = mesh.ray.intersects_location(
+            collisions, _, _ = self.mesh_collision.ray.intersects_location(
                 ray_origins=ray_origins,
                 ray_directions=ray_directions)
 
@@ -302,7 +304,7 @@ class AutomaticDataCollection():
             print('not using COLLISIONS.')
             return False
         # load mesh
-        #TODO #83 this should not be hardcoded
+        # TODO #83 this should not be hardcoded
         mesh = trimesh.load(
             '/home/danc/models_3d/santuario_collision/Virtudes_Chapel.dae', force='mesh')
 
