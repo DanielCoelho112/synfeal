@@ -1,8 +1,8 @@
-from localbot_localization.src.utilities import projectToCamera
+from utils import projectToCamera
 import numpy as np
 import os
 import shutil
-from localbot_localization.src.dataset import LocalBotDataset
+from dataset import LocalBotDataset
 from sensor_msgs.msg import PointField
 import sensor_msgs.point_cloud2 as pc2
 from utils import *
@@ -11,6 +11,7 @@ from os.path import exists
 import yaml
 from colorama import Fore
 import math
+import copy
 
 class ValidateDataset():
     def __init__(self):
@@ -137,7 +138,14 @@ class ValidateDataset():
         # return a list with invalid frames
         idxs = []
         files = copy.deepcopy(self.files)
-        files.append('.depth.png')
+        
+        config = dataset.getConfig()
+        if config['fast']:
+            files = ['.rgb.png','.pose.txt']
+        else:
+            files = copy.deepcopy(self.files)
+            files.append('.depth.png')
+        
         for index in range(len(dataset)):
             for file in files:
                 if not exists(f'{dataset.path_seq}/frame-{index:05d}{file}'):

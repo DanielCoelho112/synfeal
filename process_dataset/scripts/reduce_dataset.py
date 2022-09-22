@@ -6,13 +6,7 @@ import argparse
 import copy
 
 # 3rd-party
-import rospy
-from colorama import Fore, Style
-from std_msgs.msg import Header
-from visualization_msgs.msg import *
-from localbot_localization.src.dataset import LocalBotDataset
-from localbot_localization.src.validate_dataset import ValidateDataset
-import numpy as np
+from dataset import LocalBotDataset
 import os
 import shutil
 import yaml

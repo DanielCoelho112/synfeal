@@ -6,27 +6,30 @@ import argparse
 import copy
 
 # 3rd-party
-import rospy
-from colorama import Fore, Style
-from localbot_localization.src.dataset import LocalBotDataset
-from localbot_localization.src.validate_dataset import ValidateDataset
+from colorama import Fore
+from visualization_msgs.msg import *
+from dataset import LocalBotDataset
+from process_dataset.src.validate_dataset import ValidateDataset
 import numpy as np
 
 def main():    
     parser = argparse.ArgumentParser(description='Validate dataset')
     parser.add_argument('-d', '--dataset', type=str, required=True, help='Name of the dataset')
+    parser.add_argument('-s', '--suffix', type=str, required=True, help='Suffix name')
     
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     
     dataset = LocalBotDataset(path_seq=args['dataset'])
-    
     validate = ValidateDataset()
     
-    validate.createStatistics(dataset)
+    new_dataset = validate.duplicateDataset(dataset, args['suffix'])
+    
+    print(f'{Fore.RED} Make sure that in each frame you have a point cloud, rgb image and pose. In negative case, an error will be raised! {Fore.RESET}')
+    
+    validate.reorganizeDataset(new_dataset)
     
     
-
 
         
 if __name__ == "__main__":
