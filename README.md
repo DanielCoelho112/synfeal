@@ -12,7 +12,7 @@
 
 
 **Synfeal** (*Synthetic from Real*) synthesizes large localization datasets free of inconsistencies based on realistic 3D reconstructions of the environment.
-For instructions on how to install and use, **check the documentation** (work in progress).
+For instructions on how to install and use, **check the Documentation**.
 
 For a demonstration of the data collection procedure, see the following video:
 
@@ -32,6 +32,11 @@ For a demonstration of the data collection procedure, see the following video:
     mkdir -p $HOME/models/localbot
     mkdir -p $HOME/results/localbot
     mkdir -p $HOME/models_3d/localbot
+
+Add to zsh or bash file:
+
+    export GAZEBO_MODEL_PATH="`rospack find synfeal_bringup`/models:${GAZEBO_MODEL_PATH}"
+
 
 ## How to launch the system?
 
