@@ -28,10 +28,10 @@ For a demonstration of the data collection procedure, see the following video:
 
     pip3 install -r /synfeal/requirements.txt
 
-    mkdir $HOME/datasets
-    mkdir $HOME/models
-    mkdir $HOME/results
-    mkdir $HOME/models_3d
+    mkdir -p $HOME/datasets/localbot
+    mkdir -p $HOME/models/localbot
+    mkdir -p $HOME/results/localbot
+    mkdir -p $HOME/models_3d/localbot
 
 ## How to launch the system?
 
@@ -87,3 +87,7 @@ Run:
     ./process_results/rgb_produce_results -test_set 'seq22_p0r20' -rf <results_folder> -mp <model_name>
 
 ## How to visualize the results?
+
+Run:
+
+    roslaunch synfeal_visualization visualize_results.launch results_folder:=synfeal0 idx_max:=100 mesh_name:=room_024

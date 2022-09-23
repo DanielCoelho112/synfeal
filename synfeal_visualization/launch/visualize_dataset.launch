@@ -1,10 +1,10 @@
 <launch>
     <arg name="dataset"/>
 
-    <node name="rviz" pkg="rviz" type="rviz" args="--display-config $(find localbot_localization)/config/visualize_results.rviz" required="false">
+    <node name="rviz" pkg="rviz" type="rviz" args="--display-config $(find synfeal_visualization)/config/visualize_results.rviz" required="false">
     </node>
 
     <!-- Sleep 1 is to give time for the spawn to be finished-->
-    <node name="visualize_dataset" pkg="localbot_localization" type="visualize_dataset" args="--dataset $(arg dataset)" output='screen'/> 
+    <node name="visualize_dataset" pkg="synfeal_visualization" type="visualize_dataset" args="--dataset $(arg dataset)" output='screen'/> 
     
 </launch>

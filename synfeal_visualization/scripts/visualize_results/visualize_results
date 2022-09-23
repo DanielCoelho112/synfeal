@@ -1,34 +1,25 @@
 #!/usr/bin/env python3
-
-# stdlib
-from math import degrees
 import sys
 import argparse
-from turtle import stamp
 import copy
-
-from matplotlib.pyplot import axis
-from sympy import degree
-
-# 3rd-party
 import rospy
-from colorama import Fore, Style
-from std_msgs.msg import Header, ColorRGBA
-from geometry_msgs.msg import Point, Pose, Vector3, Quaternion, TransformStamped, Transform
-from visualization_msgs.msg import *
-from localbot_localization.src.results import LocalBotResults
 import numpy as np
 import tf2_ros
+import os
 
+from colorama import Fore, Style
+from std_msgs.msg import Header, ColorRGBA
+from geometry_msgs.msg import Point, Pose, Vector3, Quaternion
+from visualization_msgs.msg import *
 from scipy.spatial.transform import Rotation as R
 from tf.transformations import *
 from matplotlib import cm
 
+from produce_results.src.results import Results
 
 def main():
 
     parser = argparse.ArgumentParser(description='Visualizing results')
-
     parser.add_argument('-rf', '--results_folder', type=str,
                         required=True, help='Name of the results folder')
     parser.add_argument('-idx_max', '--idx_max', type=int,
@@ -37,16 +28,20 @@ def main():
                         default='0', help='min idx of the frame')
     parser.add_argument('-fsf', "--frame_selection_function",
                         default='None', type=str, help='see frames that obey a condition')
+    parser.add_argument('-mn', "--mesh_name",
+                        default='None', type=str, help='mesh name')
+
 
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
 
-    results = LocalBotResults(args['results_folder'])
+    results = Results(args['results_folder'])
 
     pos, rot = results.getErrorsArrays()
 
     idx_max = int(args['idx_max'])
     idx_min = int(args['idx_min'])
+    mesh_name = args['mesh_name']
 
     if not idx_max == 0:
         frames_used = list(range(idx_min,idx_max))
@@ -73,22 +68,24 @@ def main():
     print(f'frames used: {Fore.GREEN} {frames_used} {Fore.RESET}')
 
     while not rospy.is_shutdown():
-        print('while')
-
         markers = MarkerArray()
 
-        marker = Marker(header=Header(frame_id="map", stamp=rospy.Time.now()),
-                        id=0, frame_locked=False,
-                        type=Marker.MESH_RESOURCE, action=Marker.ADD, lifetime=rospy.Duration(
-                            0),
-                        pose=Pose(position=Point(x=0, y=0, z=0),
-                                  orientation=Quaternion(x=0, y=0, z=0, w=1)),
-                        scale=Vector3(x=1.0, y=1.0, z=1.0))
-        marker.mesh_resource = 'package://localbot_gazebo/models/room_024/room_024.dae'
-        marker.mesh_use_embedded_materials = True
-        markers.markers.append(marker)
-        
-        
+        if mesh_name != 'None':
+            marker = Marker(header=Header(frame_id="map", stamp=rospy.Time.now()),
+                            id=0, frame_locked=False,
+                            type=Marker.MESH_RESOURCE, action=Marker.ADD, lifetime=rospy.Duration(
+                                0),
+                            pose=Pose(position=Point(x=0, y=0, z=0),
+                                    orientation=Quaternion(x=0, y=0, z=0, w=1)),
+                            scale=Vector3(x=1.0, y=1.0, z=1.0))
+            # marker.mesh_resource = 'package://synfeal_visualization/models/room_024/room_024.dae'
+            #print(f'{os.environ["HOME"]}/models_3d/localbot/{mesh_name}/{mesh_name}.dae')
+            #'file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae'
+            marker.mesh_resource = f'file://{os.environ["HOME"]}/models_3d/localbot/{mesh_name}/{mesh_name}.dae'
+            marker.mesh_use_embedded_materials = True
+            markers.markers.append(marker)
+            
+            
 
         for idx,frame_idx in enumerate(frames_used):
             
@@ -165,23 +162,8 @@ def main():
             marker.id = idx
 
             markers.markers.append(marker)
-
-            # DEBUG
-            # if idx==0:
-            #     transform = TransformStamped(header=Header(frame_id="map", stamp=rospy.Time.now()),
-            #                                         child_frame_id=f'frame{idx}',
-            #                                         transform=Transform(translation=Vector3(x=pose_real[0], y=pose_real[1], z=pose_real[2]),
-            #                                                             rotation=Quaternion(x=pose_real[3], y=pose_real[4], z=pose_real[5], w=pose_real[6])))
-            #     tf_broadcaster.sendTransform(transform)
-
-            #     transform = TransformStamped(header=Header(frame_id="map", stamp=rospy.Time.now()),
-            #                                         child_frame_id=f'pred_frame{idx}',
-            #                                         transform=Transform(translation=Vector3(x=pose_predicted[0], y=pose_predicted[1], z=pose_predicted[2]),
-            #                                                             rotation=Quaternion(x=pose_predicted[3], y=pose_predicted[4], z=pose_predicted[5], w=pose_predicted[6])))
-            #     tf_broadcaster.sendTransform(transform)
-
         marker_pub.publish(markers)
-        #rate.sleep()
+        rate.sleep()
 
 
 if __name__ == "__main__":

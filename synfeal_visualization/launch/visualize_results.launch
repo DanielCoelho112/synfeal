@@ -3,11 +3,12 @@
     <arg name="idx_max" default="0"/>
     <arg name="idx_min" default="0"/>
     <arg name="frame_selection_function" default="None"/>
+    <arg name="mesh_name" default="None"/>
 
-    <node name="rviz" pkg="rviz" type="rviz" args="--display-config $(find localbot_localization)/config/visualize_results.rviz" required="false">
+    <node name="rviz" pkg="rviz" type="rviz" args="--display-config $(find synfeal_visualization)/config/visualize_results.rviz" required="false">
     </node>
 
     <!-- Sleep 1 is to give time for the spawn to be finished-->
-    <node name="visualize_results" pkg="localbot_localization" type="visualize_results" args="--results_folder $(arg results_folder) --idx_max $(arg idx_max) --idx_min $(arg idx_min) -fsf $(arg frame_selection_function)" output='screen'/> 
+    <node name="visualize_results" pkg="synfeal_visualization" type="visualize_results" args="--results_folder $(arg results_folder) --idx_max $(arg idx_max) --idx_min $(arg idx_min) -fsf $(arg frame_selection_function) --mesh_name $(arg mesh_name)" output='screen'/> 
     
 </launch>

@@ -1,35 +1,19 @@
 #!/usr/bin/env python3
 
-# stdlib
-
-import sys
-import argparse
-import copy
-import random
-import math
-
-
-
-# 3rd-party
 import rospy
-from geometry_msgs.msg import Point, Pose, Quaternion
-from interactive_markers.interactive_marker_server import *
-from interactive_markers.menu_handler import *
-from visualization_msgs.msg import *
+import os
+
 from gazebo_msgs.srv import SetModelState, GetModelState, GetModelStateRequest, SetModelStateRequest
-import tf
-import numpy as np
-from localbot_core.src.utilities import *
 from colorama import Fore
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
+from utils import write_img
 
 class GenerateRealPredicted():
     
     def __init__(self, model_name, results):
         self.set_state_service = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState) 
-        self.menu_handler = MenuHandler()
         self.model_name = model_name # model_name = 'localbot'
         self.bridge = CvBridge()
         self.folder = f'{results.path}/images'
