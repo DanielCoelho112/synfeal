@@ -27,11 +27,16 @@ For a demonstration of the data collection procedure, see the following video:
 
 
     pip3 install -r /synfeal/requirements.txt
-
+   
     mkdir $HOME/datasets
     mkdir $HOME/models
     mkdir $HOME/results
     mkdir $HOME/models_3d
+
+Add to zsh or bash file:
+
+    export GAZEBO_MODEL_PATH="`rospack find synfeal_bringup`/models:${GAZEBO_MODEL_PATH}"
+
 
 ## How to launch the system?
 
