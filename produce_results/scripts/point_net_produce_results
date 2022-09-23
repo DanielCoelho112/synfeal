@@ -4,13 +4,10 @@ import torch
 import torch.nn.parallel
 import torch.nn as nn
 import torch.utils.data
-from localbot_localization.src.models.pointnet import PointNet, feature_transform_regularizer
-from localbot_localization.src.save_results import SaveResults
-from localbot_localization.src.utilities import *
-from localbot_localization.src.dataset import Dataset
-from localbot_core.src.utilities import *
-import numpy as np
-from datetime import datetime
+from models.pointnet import PointNet, feature_transform_regularizer
+from produce_results.src.save_results import SaveResults
+from utils import *
+from dataset import Dataset
 import os
 import sys
 import argparse

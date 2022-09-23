@@ -1,13 +1,12 @@
-from localbot_core.src.utilities import matrixToXYZ, matrixToQuaternion, normalize_quat
-
 import numpy as np
 import pandas as pd
 import os
 import yaml
+
 from yaml.loader import SafeLoader
+from utils import matrixToXYZ, matrixToQuaternion, normalize_quat
 
-
-class LocalBotResults():
+class Results():
     def __init__(self, results_path):
         self.path = f'{os.environ["HOME"]}/results/localbot/{results_path}'
         self.nframes = int(sum(f.endswith('.txt') for f in os.listdir(self.path))/2)
@@ -52,7 +51,5 @@ class LocalBotResults():
         
 
 
-#results = LocalBotResults('test1')
-#print(len(results))
 
 
