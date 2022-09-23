@@ -12,7 +12,7 @@ from sklearn.preprocessing import scale
 # 3rd-party
 import rospy
 from colorama import Fore, Style
-from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.dataset import Dataset
 from localbot_localization.src.validate_dataset import ValidateDataset
 import numpy as np
 from localbot_core.src.utilities import *
@@ -28,7 +28,7 @@ def main():
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
 
-    dataset = LocalBotDataset(path_seq=args['dataset'])
+    dataset = Dataset(path_seq=args['dataset'])
     
     folder = f'/home/danc/datasets/localbot/rtab/output/{args["folder"]}'
     size_dataset = sum(f.endswith('.txt') for f in os.listdir(folder))

@@ -7,7 +7,7 @@ import copy
 
 # 3rd-party
 from visualization_msgs.msg import *
-from dataset import LocalBotDataset
+from dataset import Dataset
 from process_dataset.src.validate_dataset import ValidateDataset
 
 def main():    
@@ -19,8 +19,8 @@ def main():
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     
-    dataset1 = LocalBotDataset(path_seq=args['dataset1'])
-    dataset2 = LocalBotDataset(path_seq=args['dataset2'])
+    dataset1 = Dataset(path_seq=args['dataset1'])
+    dataset2 = Dataset(path_seq=args['dataset2'])
     
     validate = ValidateDataset()
     

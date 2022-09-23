@@ -6,7 +6,7 @@ import argparse
 import copy
 
 # 3rd-party
-from dataset import LocalBotDataset
+from dataset import Dataset
 import os
 import shutil
 import yaml
@@ -21,7 +21,7 @@ def main():
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
 
-    dataset = LocalBotDataset(path_seq=args['dataset'])
+    dataset = Dataset(path_seq=args['dataset'])
     path_root = dataset.root
     
     dataset_reduced_path = f'{path_root}/{args["dataset_reduced"]}'

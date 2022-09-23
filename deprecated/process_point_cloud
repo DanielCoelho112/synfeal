@@ -11,7 +11,7 @@ from colorama import Fore, Style
 from std_msgs.msg import Header
 from geometry_msgs.msg import Point, Pose, Vector3, Quaternion, TransformStamped, Transform
 from visualization_msgs.msg import *
-from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.dataset import Dataset
 from localbot_localization.src.validate_dataset import ValidateDataset
 import numpy as np
 
@@ -25,7 +25,7 @@ def main():
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     
-    dataset = LocalBotDataset(path_seq=args['dataset'])
+    dataset = Dataset(path_seq=args['dataset'])
     
     validate = ValidateDataset()
     

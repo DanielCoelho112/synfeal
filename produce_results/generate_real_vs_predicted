@@ -17,7 +17,7 @@ from localbot_localization.src.generate_real_vs_predicted import GenerateRealPre
 import rospy
 from geometry_msgs.msg import Point, Pose, Quaternion
 from geometry_msgs.msg import Point, Pose, Quaternion
-from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.dataset import Dataset
 from localbot_localization.src.results import LocalBotResults
 import tf2_ros
 import copy
@@ -40,9 +40,9 @@ def main():
     results = LocalBotResults(args['results_folder'])
     config = results.getConfig()
     dataset_name = config['seq_path']
-    dataset = LocalBotDataset(dataset_name)
+    dataset = Dataset(dataset_name)
     raw_dataset_name = dataset.getConfig()['raw']
-    dataset = LocalBotDataset(raw_dataset_name)
+    dataset = Dataset(raw_dataset_name)
     generate = GenerateRealPredicted(model_name='localbot', results=results)
 
     tf_broadcaster = tf2_ros.TransformBroadcaster()

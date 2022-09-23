@@ -1,10 +1,10 @@
 Build the image:
 
-    docker build . -t danielc11/pytorch-localization:latest
+    docker build . -t danielc11/synfeal:latest
 
-    docker push danielc11/pytorch-localization:latest
+    docker push danielc11/synfeal:latest
 
-    docker pull danielc11/pytorch-localization:latest
+    docker pull danielc11/synfeal:latest
 
 Spawn the container - interative:
 

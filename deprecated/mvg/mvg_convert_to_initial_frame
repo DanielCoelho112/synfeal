@@ -9,7 +9,7 @@ import json
 # 3rd-party
 import rospy
 from colorama import Fore, Style
-from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.dataset import Dataset
 from localbot_localization.src.validate_dataset import ValidateDataset
 import numpy as np
 from localbot_core.src.utilities import *

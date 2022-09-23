@@ -10,7 +10,7 @@ from localbot_localization.src.models.poselstm import PoseLSTM
 from localbot_localization.src.models.hourglass import Hourglass, HourglassBatch
 from localbot_localization.src.save_results import SaveResults
 from localbot_localization.src.utilities import *
-from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.dataset import Dataset
 from localbot_core.src.utilities import *
 import numpy as np
 from datetime import datetime
@@ -59,7 +59,7 @@ def main():
     with open(f'{folder_name}/rgb_transform_test.pickle', 'rb') as handle:
         rgb_transform = pickle.load(handle)
             
-    test_dataset = LocalBotDataset(path_seq=f'{args["testing_set"]}', rgb_transform=rgb_transform, inputs=['rgb_image'])
+    test_dataset = Dataset(path_seq=f'{args["testing_set"]}', rgb_transform=rgb_transform, inputs=['rgb_image'])
     test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False)
     
     # create results folder

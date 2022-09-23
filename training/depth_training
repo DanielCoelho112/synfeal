@@ -16,7 +16,7 @@ import yaml
 from yaml.loader import SafeLoader
 from colorama import Fore
 
-from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.dataset import Dataset
 from localbot_localization.src.loss_functions import BetaLoss, DynamicLoss
 from localbot_localization.src.utilities import process_pose
 from localbot_localization.src.models.depthnet import CNNDepth, CNNDepthLow, CNNDepthBatch, CNNDepthDropout, CNNDepthBatchLowLeaky
@@ -57,8 +57,8 @@ def main():
     model_name = f'{folder_name}/{args["model_name"]}.pth'
     
     
-    train_dataset = LocalBotDataset(path_seq=args['training_set'])
-    test_dataset = LocalBotDataset(path_seq=args['testing_set'])
+    train_dataset = Dataset(path_seq=args['training_set'])
+    test_dataset = Dataset(path_seq=args['testing_set'])
 
     # check if the datasets are validated
     config_train = train_dataset.getConfig()

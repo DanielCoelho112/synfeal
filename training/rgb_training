@@ -1,30 +1,24 @@
 #!/usr/bin/env python3
-
-import cv2
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
-from colorama import Fore, Style
 import numpy as np
 import matplotlib.pyplot as plt
-from datetime import datetime  # to track the time each epoch takes
 import argparse
 import sys
 import os
 import yaml
-from yaml.loader import SafeLoader
-from colorama import Fore
 import pickle
 
-from localbot_localization.src.dataset import LocalBotDataset
-from localbot_localization.src.loss_functions import BetaLoss, DynamicLoss
-from localbot_localization.src.utilities import process_pose
-from localbot_localization.src.models.posenet import PoseNetGoogleNet, PoseNetResNet
-from localbot_localization.src.models.poselstm import PoseLSTM
-from localbot_localization.src.models.hourglass import Hourglass, HourglassBatch
-from localbot_localization.src.torch_utilities import summarizeModel, resumeTraining
+from colorama import Fore
+from datetime import datetime  # to track the time each epoch takes
 from torchvision import transforms
+
+from dataset import Dataset
+from models.loss_functions import BetaLoss, DynamicLoss
+from models.posenet import PoseNetGoogleNet, PoseNetResNet
+from models.poselstm import PoseLSTM
+from models.hourglass import HourglassBatch
+from utils import summarizeModel, resumeTraining, process_pose
 
 def main():
     parser = argparse.ArgumentParser(description='PointNet training')
@@ -65,14 +59,10 @@ def main():
     folder_name = f'{os.environ["HOME"]}/models/localbot/{args["folder_name"]}'
     model_name = f'{folder_name}/{args["model_name"]}.pth'
     
-    config_stats = LocalBotDataset(path_seq=args['training_set']).getConfig()['statistics']
+    config_stats = Dataset(path_seq=args['training_set']).getConfig()['statistics']
     rgb_mean = [config_stats['R']['mean'], config_stats['G']['mean'], config_stats['B']['mean']]
     rgb_std = [config_stats['R']['std'], config_stats['G']['std'], config_stats['B']['std']]
-    
-    #depth_mean = config_stats['D']['mean']
-    #depth_std = config_stats['D']['std']
-    
-    
+        
     rgb_transform_train = transforms.Compose([
         transforms.Resize(args['crop_size'] + 1),
         transforms.RandomCrop(args['crop_size']),
@@ -87,11 +77,10 @@ def main():
         transforms.Normalize(rgb_mean, rgb_std)
     ])
     
-    
     print(f'rgb_transform_test is: {rgb_transform_test.transforms}')
     
-    train_dataset = LocalBotDataset(path_seq=args['training_set'], rgb_transform = rgb_transform_train, depth_transform = None, inputs=['rgb_image'])
-    test_dataset = LocalBotDataset(path_seq=args['testing_set'], rgb_transform = rgb_transform_test, depth_transform = None, inputs=['rgb_image'])
+    train_dataset = Dataset(path_seq=args['training_set'], rgb_transform = rgb_transform_train, depth_transform = None, inputs=['rgb_image'])
+    test_dataset = Dataset(path_seq=args['testing_set'], rgb_transform = rgb_transform_test, depth_transform = None, inputs=['rgb_image'])
 
     # check if the datasets are validated
     config_train = train_dataset.getConfig()
@@ -106,7 +95,6 @@ def main():
     batch_size = args['batch_size']
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
-
 
     # start training, resume training, or abandon training?
     if os.path.exists(folder_name):
@@ -155,7 +143,6 @@ def main():
     # ----------------------------------
     # Training
     # ----------------------------------
-    
     stored_test_loss_epoch = np.inf
     
     n_epochs = args['n_epochs']
@@ -199,8 +186,6 @@ def main():
                 pose = process_pose(pose)
                 loss = criterion(pose, target_pose)
                 
-
-    
             loss.backward()  # Computes the gradient of current tensor w.r.t. graph leaves.
             optimizer.step()  # Performs a single optimization step (parameter update).
 
@@ -266,8 +251,9 @@ def main():
                 plt.plot(test_losses, label='test loss')
                 plt.legend()
                 plt.savefig(f'{folder_name}/losses.png')
+                # todo: in addition to save the state_dict of the model, we should also save the state_dict of the optimizer.
                 torch.save(model.state_dict(), model_name)
-
+            
                 dt_now = datetime.now()  # current date and time
                 config = {'user': os.environ["USER"],
                         'date': dt_now.strftime("%d/%m/%Y, %H:%M:%S"),

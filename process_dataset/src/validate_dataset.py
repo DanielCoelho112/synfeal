@@ -2,7 +2,7 @@ from utils import projectToCamera
 import numpy as np
 import os
 import shutil
-from dataset import LocalBotDataset
+from dataset import Dataset
 from sensor_msgs.msg import PointField
 import sensor_msgs.point_cloud2 as pc2
 # from utils import 
@@ -27,7 +27,7 @@ class ValidateDataset():
         path_dataset = dataset.path_seq
         path_validated_dataset = f'{dataset.path_seq}{suffix}'
         shutil.copytree(path_dataset, path_validated_dataset)
-        return LocalBotDataset(path_seq=f'{dataset.seq}{suffix}')
+        return Dataset(path_seq=f'{dataset.seq}{suffix}')
     
     def numberOfPoints(self, dataset, frame = None):
         dct = {}
@@ -246,8 +246,8 @@ class ValidateDataset():
         shutil.copytree(dataset1.path_seq, f'{dataset1.root}/{dataset3_name}')
         shutil.copytree(dataset2.path_seq, f'{dataset2.path_seq}_tmp')
         
-        dataset3 = LocalBotDataset(path_seq=f'{dataset3_name}')
-        dataset2_tmp = LocalBotDataset(path_seq=f'{dataset2.seq}_tmp')
+        dataset3 = Dataset(path_seq=f'{dataset3_name}')
+        dataset2_tmp = Dataset(path_seq=f'{dataset2.seq}_tmp')
         
         for idx in range(len(dataset2_tmp)):
             for file in files:

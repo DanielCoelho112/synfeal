@@ -9,7 +9,7 @@ import torch.optim as optim
 import torch.nn as nn
 import torch.utils.data
 from localbot_localization.src.models.pointnet import PointNet, feature_transform_regularizer
-from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.dataset import Dataset
 from localbot_localization.src.loss_functions import BetaLoss, DynamicLoss
 from localbot_localization.src.utilities import process_pose
 import numpy as np
@@ -49,8 +49,8 @@ def main():
         exit(0)
 
     ## Load the dataset
-    train_dataset = LocalBotDataset(path_seq=args['training_set'])
-    test_dataset = LocalBotDataset(path_seq=args['testing_set'])
+    train_dataset = Dataset(path_seq=args['training_set'])
+    test_dataset = Dataset(path_seq=args['testing_set'])
     
     # check if the datasets are validated
     

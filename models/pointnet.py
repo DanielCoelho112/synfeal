@@ -160,34 +160,3 @@ class PointNet(nn.Module):
         x_pose = torch.cat((x_trans, x_rot), dim=1)
         return x_pose, trans, trans_feat  # softmax removed!
 
-
-if __name__ == '__main__':
-    sim_data = Variable(torch.rand(32,3,10000))   # batch size = 32, 3 features, n_points = 2500
-    # trans = STN3d()
-    # out = trans(sim_data)
-    # print('stn', out.size())
-    
-
-    # sim_data_64d = Variable(torch.rand(32, 64, 2500))
-    # trans = STNkd(k=64)
-    # out = trans(sim_data_64d)
-    # print('stn64d', out.size())
-    
-    # sim_data = Variable(torch.rand(2,3,5))
-    # pointfeat = PointNetfeat(global_feat=True)
-    # out, _, _ = pointfeat(sim_data)
-    # print('global feat', out.size())
-
-    # pointfeat = PointNetfeat(global_feat=False)
-    # out, _, _ = pointfeat(sim_data)
-    # print('point feat', out.size())
-
-    # print('simulated input size:', sim_data.shape)
-    
-    # cls = PointNet()
-    # out, _, _ = cls(sim_data)
-    # #print(out[:,:])
-    
-    # print('output size: ', out.shape)
-    
-

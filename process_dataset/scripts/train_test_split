@@ -6,7 +6,7 @@ import argparse
 
 # 3rd-party
 from visualization_msgs.msg import *
-from dataset import LocalBotDataset
+from dataset import Dataset
 import numpy as np
 import os
 import shutil
@@ -28,7 +28,7 @@ def main():
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
 
-    dataset = LocalBotDataset(path_seq=args['dataset'])
+    dataset = Dataset(path_seq=args['dataset'])
     path_root = dataset.root
     
     train_path = f'{path_root}/{args["train"]}'

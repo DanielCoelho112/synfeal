@@ -21,7 +21,7 @@ from scipy.spatial.transform import Rotation as R
 from tf.transformations import *
 from matplotlib import cm
 
-from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.dataset import Dataset
 
 
 def getFrustumMarkerArray(w, h, f_x, f_y, Z_near, Z_far, frame_id, ns, color):
@@ -181,7 +181,7 @@ def main():
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     
-    train_dataset = LocalBotDataset(path_seq=args['dataset'], inputs='rgb_image')
+    train_dataset = Dataset(path_seq=args['dataset'], inputs='rgb_image')
     
     rospy.init_node('visualize_dataset')
     rate = rospy.Rate(10) 

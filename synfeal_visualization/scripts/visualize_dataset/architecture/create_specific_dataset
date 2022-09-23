@@ -21,7 +21,7 @@ from scipy.spatial.transform import Rotation as R
 from tf.transformations import *
 from matplotlib import cm
 from localbot_core.src.utilities_ros import getFrustumMarkerArray
-from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.dataset import Dataset
 from localbot_localization.src.utilities import *
 from localbot_core.src.utilities_ros import *
 import tf

@@ -1,18 +1,18 @@
 import cv2
 import torch.utils.data as data
-from utils import read_pcd, matrixToXYZ, matrixToQuaternion, normalize_quat
-
 import numpy as np
 import torch
 import os
 import yaml
-from yaml.loader import SafeLoader
-from PIL import Image
 
+from PIL import Image
+from yaml.loader import SafeLoader
+
+from utils import read_pcd, matrixToXYZ, matrixToQuaternion, normalize_quat
 
 # pytorch datasets: https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
 
-class LocalBotDataset(data.Dataset):
+class Dataset(data.Dataset):
     def __init__(self, path_seq, rgb_transform = None, depth_transform = None, inputs = None):
         self.root = f'{os.environ["HOME"]}/datasets/localbot'
         self.seq = path_seq
@@ -86,7 +86,7 @@ class LocalBotDataset(data.Dataset):
             yaml.dump(config, f)
       
       
-# config_stats = LocalBotDataset('seq5',depth_transform=None ,rgb_transform=None, inputs=['depth_image']).getConfig()['statistics']
+# config_stats = Dataset('seq5',depth_transform=None ,rgb_transform=None, inputs=['depth_image']).getConfig()['statistics']
 # rgb_mean = [config_stats['R']['mean'], config_stats['G']['mean'], config_stats['B']['mean']]
 # rgb_std = [config_stats['R']['std'], config_stats['G']['std'], config_stats['B']['std']]
 # depth_mean = config_stats['D']['mean']
@@ -116,7 +116,7 @@ class LocalBotDataset(data.Dataset):
 #     transforms.Normalize(rgb_mean, rgb_std)
 # ])
 
-# dataset = LocalBotDataset('seq6',depth_transform=depth_transform_train ,rgb_transform=rgb_transform_train, inputs=['depth_image', 'rgb_image'])
+# dataset = Dataset('seq6',depth_transform=depth_transform_train ,rgb_transform=rgb_transform_train, inputs=['depth_image', 'rgb_image'])
 
 # for i in range(100,110):
 #     print(f'depth size: {dataset[i][0].shape}')

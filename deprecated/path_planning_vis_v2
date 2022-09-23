@@ -22,7 +22,7 @@ import yaml
 from yaml.loader import SafeLoader
 from geometry_msgs.msg import Point, Pose, Vector3, Quaternion, TransformStamped, Transform
 from visualization_msgs.msg import *
-from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.dataset import Dataset
 import numpy as np
 import tf2_ros
 from localbot_core.src.utilities_ros import createArrowMarker

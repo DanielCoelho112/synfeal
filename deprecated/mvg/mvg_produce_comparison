@@ -7,7 +7,7 @@ import torch.utils.data
 
 from localbot_localization.src.save_results import SaveComparisonDatasets
 from localbot_localization.src.utilities import *
-from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.dataset import Dataset
 from localbot_core.src.utilities import *
 import numpy as np
 from datetime import datetime
@@ -30,7 +30,7 @@ def main():
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     
-    dataset = LocalBotDataset(path_seq=f'{args["dataset"]}')
+    dataset = Dataset(path_seq=f'{args["dataset"]}')
     
     # create results folder
     

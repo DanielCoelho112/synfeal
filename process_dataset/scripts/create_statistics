@@ -8,7 +8,7 @@ import copy
 # 3rd-party
 import rospy
 from colorama import Fore, Style
-from dataset import LocalBotDataset
+from dataset import Dataset
 from process_dataset.src.validate_dataset import ValidateDataset
 import numpy as np
 
@@ -19,7 +19,7 @@ def main():
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
     
-    dataset = LocalBotDataset(path_seq=args['dataset'])
+    dataset = Dataset(path_seq=args['dataset'])
     
     validate = ValidateDataset()
     

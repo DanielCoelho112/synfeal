@@ -11,7 +11,7 @@ from regex import F, P
 # 3rd-party
 import rospy
 from colorama import Fore, Style
-from localbot_localization.src.dataset import LocalBotDataset
+from localbot_localization.src.dataset import Dataset
 from localbot_localization.src.validate_dataset import ValidateDataset
 import numpy as np
 from localbot_core.src.utilities import *
@@ -33,7 +33,7 @@ def main():
     
     json_path = f'/home/danc/datasets/localbot/mvg/input/{args["folder"]}/reconstruction_sequential/sfm_data.json'
     
-    #matrix44_frame0_world = np.loadtxt(f'{LocalBotDataset(dataset.getConfig()["raw"]).path_seq}/frame-00000.pose.txt', delimiter=',')
+    #matrix44_frame0_world = np.loadtxt(f'{Dataset(dataset.getConfig()["raw"]).path_seq}/frame-00000.pose.txt', delimiter=',')
     
     # for each frame, we read the rotation, and translation. Transform into a 4x4 matrix and save it as txt.
     file = json.load(open(json_path))
