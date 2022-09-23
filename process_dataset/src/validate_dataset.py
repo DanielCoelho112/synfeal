@@ -5,13 +5,15 @@ import shutil
 from dataset import LocalBotDataset
 from sensor_msgs.msg import PointField
 import sensor_msgs.point_cloud2 as pc2
-from utils import *
+# from utils import 
+from utils_ros import read_pcd, write_pcd
 import random
 from os.path import exists
 import yaml
 from colorama import Fore
 import math
 import copy
+import cv2
 
 class ValidateDataset():
     def __init__(self):

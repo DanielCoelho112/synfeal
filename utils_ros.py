@@ -2,10 +2,26 @@ import copy
 import math
 import tf
 import rospy
+import os
 from geometry_msgs.msg import Pose, Point
 from visualization_msgs.msg import *
 from std_msgs.msg import Header, ColorRGBA
+from synfeal_collection.src.pypcd import PointCloud
 
+
+def write_pcd(filename, msg, mode='binary'):
+    
+    pc = PointCloud.from_msg(msg)
+    pc.save_pcd(filename, compression=mode)
+    
+def read_pcd(filename):
+
+    if not os.path.isfile(filename):
+        raise Exception("[read_pcd] File does not exist.")
+    pc = PointCloud.from_path(filename)
+
+    return pc
+    
 
 def data2pose(data):
     
