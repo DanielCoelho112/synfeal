@@ -15,3 +15,4 @@ scikit_learn==1.1.1
 torchsummary==1.5.1
 trimesh==3.16.1
 pycollada==0.7.2
+Rtree==1.0.1
