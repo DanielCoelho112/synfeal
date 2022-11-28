@@ -78,7 +78,7 @@
               <geometry>
                 <mesh>
                   <!-- <uri>file:///home/danc/models_3d/santuario/santuario.dae</uri> -->
-                  <uri>file:///home/danc/models_3d/localbot/santuario/santuario.dae</uri>
+                  <uri>model:///models_3d/localbot/santuario/santuario.dae</uri>
                 </mesh>
               </geometry>
             </visual>

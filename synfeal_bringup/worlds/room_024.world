@@ -76,7 +76,7 @@
             <visual name='room_024_visual'>
               <geometry>
                 <mesh>
-                  <uri>model://room_024/room_024.dae</uri>
+                  <uri>model:///models_3d/localbot/room_024/room_024.dae</uri>
                 </mesh>
               </geometry>
             </visual>
