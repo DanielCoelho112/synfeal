@@ -81,7 +81,8 @@ def main():
             # marker.mesh_resource = 'package://synfeal_visualization/models/room_024/room_024.dae'
             #print(f'{os.environ["HOME"]}/models_3d/localbot/{mesh_name}/{mesh_name}.dae')
             #'file:///home/danc/models_3d/santuario/Virtudes_Chapel.dae'
-            marker.mesh_resource = f'file://{os.environ["HOME"]}/models_3d/localbot/{mesh_name}/{mesh_name}.dae'
+            path=os.environ.get("GAZEBO_MODEL_PATH").split(":") 
+            marker.mesh_resource = f'file://{path[2]}/models_3d/localbot/{mesh_name}/{mesh_name}.dae'
             marker.mesh_use_embedded_materials = True
             markers.markers.append(marker)
             
