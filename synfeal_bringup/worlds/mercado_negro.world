@@ -1,0 +1,123 @@
+<sdf version='1.7'>
+  <world name='mercado_negro'>
+    <scene>
+      <ambient>1 1 1 1</ambient>
+      <background>1 1 1 1</background>
+      <shadows>0</shadows>
+    </scene>
+    <light name='sun' type='directional'>
+      <cast_shadows>1</cast_shadows>
+      <pose>0 0 10 0 -0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <latitude_deg>0</latitude_deg>
+      <longitude_deg>0</longitude_deg>
+      <elevation>0</elevation>
+      <heading_deg>0</heading_deg>
+    </spherical_coordinates>
+    <state world_name='default'>
+      <sim_time>4544 362000000</sim_time>
+      <real_time>30 853672711</real_time>
+      <wall_time>1638540717 644359111</wall_time>
+      <iterations>30732</iterations>
+      <model name='ground_plane'>
+        <pose>0 0 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>0 0 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      
+      <light name='sun'>
+        <pose>0 0 10 0 -0 0</pose>
+      </light>
+    </state>
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose>-6.93178 0.416908 4.85378 0 0.443643 -0.047803</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
+
+     <!-- <model name='boiler'>
+        <pose>0 0 0 0 0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='boiler_link'>
+          <pose>0 0 0 0 0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model> -->
+
+    <model name='mercado_negro'>
+          <static>1</static>
+          <link name='mercado_negro_link'>
+            <!-- <pose>64.55 -22.73 -13.64 0 0 0</pose> -->
+            <pose>0 0 0 0 0 0</pose>
+            <!-- <visual name='mercado_negro_visual'>
+              <geometry>
+                <mesh>
+                   <uri>file:///home/danc/models_3d/santuario/santuario.dae</uri> 
+                  <uri>model:///models_3d/localbot/mercado_negro/sala_pequena.dae</uri>
+                </mesh>
+              </geometry>
+            </visual> -->
+             <visual name='mercado_negro'>
+              <pose>0 0 0 0 0 0</pose>
+              <geometry>
+                <mesh>
+                  <uri>model:///models_3d/localbot/mercado_negro/mercado_negro.dae</uri>
+                </mesh>
+              </geometry>     
+            </visual> 
+            <collision name='mercado_negro_collision'>
+              <pose>0 1.5 0.4 0 0 0</pose>
+              <geometry>
+                <mesh>
+                  <uri>model:///models_3d/localbot/mercado_negro/mercado_negro_collision.dae</uri>
+                </mesh>
+              </geometry>
+              <max_contacts>10</max_contacts>
+              <surface>
+                <contact>
+                  <ode/>
+                </contact>
+                <bounce/>
+                <friction>
+                  <torsional>
+                    <ode>
+                    <mu>100</mu>
+                    <mu2>50</mu2>
+                    </ode>
+                  </torsional>
+                </friction>
+              </surface>
+            </collision> 
+            <self_collide>0</self_collide>
+            <enable_wind>0</enable_wind>
+            <kinematic>0</kinematic>
+          </link>
+          <pose>0 0 0 0 0 0 0</pose>
+        </model>
+  </world>
+</sdf>
