@@ -8,7 +8,8 @@ from utils import matrixToXYZ, matrixToQuaternion, normalize_quat
 
 class Results():
     def __init__(self, results_path):
-        self.path = f'{os.environ["HOME"]}/results/localbot/{results_path}'
+        path=os.environ.get("GAZEBO_MODEL_PATH").split(":") 
+        self.path = f'{path[2]}/results/localbot/{results_path}'
         self.nframes = int(sum(f.endswith('.txt') for f in os.listdir(self.path))/2)
         self.csv = pd.read_csv(f'{self.path}/errors.csv')
         

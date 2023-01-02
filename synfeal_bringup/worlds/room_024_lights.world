@@ -81,7 +81,7 @@
         <visual name='room_024_visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/danc/models_3d/room_024/room_024.dae</uri>
+              <uri>model:///models_3d/localbot/room_024/room_024.dae</uri>
             </mesh>
           </geometry>
         </visual>

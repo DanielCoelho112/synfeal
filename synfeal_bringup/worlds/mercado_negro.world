@@ -1,5 +1,5 @@
 <sdf version='1.7'>
-  <world name='boiler'>
+  <world name='mercado_negro'>
     <scene>
       <ambient>1 1 1 1</ambient>
       <background>1 1 1 1</background>
@@ -23,7 +23,6 @@
         <falloff>0</falloff>
       </spot>
     </light>
-    
     <spherical_coordinates>
       <surface_model>EARTH_WGS84</surface_model>
       <latitude_deg>0</latitude_deg>
@@ -36,6 +35,17 @@
       <real_time>30 853672711</real_time>
       <wall_time>1638540717 644359111</wall_time>
       <iterations>30732</iterations>
+      <model name='ground_plane'>
+        <pose>0 0 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>0 0 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      
       <light name='sun'>
         <pose>0 0 10 0 -0 0</pose>
       </light>
@@ -59,21 +69,32 @@
         </link>
       </model> -->
 
-    <model name='boiler'>
+    <model name='mercado_negro'>
           <static>1</static>
-          <link name='boiler_link'>
+          <link name='mercado_negro_link'>
+            <!-- <pose>64.55 -22.73 -13.64 0 0 0</pose> -->
             <pose>0 0 0 0 0 0</pose>
-            <visual name='boiler_visual'>
+            <!-- <visual name='mercado_negro_visual'>
               <geometry>
                 <mesh>
-                  <uri>model:///models_3d/localbot/boiler/boiler.dae</uri>
+                   <uri>file:///home/danc/models_3d/santuario/santuario.dae</uri> 
+                  <uri>model:///models_3d/localbot/mercado_negro/sala_pequena.dae</uri>
                 </mesh>
               </geometry>
-            </visual>
-            <!-- <collision name='boiler_collision'>
+            </visual> -->
+             <visual name='mercado_negro'>
+              <pose>0 0 0 0 0 0</pose>
               <geometry>
                 <mesh>
-                  <uri>file:///home/danc/models_3d/boiler/boiler.dae</uri>
+                  <uri>model:///models_3d/localbot/mercado_negro/mercado_negro.dae</uri>
+                </mesh>
+              </geometry>     
+            </visual> 
+            <collision name='mercado_negro_collision'>
+              <pose>0 1.5 0.4 0 0 0</pose>
+              <geometry>
+                <mesh>
+                  <uri>model:///models_3d/localbot/mercado_negro/mercado_negro_collision.dae</uri>
                 </mesh>
               </geometry>
               <max_contacts>10</max_contacts>
@@ -84,18 +105,19 @@
                 <bounce/>
                 <friction>
                   <torsional>
-                    <ode/>
+                    <ode>
+                    <mu>100</mu>
+                    <mu2>50</mu2>
+                    </ode>
                   </torsional>
-                  <ode/>
                 </friction>
               </surface>
-            </collision> -->
+            </collision> 
             <self_collide>0</self_collide>
             <enable_wind>0</enable_wind>
             <kinematic>0</kinematic>
           </link>
           <pose>0 0 0 0 0 0 0</pose>
         </model>
-
   </world>
 </sdf>

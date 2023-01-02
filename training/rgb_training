@@ -55,8 +55,9 @@ def main():
         else:
             print(f'{Fore.GREEN} Cuda is available {Fore.RESET}')
             torch.cuda.set_device(args['gpu'])
-            
-    folder_name = f'{os.environ["HOME"]}/models/localbot/{args["folder_name"]}'
+
+    path=os.environ.get("GAZEBO_MODEL_PATH").split(":") 
+    folder_name = f'{path[2]}/models/localbot/{args["folder_name"]}'
     model_name = f'{folder_name}/{args["model_name"]}.pth'
     
     config_stats = Dataset(path_seq=args['training_set']).getConfig()['statistics']

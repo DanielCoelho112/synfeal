@@ -18,7 +18,8 @@ class SaveResults():
     def __init__(self, output, model_path, seq_path, overwrite):
         
         # attribute initializer
-        self.output_folder = f'{os.environ["HOME"]}/results/localbot/{output}'
+        path=os.environ.get("GAZEBO_MODEL_PATH").split(":") 
+        self.output_folder = f'{path[2]}/results/localbot/{output}'
         self.model_path = model_path
         self.seq_path = seq_path
         

@@ -17,7 +17,8 @@ import numpy as np
 class SaveDataset():
     def __init__(self, output, mode, dbf = None, uvl = None, model3d_config = None, fast=False):
         
-        self.output_folder = f'{os.environ["HOME"]}/datasets/localbot/{output}'
+        path=os.environ.get("GAZEBO_MODEL_PATH").split(":")
+        self.output_folder = f'{path[2]}/datasets/localbot/{output}'
         
         if not os.path.exists(self.output_folder):
             print(f'Creating folder {self.output_folder}')
