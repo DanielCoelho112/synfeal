@@ -9,10 +9,10 @@ volume:
   position:
     xmin: -1.5
     xmax: 1.5
-    ymin: -1.5
+    ymin: 1
     ymax: 4.0
-    zmin: 1.5
-    zmax: -2.5
+    zmin: -0.85
+    zmax: 1.65
   angles:
     rxmin: -0.52
     rxmax: 0.52
