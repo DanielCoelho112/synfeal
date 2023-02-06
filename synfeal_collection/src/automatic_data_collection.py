@@ -229,7 +229,7 @@ class AutomaticDataCollection():
                 f.write(my_str)
 
             os.system(
-                f'gz topic -p /gazebo/room_024/light/modify -f /tmp/set_light.txt')
+                f'gz topic -p /gazebo/mercado_negro/light/modify -f /tmp/set_light.txt')
 
     def checkCollision(self, initial_pose, final_pose):
         if self.use_collision is False:
