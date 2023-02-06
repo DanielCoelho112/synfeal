@@ -14,8 +14,7 @@ from utils import read_pcd, matrixToXYZ, matrixToQuaternion, normalize_quat
 
 class Dataset(data.Dataset):
     def __init__(self, path_seq, rgb_transform = None, depth_transform = None, inputs = None):
-        path=os.environ.get("GAZEBO_MODEL_PATH").split(":")
-        self.root = f'{path[2]}/datasets/localbot'
+        self.root = f'{os.environ["HOME"]}/datasets/localbot'
         self.seq = path_seq
         self.path_seq = f'{self.root}/{path_seq}'
         self.rgb_transform = rgb_transform
