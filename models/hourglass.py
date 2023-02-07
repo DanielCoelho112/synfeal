@@ -16,7 +16,10 @@ class HourglassBatch(nn.Module):
         self.sum_mode = sum_mode
         self.dropout_rate = dropout_rate
         self.aux_logits = aux_logits
-        base_model = models.resnet34(pretrained=pretrained)
+        if pretrained:
+            base_model = models.resnet34('ResNet34_Weights.DEFAULT')
+        else:
+            base_model = models.resnet34()
 
         # encoding blocks!
         self.init_block = nn.Sequential(*list(base_model.children())[:4])

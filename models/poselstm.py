@@ -19,7 +19,10 @@ class PoseLSTM(nn.Module):
             self.hidden_size = hidden_size
             self.aux_logits = aux_logits
 
-            base_model = models.inception_v3(pretrained)
+            if pretrained:
+                base_model = models.inception_v3(weights='Inception_V3_Weights.DEFAULT')
+            else:
+                base_model = models.inception_v3()
             base_model.aux_logits = True
             
             self.Conv2d_1a_3x3 = base_model.Conv2d_1a_3x3
