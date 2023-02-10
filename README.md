@@ -36,7 +36,7 @@ For a demonstration of the data collection procedure, see the following video:
 Add to zsh or bash file:
 
     export GAZEBO_MODEL_PATH="`rospack find synfeal_bringup`/models:${GAZEBO_MODEL_PATH}":${HOME}
-
+    export SYNFEAL_DATASET=${HOME}
     export PYTHONPATH="$PYTHONPATH:/home/user/catkin_ws/src/synfeal"
 Where /home/user/catkin_ws/src/synfeal is the location of synfeal. 
 
@@ -91,7 +91,7 @@ For informations on how to use other models, see https://github.com/DanielCoelho
 
 Run:
 
-    ./process_results/rgb_produce_results -test_set 'seq22_p0r20' -rf <results_folder> -mp <model_name>
+    ./produce_results/scripts/rgb_produce_results -test_set 'seq22_p0r20' -rf <results_folder> -mp <model_name>
 
 ## How to visualize the results?
 
