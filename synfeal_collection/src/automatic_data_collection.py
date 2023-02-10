@@ -69,9 +69,9 @@ class AutomaticDataCollection():
 
 
         if self.use_collision:
-            path=os.environ.get("GAZEBO_MODEL_PATH").split(":")
+            path=os.environ.get("SYNFEAL_DATASET")
             self.mesh_collision = trimesh.load(
-                f'{path[2]}/models_3d/localbot/{name_model3d_config}/{name_model3d_config}_collision.dae', force='mesh')
+                f'{path}/models_3d/localbot/{name_model3d_config}/{name_model3d_config}_collision.dae', force='mesh')
         else:
             self.mesh_collision = False
 
