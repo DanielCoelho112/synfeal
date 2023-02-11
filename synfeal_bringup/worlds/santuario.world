@@ -58,17 +58,6 @@
       </camera>
     </gui>
 
-     <!-- <model name='boiler'>
-        <pose>0 0 0 0 0 0</pose>
-        <scale>1 1 1</scale>
-        <link name='boiler_link'>
-          <pose>0 0 0 0 0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model> -->
-
     <model name='santuario'>
           <static>1</static>
           <link name='santuario_link'>
@@ -77,33 +66,10 @@
             <visual name='santuario_visual'>
               <geometry>
                 <mesh>
-                  <!-- <uri>file:///home/danc/models_3d/santuario/santuario.dae</uri> -->
                   <uri>model:///models_3d/localbot/santuario/santuario.dae</uri>
                 </mesh>
               </geometry>
             </visual>
-            <!-- <collision name='room_024_collision'>
-              <geometry>
-                <mesh>
-                  <uri>model://room_024/room_024.dae</uri>
-                </mesh>
-              </geometry>
-              <max_contacts>10</max_contacts>
-              <surface>
-                <contact>
-                  <ode/>
-                </contact>
-                <bounce/>
-                <friction>
-                  <torsional>
-                    <ode>
-                    <mu>100</mu>
-                    <mu2>50</mu2>
-                    </ode>
-                  </torsional>
-                </friction>
-              </surface>
-            </collision> -->
             <self_collide>0</self_collide>
             <enable_wind>0</enable_wind>
             <kinematic>0</kinematic>

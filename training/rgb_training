@@ -250,6 +250,8 @@ def main():
                 plt.figure()
                 plt.plot(train_losses, label='train loss')
                 plt.plot(test_losses, label='test loss')
+                plt.xlabel("Epoch")    
+                plt.ylabel("Loss")   
                 plt.legend()
                 plt.savefig(f'{folder_name}/losses.png')
                 # todo: in addition to save the state_dict of the model, we should also save the state_dict of the optimizer.
