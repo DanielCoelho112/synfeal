@@ -23,14 +23,14 @@ volume:
 light:
   light_names: 
   - 'user_point_light_0'
-  # - 'user_point_light_1'
-  # - 'user_point_light_2'
+  - 'user_point_light_1'
+  - 'user_point_light_2'
   # - 'user_point_light_3'
   # - 'user_point_light_4'
   # - 'user_point_light_5'
-  att_initial: 1.0
-  att_min: 0.0
-  att_max: 1.0
+  att_initial: 0
+  att_min: 0.1
+  att_max: 0.2
 sun:
   roll_initial: 0.0
   pitch_initial: 0.0

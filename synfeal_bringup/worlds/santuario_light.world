@@ -79,13 +79,41 @@
 
     <light name='user_point_light_0' type='point'>
       <pose>1.673773 -1.662100 2.459146 0 -0 0</pose>
-      <diffuse>0.5 0.5 0.5 1</diffuse>
-      <specular>0.1 0.1 0.1 1</specular>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
       <attenuation>
-        <range>5.2</range>
-        <constant>0.2</constant>
-        <linear>0.01</linear>
-        <quadratic>0.01</quadratic>
+        <range>5.4</range>
+        <constant>0.5</constant>
+        <linear>0.2</linear>
+        <quadratic>0.1</quadratic>
+      </attenuation>
+      <cast_shadows>1</cast_shadows>
+      <direction>0 0 -1</direction>
+    </light>
+
+    <light name='user_point_light_1' type='point'>
+      <pose>1.673773 4.290038 2.459146 0 -0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>5.4</range>
+        <constant>0.5</constant>
+        <linear>0.2</linear>
+        <quadratic>0.1</quadratic>
+      </attenuation>
+      <cast_shadows>1</cast_shadows>
+      <direction>0 0 -1</direction>
+    </light>
+
+    <light name='user_point_light_2' type='point'>
+      <pose>-2.822533 4.270349 -0.034578 0 -0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>5.4</range>
+        <constant>0.5</constant>
+        <linear>0.2</linear>
+        <quadratic>0.1</quadratic>
       </attenuation>
       <cast_shadows>1</cast_shadows>
       <direction>0 0 -1</direction>
