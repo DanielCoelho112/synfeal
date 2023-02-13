@@ -29,8 +29,12 @@ light:
   # - 'user_point_light_4'
   # - 'user_point_light_5'
   att_initial: 1.0
-  att_min: 0.1
+  att_min: 0.0
   att_max: 1.0
+sun:
+  roll_initial: 0.0
+  pitch_initial: 0.0
+  yaw_initial: 0.0
 collision:
   use: True
   min_camera_distance: 1.2

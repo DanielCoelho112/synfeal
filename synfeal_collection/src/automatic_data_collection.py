@@ -65,6 +65,10 @@ class AutomaticDataCollection():
 
         self.light_names = model3d_config['light']['light_names']
 
+        self.roll_initial = model3d_config['sun']['roll_initial']
+        self.pitch_initial = model3d_config['sun']['pitch_initial']
+        self.yaw_initial = model3d_config['sun']['yaw_initial']
+
         self.use_collision = model3d_config['collision']['use']
         self.min_cam_dist = model3d_config['collision']['min_camera_distance']
 
@@ -232,11 +236,41 @@ class AutomaticDataCollection():
             os.system(
                 f'gz topic -p /gazebo/santuario/light/modify -f /tmp/set_light.txt')
 
-    def generateSunLight(self):
-        pitch = np.random.uniform(low=-1.57, high=1.57)
-        return pitch
+    def generateSunLight(self , n_steps , random):
+        min_angle = -1.57
+        max_angle = 1.57
+        roll = []
+        pitch = []
+        yaw = []
+        if random:
+            roll = [np.random.uniform(low=min_angle, high=max_angle) for _ in range(n_steps)]
+            pitch = [np.random.uniform(low=min_angle, high=max_angle) for _ in range(n_steps)]
+            yaw = [np.random.uniform(low=min_angle, high=max_angle) for _ in range(n_steps)]
+        else:
+            roll_initial = self.roll_initial
+            pitch_initial = self.pitch_initial
+            yaw_initial = self.yaw_initial
+            roll_final = np.random.uniform(low=min_angle, high=max_angle)
+            pitch_final = np.random.uniform(low=min_angle, high=max_angle)
+            yaw_final = np.random.uniform(low=min_angle, high=max_angle)
+
+            roll_step = (roll_final - roll_initial) / n_steps
+            pitch_step = (pitch_final - pitch_initial) / n_steps
+            yaw_step = (yaw_final - yaw_initial) / n_steps
+
+            for i in range(n_steps):
+                roll.append(roll_initial + (i + 1) * roll_step)
+                pitch.append(pitch_initial + (i + 1) * pitch_step)
+                yaw.append(yaw_initial + (i + 1) * yaw_step)
+
+            self.roll_initial = roll_final
+            self.pitch_initial = pitch_final
+            self.yaw_initial = yaw_final
+
+        return roll , pitch , yaw
     
     def setSunLight(self, roll = 0, pitch = 0, yaw = 0):
+        # Generates the pose message to be sent to the gazebo service
         pose = Pose()
         pose.position = Point(0,0,10)
         orientation = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
@@ -246,6 +280,7 @@ class AutomaticDataCollection():
         pose.orientation.z = orientation[2]
         pose.orientation.w = orientation[3]
 
+        # Creates the light message to be sent to the gazebo service
         light = SetLightPropertiesRequest()
         light.light_name = 'sun'
         light.cast_shadows = True
@@ -257,14 +292,15 @@ class AutomaticDataCollection():
         light.pose = pose
         light.direction = Vector3(0,0,-1)
 
+        # Required to make the service call to gazebo
         rospy.wait_for_service('/gazebo/set_light_properties')
         try:
+            # Creates the service and sends the light message
             modify_light = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
             result = modify_light(light)
         except rospy.ServiceException as e:
             rospy.loginfo("Get Model State service call failed:  {0}".format(e))
 
-        print(result)
 
     def checkCollision(self, initial_pose, final_pose):
         if self.use_collision is False:

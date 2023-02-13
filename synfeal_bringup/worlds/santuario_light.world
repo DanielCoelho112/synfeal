@@ -83,8 +83,8 @@
       <specular>0.1 0.1 0.1 1</specular>
       <attenuation>
         <range>5.2</range>
-        <constant>0.5</constant>
-        <linear>0.1</linear>
+        <constant>0.2</constant>
+        <linear>0.01</linear>
         <quadratic>0.01</quadratic>
       </attenuation>
       <cast_shadows>1</cast_shadows>

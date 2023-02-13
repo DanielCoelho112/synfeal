@@ -76,8 +76,8 @@ def main():
             if args['use_variable_lights']:
                 light = data_collector.generateLights(n_steps=1, random=True)
                 data_collector.setLight(light)
-                sun_light = data_collector.generateSunLight()
-                data_collector.setSunLight(sun_light)
+                roll , pitch , yaw = data_collector.generateSunLight()
+                data_collector.setSunLight(roll , pitch , yaw)
             data_collector.setPose(pose)
             # todo: use getmodelstate from gazebo instead of waiting...
             rospy.sleep(0.6)
@@ -103,12 +103,12 @@ def main():
             if args['use_variable_lights']:
                 step_lights = data_collector.generateLights(
                     n_steps=len(step_poses), random=args['random_lights'])
+                roll , pitch , yaw = data_collector.generateSunLight(n_steps=len(step_poses), random=args['random_lights'])
             for idx, pose in enumerate(step_poses):
                 data_collector.setPose(pose)
                 if args['use_variable_lights']:
                     data_collector.setLight(step_lights[idx])
-                    sun_light = data_collector.generateSunLight()
-                    data_collector.setSunLight(sun_light)
+                    data_collector.setSunLight(roll[idx] , pitch[idx] , yaw[idx])
                 if not args['fast']:
                     rospy.sleep(0.4)
                 else:
