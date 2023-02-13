@@ -10,7 +10,7 @@ import rospy
 import tf
 import numpy as np
 import trimesh
-from geometry_msgs.msg import Pose , Quaternion , Point
+from geometry_msgs.msg import Pose , Quaternion , Point , Vector3
 #from interactive_markers.interactive_marker_server import *
 #from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
@@ -230,20 +230,32 @@ class AutomaticDataCollection():
                 f.write(my_str)
 
             os.system(
-                f'gz topic -p /gazebo/santuario_Light/light/modify -f /tmp/set_light.txt')
+                f'gz topic -p /gazebo/santuario/light/modify -f /tmp/set_light.txt')
 
-    def generateSun(self):
-        sun = np.random.uniform(low=self.sun_min, high=self.sun_max)
-        return sun
+    def generateSunLight(self):
+        pitch = np.random.uniform(low=-1.57, high=1.57)
+        return pitch
     
-    def setSun(self, sun):
+    def setSunLight(self, roll = 0, pitch = 0, yaw = 0):
         pose = Pose()
         pose.position = Point(0,0,10)
-        pose.orientation = Quaternion(0,2,0,1)
+        orientation = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+        pose.orientation = Quaternion(0,0,0,1)
+        pose.orientation.x = orientation[0]
+        pose.orientation.y = orientation[1]
+        pose.orientation.z = orientation[2]
+        pose.orientation.w = orientation[3]
 
         light = SetLightPropertiesRequest()
         light.light_name = 'sun'
+        light.cast_shadows = True
+        light.diffuse = ColorRGBA(0.8,0.8,0.8,1)
+        light.specular = ColorRGBA(0.2,0.2,0.2,1)
+        light.attenuation_constant = 0.9
+        light.attenuation_linear = 0.01
+        light.attenuation_quadratic = 0.001
         light.pose = pose
+        light.direction = Vector3(0,0,-1)
 
         rospy.wait_for_service('/gazebo/set_light_properties')
         try:
