@@ -10,11 +10,12 @@ import rospy
 import tf
 import numpy as np
 import trimesh
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import Pose , Quaternion , Point
 #from interactive_markers.interactive_marker_server import *
 #from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 from gazebo_msgs.srv import SetModelState, GetModelState, SetModelStateRequest
+from gazebo_msgs.srv import SetLightProperties , GetLightProperties , SetLightPropertiesRequest
 from colorama import Fore
 from scipy.spatial.transform import Rotation as R
 
@@ -230,6 +231,28 @@ class AutomaticDataCollection():
 
             os.system(
                 f'gz topic -p /gazebo/santuario_Light/light/modify -f /tmp/set_light.txt')
+
+    def generateSun(self):
+        sun = np.random.uniform(low=self.sun_min, high=self.sun_max)
+        return sun
+    
+    def setSun(self, sun):
+        pose = Pose()
+        pose.position = Point(0,0,10)
+        pose.orientation = Quaternion(0,2,0,1)
+
+        light = SetLightPropertiesRequest()
+        light.light_name = 'sun'
+        light.pose = pose
+
+        rospy.wait_for_service('/gazebo/set_light_properties')
+        try:
+            modify_light = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
+            result = modify_light(light)
+        except rospy.ServiceException as e:
+            rospy.loginfo("Get Model State service call failed:  {0}".format(e))
+
+        print(result)
 
     def checkCollision(self, initial_pose, final_pose):
         if self.use_collision is False:

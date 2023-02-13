@@ -113,7 +113,7 @@ def main():
         model = eval(args['init_model'])
         train_losses = []
         test_losses = []
-        start_epoch = 0
+        start_epoch = 1
         
     # convert transforms to pickle files
     with open(f'{folder_name}/rgb_transform_train.pickle', 'wb') as handle:
@@ -216,7 +216,7 @@ def main():
         
         dt = datetime.now() - t0
         print(
-            f'epoch {epoch + 1}/{n_epochs}, train_loss: {train_loss_epoch:.4f}, test_loss: {test_loss_epoch:.4f}, duration: {dt}')
+            f'epoch {epoch}/{n_epochs}, train_loss: {train_loss_epoch:.4f}, test_loss: {test_loss_epoch:.4f}, duration: {dt}')
         
         
         scheduler.step()
@@ -242,7 +242,7 @@ def main():
         # ------------------
         # Saving of Model
         # ------------------
-        if (epoch+1)%save_step == 0:
+        if (epoch)%save_step == 0:
             
             # only save if test loss is lower than the previous saved!
             if test_loss_epoch < stored_test_loss_epoch:
@@ -252,6 +252,7 @@ def main():
                 plt.plot(test_losses, label='test loss')
                 plt.xlabel("Epoch")    
                 plt.ylabel("Loss")   
+                #plt.xticks(np.arange(0, n_epochs, 1.0)
                 plt.legend()
                 plt.savefig(f'{folder_name}/losses.png')
                 # todo: in addition to save the state_dict of the model, we should also save the state_dict of the optimizer.
