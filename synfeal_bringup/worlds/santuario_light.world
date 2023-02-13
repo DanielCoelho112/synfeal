@@ -4,6 +4,7 @@
       <ambient>1 1 1 1</ambient>
       <background>1 1 1 1</background>
       <shadows>1</shadows>
+      <!-- <shadowTechnique>textureAdditive</shadowTechnique> -->
     </scene>
 
     <spherical_coordinates>
@@ -69,12 +70,7 @@
         <linear>0.01</linear>
         <quadratic>0.001</quadratic>
       </attenuation>
-      <direction>-0.5 0.1 -0.9</direction>
-      <spot>
-        <inner_angle>0</inner_angle>
-        <outer_angle>0</outer_angle>
-        <falloff>0</falloff>
-      </spot>
+      <direction>1e-6 1e-6 -1</direction>
     </light>
 
     <light name='user_point_light_0' type='point'>
@@ -87,8 +83,8 @@
         <linear>0.2</linear>
         <quadratic>0.1</quadratic>
       </attenuation>
-      <cast_shadows>1</cast_shadows>
-      <direction>0 0 -1</direction>
+      <!-- <cast_shadows>1</cast_shadows> -->
+      <direction>1e-6 1e-6 -1</direction>
     </light>
 
     <light name='user_point_light_1' type='point'>
@@ -101,8 +97,8 @@
         <linear>0.2</linear>
         <quadratic>0.1</quadratic>
       </attenuation>
-      <cast_shadows>1</cast_shadows>
-      <direction>0 0 -1</direction>
+      <!-- <cast_shadows>1</cast_shadows> -->
+      <direction>1e-6 1e-6 -1</direction>
     </light>
 
     <light name='user_point_light_2' type='point'>
