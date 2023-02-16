@@ -73,7 +73,7 @@ class AutomaticDataCollection():
         self.roll_initial = model3d_config['sun']['roll_initial']
         self.pitch_initial = model3d_config['sun']['pitch_initial']
         self.yaw_initial = model3d_config['sun']['yaw_initial']
-        self.initial_time = datetime.datetime(2021, 1, 1, 0, 0, 0)
+        self.initial_time = datetime.datetime(2021, 6, 1, 0, 0, 0)
 
         self.use_collision = model3d_config['collision']['use']
         self.min_cam_dist = model3d_config['collision']['min_camera_distance']
@@ -290,12 +290,15 @@ class AutomaticDataCollection():
 
         self.initial_time = self.final_time
 
-        return solpos_nrel['azimuth'], solpos_nrel['apparent_elevation'] , times
+        return solpos_nrel['azimuth'], solpos_nrel['zenith'] , times
 
     
     def setSunLight(self, roll = 0, pitch = 0, yaw = 0 , time=0):
-        print(roll*math.pi/180 )
         print(f'the time is {time}')
+        if time.hour > 18  or time.hour < 6:
+            roll = 0
+            pitch = 0
+            yaw = 0
         # Generates the pose message to be sent to the gazebo service
         pose = Pose()
         pose.position = Point(0,0,5)
@@ -316,7 +319,7 @@ class AutomaticDataCollection():
         light.attenuation_linear = 0.01
         light.attenuation_quadratic = 0.001
         light.pose = pose
-        light.direction = Vector3(0,0,-1)
+        light.direction = Vector3(1e-6,1e-6,-1)
 
         # Required to make the service call to gazebo
         rospy.wait_for_service('/gazebo/set_light_properties')

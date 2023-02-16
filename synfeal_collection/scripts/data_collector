@@ -104,12 +104,12 @@ def main():
                 step_lights = data_collector.generateLights(
                     n_steps=len(step_poses), random=args['random_lights'])
                 #roll , pitch , yaw = data_collector.generateSunLight(n_steps=len(step_poses), random=args['random_lights'])
-                yaw , roll , times = data_collector.getSunAzimuth(n_steps=len(step_poses), random=args['random_lights'])
+                yaw , pitch , times = data_collector.getSunAzimuth(n_steps=len(step_poses), random=args['random_lights'])
             for idx, pose in enumerate(step_poses):
                 data_collector.setPose(pose)
                 if args['use_variable_lights']:
                     data_collector.setLight(step_lights[idx])
-                    data_collector.setSunLight(roll=roll[idx]  , time = times[idx])
+                    data_collector.setSunLight(pitch=pitch[idx] , yaw=yaw[idx]  , time = times[idx])
                 if not args['fast']:
                     rospy.sleep(0.4)
                 else:
