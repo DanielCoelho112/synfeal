@@ -5,6 +5,8 @@
 import random
 import os
 from xml.parsers.expat import model
+
+import pandas as pd
 # 3rd-party
 import rospy
 import tf
@@ -18,6 +20,9 @@ from gazebo_msgs.srv import SetModelState, GetModelState, SetModelStateRequest
 from gazebo_msgs.srv import SetLightProperties , GetLightProperties , SetLightPropertiesRequest
 from colorama import Fore
 from scipy.spatial.transform import Rotation as R
+import pvlib
+from pvlib.location import Location
+import datetime
 
 from synfeal_collection.src.save_dataset import SaveDataset
 from utils import *
@@ -68,6 +73,7 @@ class AutomaticDataCollection():
         self.roll_initial = model3d_config['sun']['roll_initial']
         self.pitch_initial = model3d_config['sun']['pitch_initial']
         self.yaw_initial = model3d_config['sun']['yaw_initial']
+        self.initial_time = datetime.datetime(2021, 1, 1, 0, 0, 0)
 
         self.use_collision = model3d_config['collision']['use']
         self.min_cam_dist = model3d_config['collision']['min_camera_distance']
@@ -240,40 +246,60 @@ class AutomaticDataCollection():
         min_angle = -1.57
         max_angle = 1.57
         roll = []
-        pitch = []
+        pitch = 0
         yaw = []
         if random:
             roll = [np.random.uniform(low=min_angle, high=max_angle) for _ in range(n_steps)]
-            pitch = [np.random.uniform(low=min_angle, high=max_angle) for _ in range(n_steps)]
+            #pitch = [np.random.uniform(low=min_angle, high=max_angle) for _ in range(n_steps)]
             yaw = [np.random.uniform(low=min_angle, high=max_angle) for _ in range(n_steps)]
         else:
             roll_initial = self.roll_initial
             pitch_initial = self.pitch_initial
             yaw_initial = self.yaw_initial
             roll_final = np.random.uniform(low=min_angle, high=max_angle)
-            pitch_final = np.random.uniform(low=min_angle, high=max_angle)
+            #pitch_final = np.random.uniform(low=min_angle, high=max_angle)
             yaw_final = np.random.uniform(low=min_angle, high=max_angle)
 
             roll_step = (roll_final - roll_initial) / n_steps
-            pitch_step = (pitch_final - pitch_initial) / n_steps
+            #7pitch_step = (pitch_final - pitch_initial) / n_steps
             yaw_step = (yaw_final - yaw_initial) / n_steps
 
             for i in range(n_steps):
                 roll.append(roll_initial + (i + 1) * roll_step)
-                pitch.append(pitch_initial + (i + 1) * pitch_step)
+                #pitch.append(pitch_initial + (i + 1) * pitch_step)
                 yaw.append(yaw_initial + (i + 1) * yaw_step)
 
             self.roll_initial = roll_final
-            self.pitch_initial = pitch_final
+            #self.pitch_initial = pitch_final
             self.yaw_initial = yaw_final
 
         return roll , pitch , yaw
+
+    def getSunAzimuth(self , n_steps , random):
+        # Definition of Location oject. Coordinates and elevation of Madrid Ciemat Headquarters (Spain)
+        site = Location(40.456, -3.73, 'Etc/GMT+1', 651, 'Ciemat (Madrid, ES)') # latitude, longitude, time_zone, altitude, name
+
+        # Definition of a time range of simulation
+        time_change = datetime.timedelta(minutes=20*n_steps)
+        self.final_time = self.initial_time + time_change
+
+        # Definition of a time range of simulation
+        times = pd.date_range(self.initial_time, self.final_time, closed='left', freq=f'20T', tz=site.tz)
+
+        solpos_nrel = pvlib.solarposition.get_solarposition(times, site.latitude, site.longitude, site.altitude, method='nrel_numpy')
+
+        self.initial_time = self.final_time
+
+        return solpos_nrel['azimuth'], solpos_nrel['apparent_elevation'] , times
+
     
-    def setSunLight(self, roll = 0, pitch = 0, yaw = 0):
+    def setSunLight(self, roll = 0, pitch = 0, yaw = 0 , time=0):
+        print(roll*math.pi/180 )
+        print(f'the time is {time}')
         # Generates the pose message to be sent to the gazebo service
         pose = Pose()
-        pose.position = Point(0,0,10)
-        orientation = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+        pose.position = Point(0,0,5)
+        orientation = tf.transformations.quaternion_from_euler(roll*math.pi/180, pitch*math.pi/180, yaw*math.pi/180)
         pose.orientation = Quaternion(0,0,0,1)
         pose.orientation.x = orientation[0]
         pose.orientation.y = orientation[1]

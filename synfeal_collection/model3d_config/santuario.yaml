@@ -28,11 +28,11 @@ light:
   # - 'user_point_light_3'
   # - 'user_point_light_4'
   # - 'user_point_light_5'
-  att_initial: 0.1
-  att_min: 0.1
-  att_max: 0.2
+  att_initial: 0.01
+  att_min: 0.0
+  att_max: 0.1
 sun:
-  roll_initial: 0.0
+  roll_initial: 0.785
   pitch_initial: 0.0
   yaw_initial: 0.0
 collision:
