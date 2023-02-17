@@ -21,13 +21,13 @@ class SaveDataset():
         self.output_folder = f'{path}/datasets/localbot/{output}'
 
         ans = ''
-        if os.path.exists(path):
+        if os.path.exists(self.output_folder):
             print(Fore.YELLOW + f'Dataset already exists! Do you want to overwrite?' + Style.RESET_ALL)
             ans = input(Fore.YELLOW + "Y" + Style.RESET_ALL + "ES/" + Fore.YELLOW + "n" + Style.RESET_ALL + "o: ") # Asks the user if they want to resume training
-        if not os.path.exists(path):
+        
+        if not os.path.exists(self.output_folder):
             print(f'Creating folder {self.output_folder}')
             os.makedirs(self.output_folder)  # Create the new folder
-
         elif os.path.exists(self.output_folder) and ans.lower() in ['' , 'y' , 'yes']:
             print(f'Overwriting folder {self.output_folder}')
             os.system(f'rm -r {self.output_folder}')
