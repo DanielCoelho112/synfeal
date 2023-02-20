@@ -20,14 +20,22 @@ volume:
     rymax: 0.52
     rzmin: 0
     rzmax: 6.28
+lights:
+  [
+    {
+      name: 'user_point_light_0',
+      pose: [1.673773, -1.662100, 2.459146, 0, -0, 0]
+    },
+    {
+      name: 'user_point_light_1',
+      pose: [1.673773, 4.290038, 2.459146, 0, -0, 0]
+    },
+    {
+      name: 'user_point_light_2',
+      pose: [-2.822533, 4.270349, -0.034578, 0, -0, 0]
+    }
+  ]
 light:
-  light_names: 
-  - 'user_point_light_0'
-  - 'user_point_light_1'
-  - 'user_point_light_2'
-  # - 'user_point_light_3'
-  # - 'user_point_light_4'
-  # - 'user_point_light_5'
   att_initial: 0.01
   att_min: 0.0
   att_max: 0.1

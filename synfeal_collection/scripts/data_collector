@@ -91,7 +91,7 @@ def main():
     ######################     path      #######################
     ############################################################
     elif mode == 'path':
-        if args['fast'] and not args['use_variable_lights']:
+        if args['fast']:
             rate = rospy.Rate(3)
         else:
             rate = rospy.Rate(0.4)
@@ -108,7 +108,7 @@ def main():
                 if args['use_variable_lights']:
                     data_collector.setLight(step_lights[idx])
                     data_collector.setSunLight(pitch=pitch[idx] , yaw=yaw[idx]  , time = times[idx])
-                if not args['fast'] or not args['use_variable_lights']:
+                if not args['fast']:
                     rospy.sleep(0.4)
                 else:
                     rospy.sleep(0.001)

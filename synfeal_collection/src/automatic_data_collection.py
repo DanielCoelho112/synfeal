@@ -71,7 +71,7 @@ class AutomaticDataCollection():
         self.att_max = model3d_config['light']['att_max']
         self.att_initial = model3d_config['light']['att_initial']
 
-        self.light_names = model3d_config['light']['light_names']
+        self.lights = model3d_config['lights']
 
         self.roll_initial = model3d_config['sun']['roll_initial']
         self.pitch_initial = model3d_config['sun']['pitch_initial']
@@ -234,17 +234,33 @@ class AutomaticDataCollection():
             self.att_initial = final_light
         return lights
 
-    def setLight(self, light):
+    def setLight(self, attenuation_quadratic):
 
-        for name in self.light_names:
+        for light in self.lights:
+            pose = Pose()
+            pose.position = Point(light['pose'][0],light['pose'][1],light['pose'][2])
+            pose.orientation = Quaternion(0,0,0,1)
 
-            my_str = f'name: "{name}" \nattenuation_quadratic: {light}'
+            # Creates the light message to be sent to the gazebo service
+            light_msg = SetLightPropertiesRequest()
+            light_msg.light_name = light['name']
+            light_msg.cast_shadows = True
+            light_msg.diffuse = ColorRGBA(0.8,0.8,0.8,1)
+            light_msg.specular = ColorRGBA(0.2,0.2,0.2,1)
+            light_msg.attenuation_constant = 0.1
+            light_msg.attenuation_linear = 0.01
+            light_msg.attenuation_quadratic = attenuation_quadratic
+            light_msg.pose = pose
+            light_msg.direction = Vector3(1e-6,1e-6,-1)
+            self.modify_light(light_msg) 
 
-            with open('/tmp/set_light.txt', 'w') as f:
-                f.write(my_str)
+            # my_str = f'name: "{name}" \nattenuation_quadratic: {light}'
 
-            os.system(
-                f'gz topic -p /gazebo/santuario/light/modify -f /tmp/set_light.txt')
+            # with open('/tmp/set_light.txt', 'w') as f:
+            #     f.write(my_str)
+
+            # os.system(
+            #     f'gz topic -p /gazebo/santuario/light/modify -f /tmp/set_light.txt')
 
     def getSunAzimuth(self , n_steps , random): 
         # Definition of a time range of simulation
