@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import argparse
 import sys
 import os
-import tqdm
+from tqdm import tqdm
 import yaml
 import pickle
 
@@ -104,17 +104,26 @@ def main():
         ans = input("YES/no")
         
         if ans.lower() in ['', 'yes','y']:
-            start_epoch, train_losses, test_losses, model = resumeTraining(folder_name)
+            try:
+                checkpoint = torch.load(model_name)
+            except FileNotFoundError:
+                print(Fore.YELLOW + 'Folder empty' + Style.RESET_ALL)
+                ans = 'o'
+            else:
+                start_epoch, train_losses, test_losses, model = resumeTraining(folder_name)
+        if ans.lower() in ['overwrite', 'o']:
+            print(Fore.YELLOW + 'Overwriting.' + Style.RESET_ALL)
+            os.system('rm -rf ' + folder_name)
         else:
             print(f'{Fore.RED} Terminating training... {Fore.RESET}')
             exit(0)
-    else:
-        print(f'Model Folder not found: {folder_name}. Starting from sratch.')
+    if not os.path.exists(folder_name) or ans.lower() in ['overwrite', 'o']: # If the model does not exist
+        print(f'Model Folder not found: {folder_name}. {Fore.YELLOW} Starting from sratch.{Style.RESET_ALL}')
         os.makedirs(folder_name)
         model = eval(args['init_model'])
         train_losses = []
         test_losses = []
-        start_epoch = 1
+        start_epoch = 0
         
     # convert transforms to pickle files
     with open(f'{folder_name}/rgb_transform_train.pickle', 'wb') as handle:
@@ -160,7 +169,7 @@ def main():
         t0 = datetime.now()
         train_losses_per_batch = []
 
-        for rgb_image, target_pose in tqdm(train_loader, total=len(train_loader), desc=Fore.GREEN + 'Training batches for Epoch ' + str(epoch) +  Style.RESET_ALL):  # iterate batches
+        for (rgb_image, target_pose) in tqdm(train_loader, total=len(train_loader), desc=Fore.GREEN + 'Training batches for Epoch ' + str(epoch) +  Style.RESET_ALL):  # iterate batches
             
             if args['cuda']:
                 rgb_image, target_pose = rgb_image.cuda(), target_pose.cuda()  # move data into GPU
@@ -196,7 +205,7 @@ def main():
         train_loss_epoch = float(np.mean(train_losses_per_batch))
 
         test_losses_per_batch = []
-        for rgb_image, target_pose in tqdm(test_loader, total=len(test_loader), desc=Fore.GREEN + 'Testing batches for Epoch ' + str(epoch) +  Style.RESET_ALL):
+        for (rgb_image, target_pose) in tqdm(test_loader, total=len(test_loader), desc=Fore.GREEN + 'Testing batches for Epoch ' + str(epoch) +  Style.RESET_ALL):
             if args['cuda']:
                 rgb_image, target_pose = rgb_image.cuda(), target_pose.cuda()  # move data into GPU
 
