@@ -6,10 +6,11 @@ import matplotlib.pyplot as plt
 import argparse
 import sys
 import os
+import tqdm
 import yaml
 import pickle
 
-from colorama import Fore
+from colorama import Fore, Style
 from datetime import datetime  # to track the time each epoch takes
 from torchvision import transforms
 
@@ -159,7 +160,7 @@ def main():
         t0 = datetime.now()
         train_losses_per_batch = []
 
-        for rgb_image, target_pose in train_loader:  # iterate batches
+        for rgb_image, target_pose in tqdm(train_loader, total=len(train_loader), desc=Fore.GREEN + 'Training batches for Epoch ' + str(epoch) +  Style.RESET_ALL):  # iterate batches
             
             if args['cuda']:
                 rgb_image, target_pose = rgb_image.cuda(), target_pose.cuda()  # move data into GPU
@@ -195,7 +196,7 @@ def main():
         train_loss_epoch = float(np.mean(train_losses_per_batch))
 
         test_losses_per_batch = []
-        for rgb_image, target_pose in test_loader:
+        for rgb_image, target_pose in tqdm(test_loader, total=len(test_loader), desc=Fore.GREEN + 'Testing batches for Epoch ' + str(epoch) +  Style.RESET_ALL):
             if args['cuda']:
                 rgb_image, target_pose = rgb_image.cuda(), target_pose.cuda()  # move data into GPU
 
