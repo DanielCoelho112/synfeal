@@ -91,7 +91,7 @@ def main():
     ######################     path      #######################
     ############################################################
     elif mode == 'path':
-        if args['fast']:
+        if args['fast'] and not args['use_variable_lights']:
             rate = rospy.Rate(3)
         else:
             rate = rospy.Rate(0.4)
@@ -101,16 +101,14 @@ def main():
         while not rospy.is_shutdown():
             step_poses = data_collector.generatePath()
             if args['use_variable_lights']:
-                step_lights = data_collector.generateLights(
-                    n_steps=len(step_poses), random=args['random_lights'])
-                #roll , pitch , yaw = data_collector.generateSunLight(n_steps=len(step_poses), random=args['random_lights'])
+                step_lights = data_collector.generateLights(n_steps=len(step_poses), random=args['random_lights'])
                 yaw , pitch , times = data_collector.getSunAzimuth(n_steps=len(step_poses), random=args['random_lights'])
             for idx, pose in enumerate(step_poses):
                 data_collector.setPose(pose)
                 if args['use_variable_lights']:
                     data_collector.setLight(step_lights[idx])
                     data_collector.setSunLight(pitch=pitch[idx] , yaw=yaw[idx]  , time = times[idx])
-                if not args['fast']:
+                if not args['fast'] or not args['use_variable_lights']:
                     rospy.sleep(0.4)
                 else:
                     rospy.sleep(0.001)

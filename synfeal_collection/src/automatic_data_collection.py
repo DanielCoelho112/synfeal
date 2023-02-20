@@ -32,6 +32,7 @@ from utils_ros import *
 class AutomaticDataCollection():
 
     def __init__(self, model_name, seq, dbf=None, uvl=None, model3d_config=None, fast=None, save_dataset=True, mode=None):
+        rospy.wait_for_service('/gazebo/set_model_state')
         self.set_state_service = rospy.ServiceProxy(
             '/gazebo/set_model_state', SetModelState)
         self.model_name = model_name  # model_name = 'localbot'
@@ -47,7 +48,6 @@ class AutomaticDataCollection():
                 f'{seq}', mode=mode, dbf=dbf, uvl=uvl, model3d_config=model3d_config, fast=fast)
 
         name_model3d_config = model3d_config['name'].split('.')[0]
-        print(name_model3d_config)
         # define minimum and maximum boundaries
         self.x_min = model3d_config['volume']['position']['xmin']
         self.x_max = model3d_config['volume']['position']['xmax']
@@ -74,6 +74,7 @@ class AutomaticDataCollection():
         self.pitch_initial = model3d_config['sun']['pitch_initial']
         self.yaw_initial = model3d_config['sun']['yaw_initial']
         self.initial_time = datetime.datetime(2021, 6, 1, 0, 0, 0)
+        self.site = Location(40.456, -3.73, 'Etc/GMT+1', 651, 'Ciemat (Madrid, ES)') # latitude, longitude, time_zone, altitude, name
 
         self.use_collision = model3d_config['collision']['use']
         self.min_cam_dist = model3d_config['collision']['min_camera_distance']
@@ -242,51 +243,15 @@ class AutomaticDataCollection():
             os.system(
                 f'gz topic -p /gazebo/santuario/light/modify -f /tmp/set_light.txt')
 
-    def generateSunLight(self , n_steps , random):
-        min_angle = -1.57
-        max_angle = 1.57
-        roll = []
-        pitch = 0
-        yaw = []
-        if random:
-            roll = [np.random.uniform(low=min_angle, high=max_angle) for _ in range(n_steps)]
-            #pitch = [np.random.uniform(low=min_angle, high=max_angle) for _ in range(n_steps)]
-            yaw = [np.random.uniform(low=min_angle, high=max_angle) for _ in range(n_steps)]
-        else:
-            roll_initial = self.roll_initial
-            pitch_initial = self.pitch_initial
-            yaw_initial = self.yaw_initial
-            roll_final = np.random.uniform(low=min_angle, high=max_angle)
-            #pitch_final = np.random.uniform(low=min_angle, high=max_angle)
-            yaw_final = np.random.uniform(low=min_angle, high=max_angle)
-
-            roll_step = (roll_final - roll_initial) / n_steps
-            #7pitch_step = (pitch_final - pitch_initial) / n_steps
-            yaw_step = (yaw_final - yaw_initial) / n_steps
-
-            for i in range(n_steps):
-                roll.append(roll_initial + (i + 1) * roll_step)
-                #pitch.append(pitch_initial + (i + 1) * pitch_step)
-                yaw.append(yaw_initial + (i + 1) * yaw_step)
-
-            self.roll_initial = roll_final
-            #self.pitch_initial = pitch_final
-            self.yaw_initial = yaw_final
-
-        return roll , pitch , yaw
-
-    def getSunAzimuth(self , n_steps , random):
-        # Definition of Location oject. Coordinates and elevation of Madrid Ciemat Headquarters (Spain)
-        site = Location(40.456, -3.73, 'Etc/GMT+1', 651, 'Ciemat (Madrid, ES)') # latitude, longitude, time_zone, altitude, name
-
+    def getSunAzimuth(self , n_steps , random): 
         # Definition of a time range of simulation
         time_change = datetime.timedelta(minutes=20*n_steps)
         self.final_time = self.initial_time + time_change
 
         # Definition of a time range of simulation
-        times = pd.date_range(self.initial_time, self.final_time, closed='left', freq=f'20T', tz=site.tz)
+        times = pd.date_range(self.initial_time, self.final_time, inclusive='left', freq=f'20T', tz=self.site.tz)
 
-        solpos_nrel = pvlib.solarposition.get_solarposition(times, site.latitude, site.longitude, site.altitude, method='nrel_numpy')
+        solpos_nrel = pvlib.solarposition.get_solarposition(times, self.site.latitude, self.site.longitude, self.site.altitude, method='nrel_numpy')
 
         self.initial_time = self.final_time
 
@@ -294,7 +259,6 @@ class AutomaticDataCollection():
 
     
     def setSunLight(self, roll = 0, pitch = 0, yaw = 0 , time=0):
-        print(f'the time is {time}')
         if time.hour > 18  or time.hour < 6:
             roll = 0
             pitch = 0
@@ -323,10 +287,10 @@ class AutomaticDataCollection():
 
         # Required to make the service call to gazebo
         rospy.wait_for_service('/gazebo/set_light_properties')
+        modify_light = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
         try:
             # Creates the service and sends the light message
-            modify_light = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
-            result = modify_light(light)
+            modify_light(light)
         except rospy.ServiceException as e:
             rospy.loginfo("Get Model State service call failed:  {0}".format(e))
 
