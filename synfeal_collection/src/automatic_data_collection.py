@@ -17,7 +17,7 @@ from geometry_msgs.msg import Pose , Quaternion , Point , Vector3
 #from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 from gazebo_msgs.srv import SetModelState, GetModelState, SetModelStateRequest
-from gazebo_msgs.srv import SetLightProperties , GetLightProperties , SetLightPropertiesRequest
+from gazebo_msgs.srv import SetLightProperties , GetLightProperties , SetLightPropertiesRequest , GetLightPropertiesRequest 
 from colorama import Fore
 from scipy.spatial.transform import Rotation as R
 import pvlib
@@ -41,6 +41,9 @@ class AutomaticDataCollection():
         rospy.wait_for_service('/gazebo/get_model_state')
         self.get_model_state_service = rospy.ServiceProxy(
             '/gazebo/get_model_state', GetModelState)
+        
+        rospy.wait_for_service('/gazebo/set_light_properties')
+        self.modify_light = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
 
         # create instance to save dataset
         if save_dataset:
@@ -263,7 +266,8 @@ class AutomaticDataCollection():
             roll = 0
             pitch = 0
             yaw = 0
-        # Generates the pose message to be sent to the gazebo service
+
+        # Required to make the service call to gazebo
         pose = Pose()
         pose.position = Point(0,0,5)
         orientation = tf.transformations.quaternion_from_euler(roll*math.pi/180, pitch*math.pi/180, yaw*math.pi/180)
@@ -285,14 +289,8 @@ class AutomaticDataCollection():
         light.pose = pose
         light.direction = Vector3(1e-6,1e-6,-1)
 
-        # Required to make the service call to gazebo
-        rospy.wait_for_service('/gazebo/set_light_properties')
-        modify_light = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
-        try:
-            # Creates the service and sends the light message
-            modify_light(light)
-        except rospy.ServiceException as e:
-            rospy.loginfo("Get Model State service call failed:  {0}".format(e))
+        # Creates the service and sends the light message
+        self.modify_light(light)
 
 
     def checkCollision(self, initial_pose, final_pose):
