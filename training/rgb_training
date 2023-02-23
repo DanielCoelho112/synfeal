@@ -46,6 +46,10 @@ def main():
                         help='Decay of the learning rate after step size')
     parser.add_argument('-cs', '--crop_size', type=int, default=299,
                         help='Size of the random and center crop. For PoseNet/LSTM use 299, for Hourglass use 224')
+    parser.add_argument('-nw', '--num_workers', type=int, default=4, 
+                        help='How many subprocesses to use for data loading. 0 means that the data will be loaded in the main process.')
+    parser.add_argument('-pff', '--prefetch_factor', type=int, default=2, 
+                        help='Number of batches loaded in advance by each worker')
 
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
@@ -95,17 +99,17 @@ def main():
         exit(0)
 
     batch_size = args['batch_size']
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True , num_workers=args['num_workers'] , prefetch_factor=args['prefetch_factor'])
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False , num_workers=args['num_workers'] , prefetch_factor=args['prefetch_factor'])
 
     # start training, resume training, or abandon training?
     if os.path.exists(folder_name):
-        print(f'Folder already exists! Do you want to resume training?')
-        ans = input("YES/no")
+        print(Fore.YELLOW + f'Folder already exists! Do you want to resume training?' + Style.RESET_ALL)
+        ans = input(Fore.YELLOW + "Y" + Style.RESET_ALL + "ES/" + Fore.YELLOW + "n" + Style.RESET_ALL + "o/"+ Fore.YELLOW + "o" + Style.RESET_ALL + "verwrite: ") # Asks the user if they want to resume training
         
         if ans.lower() in ['', 'yes','y']:
             try:
-                checkpoint = torch.load(model_name)
+                torch.load(model_name)
             except FileNotFoundError:
                 print(Fore.YELLOW + 'Folder empty' + Style.RESET_ALL)
                 ans = 'o'
@@ -274,7 +278,7 @@ def main():
                         'train_set': args['training_set'],
                         'test_set': args['testing_set'],
                         'max_n_epochs': args['n_epochs'],
-                        'epoch': epoch +1,
+                        'epoch': epoch,
                         'batch_size': args['batch_size'],
                         'loss': args['loss_function'],
                         'learning_rate': args['learning_rate'],

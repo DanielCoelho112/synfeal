@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -16,8 +15,11 @@ class PoseNetGoogleNet(nn.Module):
             
             self.dropout_rate = dropout_rate
             self.aux_logits = aux_logits
-         
-            base_model = models.inception_v3(pretrained)
+
+            if pretrained:
+                base_model = models.inception_v3(weights=models.Inception_V3_Weights.IMAGENET1K_V1)
+            else:
+                base_model = models.inception_v3()
             base_model.aux_logits = True
             
             self.Conv2d_1a_3x3 = base_model.Conv2d_1a_3x3
