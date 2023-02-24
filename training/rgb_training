@@ -256,7 +256,7 @@ def main():
         # ------------------
         # Saving of Model
         # ------------------
-        if (epoch)%save_step == 0:
+        if (epoch+1)%save_step == 0:
             
             # only save if test loss is lower than the previous saved!
             if test_loss_epoch < stored_test_loss_epoch:
@@ -278,7 +278,7 @@ def main():
                         'train_set': args['training_set'],
                         'test_set': args['testing_set'],
                         'max_n_epochs': args['n_epochs'],
-                        'epoch': epoch,
+                        'epoch': epoch+1,
                         'batch_size': args['batch_size'],
                         'loss': args['loss_function'],
                         'learning_rate': args['learning_rate'],
@@ -292,7 +292,7 @@ def main():
                 with open(f'{folder_name}/config.yaml', 'w') as file:
                     yaml.dump(config, file)
 
-                print(f'Saved model at epoch {epoch+1}')
+                print(f'Saved model at epoch {epoch}')
                 stored_test_loss_epoch = test_loss_epoch
             else:
                 print('Current model is no better than the stored model. Ignoring saving.')

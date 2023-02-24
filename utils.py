@@ -154,7 +154,7 @@ def resumeTraining(folder_name):
     model = eval(config['init_model'])
     model.load_state_dict(torch.load(f'{folder_name}/{model_name}'))
 
-    start_epoch = config['epoch'] + 1
+    start_epoch = config['epoch']
     train_losses = config['train_losses']
     test_losses = config['test_losses']
     
