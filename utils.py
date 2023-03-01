@@ -2,12 +2,11 @@ import numpy as np
 import os
 import cv2
 import torch
-import torch
 import math
 import yaml
 
 from sklearn.metrics import mean_squared_error
-from torchsummary import summary
+from torchinfo import summary
 from yaml.loader import SafeLoader
 from colorama import Fore
 from scipy.spatial.transform import Rotation as R
@@ -140,7 +139,7 @@ def normalize_quat(x, p=2, dim=1):
 
 def summarizeModel(model, input_example):
     model.cuda()
-    summary(model, input_size=input_example.shape)
+    print(summary(model, input_size=input_example))
     model.cpu()
     
     

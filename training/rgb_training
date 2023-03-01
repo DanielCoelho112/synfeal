@@ -15,10 +15,12 @@ from datetime import datetime  # to track the time each epoch takes
 from torchvision import transforms
 
 from dataset import Dataset
+from visualization import Visualizer
 from models.loss_functions import BetaLoss, DynamicLoss
 from models.posenet import PoseNetGoogleNet, PoseNetResNet
 from models.poselstm import PoseLSTM
 from models.hourglass import HourglassBatch
+from models.posenetv1 import PoseNetGoogleNetV1
 from utils import summarizeModel, resumeTraining, process_pose
 
 def main():
@@ -43,7 +45,7 @@ def main():
                         help='Decay of the learning rate after step size')
     parser.add_argument('-wd', '--weight_decay', type=float, default=0, help='L2 regularizer')
     parser.add_argument('-im', '--init_model', type=str, default='CNNDepth()',
-                        help='Decay of the learning rate after step size')
+                        help='Initial model choose between [PoseNetGoogleNet(), PoseNetResNet(), PoseLSTM(), HourglassBatch()]')
     parser.add_argument('-cs', '--crop_size', type=int, default=299,
                         help='Size of the random and center crop. For PoseNet/LSTM use 299, for Hourglass use 224')
     parser.add_argument('-nw', '--num_workers', type=int, default=4, 
@@ -118,7 +120,7 @@ def main():
         if ans.lower() in ['overwrite', 'o']:
             print(Fore.YELLOW + 'Overwriting.' + Style.RESET_ALL)
             os.system('rm -rf ' + folder_name)
-        else:
+        if ans.lower() not in ['', 'yes', 'y', 'overwrite', 'o']: # If the user does not want to resume training
             print(f'{Fore.RED} Terminating training... {Fore.RESET}')
             exit(0)
     if not os.path.exists(folder_name) or ans.lower() in ['overwrite', 'o']: # If the model does not exist
@@ -137,7 +139,7 @@ def main():
     
     
     if args['summarize_model']:
-        summarizeModel(model, train_dataset[0][1])
+        summarizeModel(model, (args['batch_size'],3, args['crop_size'], args['crop_size']))
         
     # ----------------------------------
     # Define loss function
@@ -172,15 +174,13 @@ def main():
     for epoch in range(start_epoch, n_epochs):
         t0 = datetime.now()
         train_losses_per_batch = []
-
+        model.train()
         for (rgb_image, target_pose) in tqdm(train_loader, total=len(train_loader), desc=Fore.GREEN + 'Training batches for Epoch ' + str(epoch) +  Style.RESET_ALL):  # iterate batches
             
             if args['cuda']:
-                rgb_image, target_pose = rgb_image.cuda(), target_pose.cuda()  # move data into GPU
-                
-            optimizer.zero_grad()  # Clears the gradients of all optimized tensors (always needed in the beginning of the training loop)
+                rgb_image, target_pose = rgb_image.cuda(), target_pose.cuda()  # move data into GP
 
-            model = model.train()  # Sets the module in training mode. For example, the dropout module can only be use in training mode.
+            #model = model.train()  # Sets the module in training mode. For example, the dropout module can only be use in training mode.
 
             if model.aux_logits:
             
@@ -200,7 +200,7 @@ def main():
                 pose = model(rgb_image)
                 pose = process_pose(pose)
                 loss = criterion(pose, target_pose)
-                
+            optimizer.zero_grad()  # Clears the gradients of all optimized tensors (always needed in the beginning of the training loop)
             loss.backward()  # Computes the gradient of current tensor w.r.t. graph leaves.
             optimizer.step()  # Performs a single optimization step (parameter update).
 
@@ -209,11 +209,12 @@ def main():
         train_loss_epoch = float(np.mean(train_losses_per_batch))
 
         test_losses_per_batch = []
+        model.eval()
         for (rgb_image, target_pose) in tqdm(test_loader, total=len(test_loader), desc=Fore.GREEN + 'Testing batches for Epoch ' + str(epoch) +  Style.RESET_ALL):
             if args['cuda']:
                 rgb_image, target_pose = rgb_image.cuda(), target_pose.cuda()  # move data into GPU
 
-            model = model.eval()  # Sets the module in evaluation mode.
+            #model = model.eval()  # Sets the module in evaluation mode.
 
             predicted_pose = model(rgb_image)  # our model outputs the pose, and the transformations used
             predicted_pose = process_pose(predicted_pose)
@@ -221,6 +222,11 @@ def main():
             loss = criterion(predicted_pose, target_pose)
 
             test_losses_per_batch.append(loss.item())
+
+            if first_time: # Checks if the user wants to visualize the loss
+                test_visualizer = Visualizer('Test Images')
+            if args['visualize']:
+                test_visualizer.draw(rgb_image, target_pose, predicted_pose)
 
         test_loss_epoch = float(np.mean(test_losses_per_batch))
 
@@ -239,6 +245,7 @@ def main():
         # Visualization
         # ----------------------
         if args['visualize']:
+            plt.figure('Losses')
             if first_time:
                 hanle_train_plot = plt.plot(train_losses, label='train loss')
                 hanle_test_plot = plt.plot(test_losses, label='test loss')
@@ -256,7 +263,7 @@ def main():
         # ------------------
         # Saving of Model
         # ------------------
-        if (epoch+1)%save_step == 0:
+        if (epoch)%save_step == 0:
             
             # only save if test loss is lower than the previous saved!
             if test_loss_epoch < stored_test_loss_epoch:
