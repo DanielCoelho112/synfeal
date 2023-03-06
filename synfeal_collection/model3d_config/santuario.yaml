@@ -20,6 +20,22 @@ volume:
     rymax: 0.52
     rzmin: 0
     rzmax: 6.28
+
+objects:
+  [
+    {
+      name: 'person_standing',
+      mesh_name: 'standing.dae',
+      height: 1.0
+    },
+    # {
+    #   name: 'chair',
+    #   mesh_name: 'Chair.obj',
+    #   height: 1.0
+    # }
+
+  ]
+
 lights:
   [
     {

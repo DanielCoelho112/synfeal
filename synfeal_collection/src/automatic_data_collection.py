@@ -17,7 +17,7 @@ from geometry_msgs.msg import Pose , Quaternion , Point , Vector3
 #from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 from gazebo_msgs.srv import SetModelState, GetModelState, SetModelStateRequest
-from gazebo_msgs.srv import SetLightProperties , GetLightProperties , SetLightPropertiesRequest , GetLightPropertiesRequest 
+from gazebo_msgs.srv import SetLightProperties , SetLightPropertiesRequest , SpawnModel , SpawnModelRequest
 from colorama import Fore
 from scipy.spatial.transform import Rotation as R
 import pvlib
@@ -73,6 +73,8 @@ class AutomaticDataCollection():
 
         self.lights = model3d_config['lights']
 
+        self.objects = model3d_config['objects']
+
         self.roll_initial = model3d_config['sun']['roll_initial']
         self.pitch_initial = model3d_config['sun']['pitch_initial']
         self.yaw_initial = model3d_config['sun']['yaw_initial']
@@ -82,13 +84,28 @@ class AutomaticDataCollection():
         self.use_collision = model3d_config['collision']['use']
         self.min_cam_dist = model3d_config['collision']['min_camera_distance']
 
-
+        # Load meshes
         if self.use_collision:
             path=os.environ.get("SYNFEAL_DATASET")
             self.mesh_collision = trimesh.load(
                 f'{path}/models_3d/localbot/{name_model3d_config}/{name_model3d_config}_collision.dae', force='mesh')
         else:
             self.mesh_collision = False
+
+        for object in self.objects:
+            object['mesh'] = trimesh.load(f'{path}/models_3d/localbot/objects/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
+            spawn_model = SpawnModelRequest()
+            spawn_model.model_name = object['name']
+            spawn_model.model_xml = open(f'{path}/models_3d/localbot/objects/{object["name"]}/model.sdf', 'r').read()
+            spawn_model.robot_namespace = ''
+            spawn_model.initial_pose = Pose()
+            spawn_model.reference_frame = 'world'
+            rospy.wait_for_service('/gazebo/spawn_sdf_model')
+            spawn_model_service = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
+            spawn_model_service(spawn_model)
+
+
+
 
         # set initial pose
         print('setting initial pose...')
@@ -107,7 +124,7 @@ class AutomaticDataCollection():
         p.orientation.y = quaternion[1]
         p.orientation.z = quaternion[2]
         p.orientation.w = quaternion[3]
-        self.setPose(p)
+        self.setPose(model_name , p)
         rospy.sleep(1)
 
     def generateRandomPose(self):
@@ -133,10 +150,32 @@ class AutomaticDataCollection():
         p.orientation.w = quaternion[3]
 
         return p
+    
+    def generateRandomPoseInsideMesh(self):
+        final_poses = []
+        object_names = []
+        for object in self.objects:
+            while True:
+                p = self.generateRandomPose()
+                translation = np.array([p.position.x, p.position.y, p.position.z])
+                standing_person = object['mesh'].copy()
+                standing_person.apply_translation(translation)
+                points = trimesh.convex.hull_points(standing_person)
+                is_inside = self.checkInsideMesh(points)
+                if is_inside.all():
+                    final_pose = p
+                    final_pose.orientation.x = 0
+                    final_pose.orientation.y = 0
+                    #final_pose.orientation.z = 0
+                    final_pose.orientation.w = 1
+                    break
+            final_poses.append(final_pose)
+            object_names.append(object['name'])
+        
+        return final_poses , object_names
 
-    def generatePath(self, final_pose=None):
-
-        initial_pose = self.getPose().pose
+    def generatePath(self, model_name , final_pose=None):
+        initial_pose = self.getPose(model_name).pose
 
         if final_pose == None:
             final_pose = self.generateRandomPose()
@@ -197,13 +236,13 @@ class AutomaticDataCollection():
 
         return step_poses
 
-    def getPose(self):
-        return self.get_model_state_service(self.model_name, 'world')
+    def getPose(self , model_name):
+        return self.get_model_state_service(model_name, 'world')
 
-    def setPose(self, pose):
+    def setPose(self, model_name , pose):
 
         req = SetModelStateRequest()  # Create an object of type SetModelStateRequest
-        req.model_state.model_name = self.model_name
+        req.model_state.model_name = model_name
 
         req.model_state.pose.position.x = pose.position.x
         req.model_state.pose.position.y = pose.position.y
@@ -375,6 +414,10 @@ class AutomaticDataCollection():
             else:
                 print(f'{Fore.GREEN} NO Collision Detected {Fore.RESET}')
                 return False
+            
+    def checkInsideMesh(self,points):
+        result = self.mesh_collision.contains(points)
+        return result
 
     def checkCollisionVis(self, initial_pose, final_pose):
         if self.use_collision is False:

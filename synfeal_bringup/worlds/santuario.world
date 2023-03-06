@@ -5,6 +5,7 @@
       <background>1 1 1 1</background>
       <shadows>0</shadows>
     </scene>
+    <gravity>0 0 0</gravity>
     <light name='sun' type='directional'>
       <cast_shadows>1</cast_shadows>
       <pose>0 0 10 0 -0 0</pose>

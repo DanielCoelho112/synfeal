@@ -2,6 +2,7 @@
 
 import sys
 import argparse
+import numpy as np
 import rospkg
 import rospy
 import rospkg
@@ -30,6 +31,8 @@ def main():
                         action='store_true', help='use random lights')
     parser.add_argument('-mc', '--model3d_config', type=str,
                         required=True, help='model3d config to use')
+    parser.add_argument('-obj', '--use_objects',
+                        action='store_true', help='spawn random objects in scene')
     parser.add_argument('-f', '--fast', action='store_true',
                         help='fast data collection. Only rgb images and pose are captured.')
 
@@ -99,12 +102,20 @@ def main():
             model_name='localbot', seq=seq, dbf=distance_between_frames, uvl=args['use_variable_lights'], model3d_config=model3d_config, fast=args['fast'], mode=mode)
         rospy.sleep(1)
         while not rospy.is_shutdown():
-            step_poses = data_collector.generatePath()
+            step_poses = data_collector.generatePath(model_name='localbot')
             if args['use_variable_lights']:
                 step_lights = data_collector.generateLights(n_steps=len(step_poses), random=args['random_lights'])
                 yaw , pitch , times = data_collector.getSunAzimuth(n_steps=len(step_poses), random=args['random_lights'])
             for idx, pose in enumerate(step_poses):
-                data_collector.setPose(pose)
+                # Camera
+                data_collector.setPose('localbot' , pose)
+                # Objects
+                if args['use_objects']:
+                    objects_pose , objects_name = data_collector.generateRandomPoseInsideMesh()
+
+                    for idx,pose in enumerate(objects_pose):
+                        data_collector.setPose(objects_name[idx] , pose)
+                # Lights
                 if args['use_variable_lights']:
                     data_collector.setLight(step_lights[idx])
                     data_collector.setSunLight(pitch=pitch[idx] , yaw=yaw[idx]  , time = times[idx])
