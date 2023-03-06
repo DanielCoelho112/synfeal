@@ -24,15 +24,13 @@ volume:
 objects:
   [
     {
+      name: 'VisitorChair',
+      mesh_name: 'VisitorChair.obj',
+    },
+    {
       name: 'person_standing',
       mesh_name: 'standing.dae',
-      height: 1.0
-    },
-    # {
-    #   name: 'chair',
-    #   mesh_name: 'Chair.obj',
-    #   height: 1.0
-    # }
+    }
 
   ]
 

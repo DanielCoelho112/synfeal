@@ -73,7 +73,7 @@ def main():
     elif mode == 'random':
         rate = rospy.Rate(0.6)
         data_collector = AutomaticDataCollection(
-            model_name='localbot', seq=seq, uvl=args['use_variable_lights'], model3d_config=model3d_config, fast=args['fast'], mode=mode)
+            model_name='localbot', seq=seq, uvl=args['use_variable_lights'], use_objects=args['use_objects'] , model3d_config=model3d_config, fast=args['fast'], mode=mode)
         while not rospy.is_shutdown():
             pose = data_collector.generateRandomPose()
             if args['use_variable_lights']:
@@ -99,7 +99,7 @@ def main():
         else:
             rate = rospy.Rate(0.4)
         data_collector = AutomaticDataCollection(
-            model_name='localbot', seq=seq, dbf=distance_between_frames, uvl=args['use_variable_lights'], model3d_config=model3d_config, fast=args['fast'], mode=mode)
+            model_name='localbot', seq=seq, dbf=distance_between_frames, uvl=args['use_variable_lights'], use_objects=args['use_objects'], model3d_config=model3d_config, fast=args['fast'], mode=mode)
         rospy.sleep(1)
         while not rospy.is_shutdown():
             step_poses = data_collector.generatePath(model_name='localbot')
@@ -115,6 +115,7 @@ def main():
 
                     for idx,pose in enumerate(objects_pose):
                         data_collector.setPose(objects_name[idx] , pose)
+                        rospy.sleep(0.4)
                 # Lights
                 if args['use_variable_lights']:
                     data_collector.setLight(step_lights[idx])

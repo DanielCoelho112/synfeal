@@ -31,7 +31,7 @@ from utils_ros import *
 
 class AutomaticDataCollection():
 
-    def __init__(self, model_name, seq, dbf=None, uvl=None, model3d_config=None, fast=None, save_dataset=True, mode=None):
+    def __init__(self, model_name, seq, dbf=None, uvl=None, use_objects = None , model3d_config=None, fast=None, save_dataset=True, mode=None):
         rospy.wait_for_service('/gazebo/set_model_state')
         self.set_state_service = rospy.ServiceProxy(
             '/gazebo/set_model_state', SetModelState)
@@ -44,6 +44,9 @@ class AutomaticDataCollection():
         
         rospy.wait_for_service('/gazebo/set_light_properties')
         self.modify_light = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
+
+        rospy.wait_for_service('/gazebo/spawn_sdf_model')
+        self.spawn_model_service = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
 
         # create instance to save dataset
         if save_dataset:
@@ -92,17 +95,15 @@ class AutomaticDataCollection():
         else:
             self.mesh_collision = False
 
-        for object in self.objects:
-            object['mesh'] = trimesh.load(f'{path}/models_3d/localbot/objects/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
-            spawn_model = SpawnModelRequest()
-            spawn_model.model_name = object['name']
-            spawn_model.model_xml = open(f'{path}/models_3d/localbot/objects/{object["name"]}/model.sdf', 'r').read()
-            spawn_model.robot_namespace = ''
-            spawn_model.initial_pose = Pose()
-            spawn_model.reference_frame = 'world'
-            rospy.wait_for_service('/gazebo/spawn_sdf_model')
-            spawn_model_service = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
-            spawn_model_service(spawn_model)
+        if use_objects:
+            for object in self.objects:
+                object['mesh'] = trimesh.load(f'{path}/models_3d/localbot/objects/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
+                spawn_model = SpawnModelRequest()
+                spawn_model.model_name = object['name']
+                spawn_model.model_xml = open(f'{path}/models_3d/localbot/objects/{object["name"]}/model.sdf', 'r').read()
+                spawn_model.robot_namespace = ''
+                spawn_model.initial_pose = Pose()
+                self.spawn_model_service(spawn_model)
 
 
 
@@ -168,6 +169,23 @@ class AutomaticDataCollection():
                     final_pose.orientation.y = 0
                     #final_pose.orientation.z = 0
                     final_pose.orientation.w = 1
+                    p1_xyz = np.array([p.position.x, p.position.y, p.position.z])
+
+                    p2_xyz = np.array([final_pose.position.x, final_pose.position.y, final_pose.position.z-5])
+
+                    orientation = p2_xyz - p1_xyz
+                    norm_orientation = np.linalg.norm(orientation)
+                    orientation = orientation / norm_orientation
+
+                    ray_origins = np.array([p1_xyz])
+                    ray_directions = np.array([orientation])
+
+                    collisions, _, _ = self.mesh_collision.ray.intersects_location(
+                        ray_origins=ray_origins,
+                        ray_directions=ray_directions)
+
+                    closest_collision_to_p1 = self.getClosestCollision(collisions, p1_xyz)
+                    final_pose.position.z = final_pose.position.z - closest_collision_to_p1
                     break
             final_poses.append(final_pose)
             object_names.append(object['name'])
@@ -240,6 +258,8 @@ class AutomaticDataCollection():
         return self.get_model_state_service(model_name, 'world')
 
     def setPose(self, model_name , pose):
+        print('setting pose of: ', model_name)
+        #print('pose: ', pose)
 
         req = SetModelStateRequest()  # Create an object of type SetModelStateRequest
         req.model_state.model_name = model_name

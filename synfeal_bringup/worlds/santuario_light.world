@@ -54,7 +54,7 @@
         <visual name='santuario_visual'>
           <geometry>
             <mesh>
-              <uri>model:///models_3d/localbot/santuario_light/santuario_light.dae</uri>
+              <uri>model:///santuario_light/santuario_light.dae</uri>
             </mesh>
           </geometry>
         </visual>
