@@ -115,7 +115,6 @@ def main():
 
                     for idx,pose in enumerate(objects_pose):
                         data_collector.setPose(objects_name[idx] , pose)
-                        rospy.sleep(0.4)
                 # Lights
                 if args['use_variable_lights']:
                     data_collector.setLight(step_lights[idx])

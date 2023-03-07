@@ -28,6 +28,10 @@ objects:
       mesh_name: 'VisitorChair.obj',
     },
     {
+      name: 'foldable_chair',
+      mesh_name: 'foldable_chair.dae',
+    },
+    {
       name: 'person_standing',
       mesh_name: 'standing.dae',
     }

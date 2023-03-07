@@ -32,15 +32,14 @@ from utils_ros import *
 class AutomaticDataCollection():
 
     def __init__(self, model_name, seq, dbf=None, uvl=None, use_objects = None , model3d_config=None, fast=None, save_dataset=True, mode=None):
-        rospy.wait_for_service('/gazebo/set_model_state')
-        self.set_state_service = rospy.ServiceProxy(
-            '/gazebo/set_model_state', SetModelState)
         self.model_name = model_name  # model_name = 'localbot'
         self.dbf = dbf
+    
+        rospy.wait_for_service('/gazebo/set_model_state')
+        self.set_state_service = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
 
         rospy.wait_for_service('/gazebo/get_model_state')
-        self.get_model_state_service = rospy.ServiceProxy(
-            '/gazebo/get_model_state', GetModelState)
+        self.get_model_state_service = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
         
         rospy.wait_for_service('/gazebo/set_light_properties')
         self.modify_light = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
@@ -97,10 +96,10 @@ class AutomaticDataCollection():
 
         if use_objects:
             for object in self.objects:
-                object['mesh'] = trimesh.load(f'{path}/models_3d/localbot/objects/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
+                object['mesh'] = trimesh.load(f'{path}/models_3d/localbot/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
                 spawn_model = SpawnModelRequest()
                 spawn_model.model_name = object['name']
-                spawn_model.model_xml = open(f'{path}/models_3d/localbot/objects/{object["name"]}/model.sdf', 'r').read()
+                spawn_model.model_xml = open(f'{path}/models_3d/localbot/{object["name"]}/model.sdf', 'r').read()
                 spawn_model.robot_namespace = ''
                 spawn_model.initial_pose = Pose()
                 self.spawn_model_service(spawn_model)
@@ -159,18 +158,16 @@ class AutomaticDataCollection():
             while True:
                 p = self.generateRandomPose()
                 translation = np.array([p.position.x, p.position.y, p.position.z])
-                standing_person = object['mesh'].copy()
-                standing_person.apply_translation(translation)
-                points = trimesh.convex.hull_points(standing_person)
+                object_mesh = object['mesh'].copy()
+                object_mesh.apply_translation(translation)
+                points = trimesh.convex.hull_points(object_mesh)
                 is_inside = self.checkInsideMesh(points)
                 if is_inside.all():
                     final_pose = p
                     final_pose.orientation.x = 0
                     final_pose.orientation.y = 0
-                    #final_pose.orientation.z = 0
                     final_pose.orientation.w = 1
                     p1_xyz = np.array([p.position.x, p.position.y, p.position.z])
-
                     p2_xyz = np.array([final_pose.position.x, final_pose.position.y, final_pose.position.z-5])
 
                     orientation = p2_xyz - p1_xyz
@@ -186,9 +183,9 @@ class AutomaticDataCollection():
 
                     closest_collision_to_p1 = self.getClosestCollision(collisions, p1_xyz)
                     final_pose.position.z = final_pose.position.z - closest_collision_to_p1
+                    final_poses.append(final_pose)
+                    object_names.append(object['name'])
                     break
-            final_poses.append(final_pose)
-            object_names.append(object['name'])
         
         return final_poses , object_names
 
@@ -258,9 +255,6 @@ class AutomaticDataCollection():
         return self.get_model_state_service(model_name, 'world')
 
     def setPose(self, model_name , pose):
-        print('setting pose of: ', model_name)
-        #print('pose: ', pose)
-
         req = SetModelStateRequest()  # Create an object of type SetModelStateRequest
         req.model_state.model_name = model_name
 
@@ -272,8 +266,10 @@ class AutomaticDataCollection():
         req.model_state.pose.orientation.z = pose.orientation.z
         req.model_state.pose.orientation.w = pose.orientation.w
         req.model_state.reference_frame = 'world'
-
-        self.set_state_service(req.model_state)
+        try:
+            response = self.set_state_service(req.model_state)
+        except rospy.ServiceException as e:
+            print("Service call failed: %s" % e)
 
     def generateLights(self, n_steps, random):
         lights = []
