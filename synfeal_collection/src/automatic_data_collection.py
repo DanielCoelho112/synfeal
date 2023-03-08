@@ -161,6 +161,7 @@ class AutomaticDataCollection():
                 object_mesh = object['mesh'].copy()
                 object_mesh.apply_translation(translation)
                 points = trimesh.convex.hull_points(object_mesh)
+                del object_mesh # this variable lead to a memory leak
                 is_inside = self.checkInsideMesh(points)
                 if is_inside.all():
                     final_pose = p
