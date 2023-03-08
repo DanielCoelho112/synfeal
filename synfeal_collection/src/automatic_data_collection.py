@@ -94,18 +94,22 @@ class AutomaticDataCollection():
         else:
             self.mesh_collision = False
 
+        # Loads the mesh of the model
+        for object in self.objects:
+            object['mesh'] = trimesh.load(f'{path}/models_3d/localbot/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
+
+        # Gets an initial pose inside the mesh for the objects
+        initial_positions , object_names =self.generateRandomPoseInsideMesh()
+
+        # Spawns the model in gazebo
         if use_objects:
-            for object in self.objects:
-                object['mesh'] = trimesh.load(f'{path}/models_3d/localbot/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
+            for idx , object in enumerate(self.objects):
                 spawn_model = SpawnModelRequest()
                 spawn_model.model_name = object['name']
                 spawn_model.model_xml = open(f'{path}/models_3d/localbot/{object["name"]}/model.sdf', 'r').read()
                 spawn_model.robot_namespace = ''
-                spawn_model.initial_pose = Pose()
+                spawn_model.initial_pose = initial_positions[idx]
                 self.spawn_model_service(spawn_model)
-
-
-
 
         # set initial pose
         print('setting initial pose...')
