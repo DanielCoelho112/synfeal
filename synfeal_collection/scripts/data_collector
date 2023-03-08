@@ -111,7 +111,7 @@ def main():
                 data_collector.setPose('localbot' , pose)
                 # Objects
                 if args['use_objects']:
-                    objects_pose , objects_name = data_collector.generateRandomPoseInsideMesh()
+                    objects_pose , objects_name = data_collector.generateRandomPoseInsideMesh(pose)
 
                     for idx,pose in enumerate(objects_pose):
                         data_collector.setPose(objects_name[idx] , pose)

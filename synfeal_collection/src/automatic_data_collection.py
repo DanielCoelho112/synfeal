@@ -155,7 +155,7 @@ class AutomaticDataCollection():
 
         return p
     
-    def generateRandomPoseInsideMesh(self):
+    def generateRandomPoseInsideMesh(self , camera_pose = Pose()):
         final_poses = []
         object_names = []
         for object in self.objects:
@@ -167,7 +167,7 @@ class AutomaticDataCollection():
                 points = trimesh.convex.hull_points(object_mesh)
                 del object_mesh # this variable lead to a memory leak
                 is_inside = self.checkInsideMesh(points)
-                if is_inside.all():
+                if is_inside.all() and abs(p.position.x - camera_pose.position.x) > 0.5 and abs(p.position.y - camera_pose.position.y) > 0.5:
                     final_pose = p
                     final_pose.orientation.x = 0
                     final_pose.orientation.y = 0
