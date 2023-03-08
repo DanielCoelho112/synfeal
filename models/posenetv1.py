@@ -16,7 +16,7 @@ class PoseNetGoogleNetV1(nn.Module):
             self.dropout_rate = dropout_rate
             self.aux_logits = aux_logits
 
-            base_model = models.inception_v3(weights=models.Inception_V3_Weights.IMAGENET1K_V1)
+            base_model = models.inception_v3(pretrained)
             base_model.aux_logits = aux_logits
 
             for parameter in base_model.parameters():
