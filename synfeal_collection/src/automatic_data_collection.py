@@ -163,6 +163,9 @@ class AutomaticDataCollection():
                 p = self.generateRandomPose()
                 translation = np.array([p.position.x, p.position.y, p.position.z])
                 object_mesh = object['mesh'].copy()
+                # TODO perform this transformation in the convex hull
+                rotation_matrix = trimesh.transformations.quaternion_matrix([0, 0, p.orientation.z, 1])
+                object_mesh.apply_transform(rotation_matrix)
                 object_mesh.apply_translation(translation)
                 points = trimesh.convex.hull_points(object_mesh)
                 del object_mesh # this variable lead to a memory leak
@@ -314,13 +317,6 @@ class AutomaticDataCollection():
             light_msg.direction = Vector3(1e-6,1e-6,-1)
             self.modify_light(light_msg) 
 
-            # my_str = f'name: "{name}" \nattenuation_quadratic: {light}'
-
-            # with open('/tmp/set_light.txt', 'w') as f:
-            #     f.write(my_str)
-
-            # os.system(
-            #     f'gz topic -p /gazebo/santuario/light/modify -f /tmp/set_light.txt')
 
     def getSunAzimuth(self , n_steps , random): 
         # Definition of a time range of simulation
