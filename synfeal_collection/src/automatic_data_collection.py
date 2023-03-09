@@ -30,7 +30,7 @@ from utils_ros import *
 
 
 class AutomaticDataCollection():
-
+    
     def __init__(self, model_name, seq, dbf=None, uvl=None, use_objects = None , model3d_config=None, fast=None, save_dataset=True, mode=None):
         self.model_name = model_name  # model_name = 'localbot'
         self.dbf = dbf
@@ -94,15 +94,15 @@ class AutomaticDataCollection():
         else:
             self.mesh_collision = False
 
-        # Loads the mesh of the model
-        for object in self.objects:
-            object['mesh'] = trimesh.load(f'{path}/models_3d/localbot/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
+        if use_objects:
+            # Loads the mesh of the model
+            for object in self.objects:
+                object['mesh'] = trimesh.load(f'{path}/models_3d/localbot/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
 
-        # Gets an initial pose inside the mesh for the objects
-        initial_positions , object_names =self.generateRandomPoseInsideMesh()
+            # Gets an initial pose inside the mesh for the objects
+            initial_positions , object_names =self.generateRandomPoseInsideMesh()
 
         # Spawns the model in gazebo
-        if use_objects:
             for idx , object in enumerate(self.objects):
                 spawn_model = SpawnModelRequest()
                 spawn_model.model_name = object['name']

@@ -169,6 +169,7 @@ def main():
 
     first_time = True
     save_step = args['save_step'] # when to store the model
+    last_saved_epoch = 0
 
     if args['cuda']:
         model.cuda()  # Send model to GPU
@@ -266,19 +267,10 @@ def main():
         # ------------------
         # Saving of Model
         # ------------------
-        if (epoch)%save_step == 0:
-            
+        if (epoch)%save_step == 0:            
             # only save if test loss is lower than the previous saved!
             if test_loss_epoch < stored_test_loss_epoch:
-                
-                plt.figure()
-                plt.plot(train_losses, label='train loss')
-                plt.plot(test_losses, label='test loss')
-                plt.xlabel("Epoch")    
-                plt.ylabel("Loss")   
-                #plt.xticks(np.arange(0, n_epochs, 1.0)
-                plt.legend()
-                plt.savefig(f'{folder_name}/losses.png')
+                last_saved_epoch = epoch
                 # todo: in addition to save the state_dict of the model, we should also save the state_dict of the optimizer.
                 torch.save(model.state_dict(), model_name)
             
@@ -307,6 +299,16 @@ def main():
             else:
                 print('Current model is no better than the stored model. Ignoring saving.')
         
+            plt.figure()
+            plt.plot(train_losses, label='train loss')
+            plt.plot(test_losses, label='test loss')
+            plt.axvline(x = last_saved_epoch, color = 'b', label = 'axvline - full height')
+            plt.xlabel("Epoch")    
+            plt.ylabel("Loss")   
+            #plt.xticks(np.arange(0, n_epochs, 1.0)
+            plt.legend()
+            plt.savefig(f'{folder_name}/losses.png')
+            
 
 if __name__ == "__main__":
     main()
