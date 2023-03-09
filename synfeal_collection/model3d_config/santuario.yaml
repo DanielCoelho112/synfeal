@@ -21,38 +21,33 @@ volume:
     rzmin: 0
     rzmax: 6.28
 
-objects:
-  [
-    {
-      name: 'VisitorChair',
-      mesh_name: 'VisitorChair.obj',
-    },
-    {
-      name: 'foldable_chair',
-      mesh_name: 'foldable_chair.dae',
-    },
-    {
-      name: 'person_standing',
-      mesh_name: 'standing.dae',
-    }
+objects: 
+  -   name: 'VisitorChair'
+      mesh_name: 'VisitorChair.obj'
+  
+  -   name: 'foldable_chair'
+      mesh_name: 'foldable_chair.dae'
 
-  ]
+  -   name: 'person_standing'
+      mesh_name: 'standing.dae'
+
+  -   name: 'casual_female'
+      mesh_name: 'casual_female.dae'
+
+  -   name: 'TrashBin'
+      mesh_name: 'TrashBin.obj'
+
 
 lights:
-  [
-    {
-      name: 'user_point_light_0',
+  -   name: 'user_point_light_0'
       pose: [1.673773, -1.662100, 2.459146, 0, -0, 0]
-    },
-    {
-      name: 'user_point_light_1',
+
+  -   name: 'user_point_light_1'
       pose: [1.673773, 4.290038, 2.459146, 0, -0, 0]
-    },
-    {
-      name: 'user_point_light_2',
+
+  -   name: 'user_point_light_2'
       pose: [-2.822533, 4.270349, -0.034578, 0, -0, 0]
-    }
-  ]
+
 light:
   att_initial: 0.01
   att_min: 0.0
