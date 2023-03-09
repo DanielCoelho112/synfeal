@@ -302,7 +302,7 @@ def main():
             plt.figure()
             plt.plot(train_losses, label='train loss')
             plt.plot(test_losses, label='test loss')
-            plt.axvline(x = last_saved_epoch, color = 'b', label = 'axvline - full height')
+            plt.axvline(x = last_saved_epoch, color = 'b', label = 'last saved epoch')
             plt.xlabel("Epoch")    
             plt.ylabel("Loss")   
             #plt.xticks(np.arange(0, n_epochs, 1.0)
