@@ -20,7 +20,6 @@ from models.loss_functions import BetaLoss, DynamicLoss
 from models.posenet import PoseNetGoogleNet, PoseNetResNet
 from models.poselstm import PoseLSTM
 from models.hourglass import HourglassBatch
-from models.posenetv1 import PoseNetGoogleNetV1
 from utils import summarizeModel, resumeTraining, process_pose
 
 def main():
