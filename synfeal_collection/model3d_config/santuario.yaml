@@ -37,6 +37,9 @@ objects:
   -   name: 'TrashBin'
       mesh_name: 'TrashBin.obj'
 
+  -   name: 'MaleVisitorOnPhone'
+      mesh_name: 'MaleVisitorStatic.obj'
+
 
 lights:
   -   name: 'user_point_light_0'

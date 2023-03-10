@@ -68,6 +68,9 @@
     <light name='sun' type='directional'>
       <cast_shadows>1</cast_shadows>
       <pose>0 0 5 0 -0 0</pose>
+      <diffuse>0.7 0.7 0.7 0</diffuse>
+      <specular>1 1 1 0</specular>
+      <direction>-1 -1 -1</direction>
       <!-- <diffuse>0.8 0.8 0.8 1</diffuse>
       <specular>0.2 0.2 0.2 1</specular> -->
       <!-- <attenuation>
@@ -76,7 +79,7 @@
         <linear>0.01</linear>
         <quadratic>0.001</quadratic>
       </attenuation> -->
-      <direction>1e-6 1e-6 -1</direction>
+      <!-- <direction>1e-6 1e-6 -1</direction> -->
     </light>
 
     <light name='user_point_light_0' type='point'>

@@ -18,7 +18,7 @@ from geometry_msgs.msg import Pose , Quaternion , Point , Vector3
 from visualization_msgs.msg import *
 from gazebo_msgs.srv import SetModelState, GetModelState, SetModelStateRequest
 from gazebo_msgs.srv import SetLightProperties , SetLightPropertiesRequest , SpawnModel , SpawnModelRequest
-from colorama import Fore
+from colorama import Fore, Style
 from scipy.spatial.transform import Rotation as R
 import pvlib
 from pvlib.location import Location
@@ -86,9 +86,10 @@ class AutomaticDataCollection():
         self.use_collision = model3d_config['collision']['use']
         self.min_cam_dist = model3d_config['collision']['min_camera_distance']
 
+        path=os.environ.get("SYNFEAL_DATASET")
+
         # Load meshes
         if self.use_collision:
-            path=os.environ.get("SYNFEAL_DATASET")
             self.mesh_collision = trimesh.load(
                 f'{path}/models_3d/localbot/{name_model3d_config}/{name_model3d_config}_collision.dae', force='mesh')
         else:
@@ -97,7 +98,7 @@ class AutomaticDataCollection():
         if use_objects:
             # Loads the mesh of the model
             for object in self.objects:
-                object['mesh'] = trimesh.load(f'{path}/models_3d/localbot/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
+                object['mesh'] = trimesh.load(f'{path}/models_3d/localbot/Objects/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
 
             # Gets an initial pose inside the mesh for the objects
             initial_positions , object_names =self.generateRandomPoseInsideMesh()
@@ -106,7 +107,7 @@ class AutomaticDataCollection():
             for idx , object in enumerate(self.objects):
                 spawn_model = SpawnModelRequest()
                 spawn_model.model_name = object['name']
-                spawn_model.model_xml = open(f'{path}/models_3d/localbot/{object["name"]}/model.sdf', 'r').read()
+                spawn_model.model_xml = open(f'{path}/models_3d/localbot/Objects/{object["name"]}/model.sdf', 'r').read()
                 spawn_model.robot_namespace = ''
                 spawn_model.initial_pose = initial_positions[idx]
                 self.spawn_model_service(spawn_model)
@@ -169,32 +170,47 @@ class AutomaticDataCollection():
                 object_mesh.apply_translation(translation)
                 points = trimesh.convex.hull_points(object_mesh)
                 del object_mesh # this variable lead to a memory leak
-                is_inside = self.checkInsideMesh(points)
-                if is_inside.all() and abs(p.position.x - camera_pose.position.x) > 0.5 and abs(p.position.y - camera_pose.position.y) > 0.5:
-                    final_pose = p
-                    final_pose.orientation.x = 0
-                    final_pose.orientation.y = 0
-                    final_pose.orientation.w = 1
-                    p1_xyz = np.array([p.position.x, p.position.y, p.position.z])
-                    p2_xyz = np.array([final_pose.position.x, final_pose.position.y, final_pose.position.z-5])
+                is_inside = self.checkInsideMesh(points) # Check if the object is inside the mesh
+                # If the object is not inside the mesh, try again
+                if not is_inside.all():
+                    continue
+                # Check if the object collides with the camera
+                if abs(p.position.x - camera_pose.position.x) < 1 and abs(p.position.y - camera_pose.position.y) < 1:
+                    continue
+                # Check if the object collides with previous objects
+                valid = True
+                for pose in final_poses:
+                    if abs(pose.position.x - p.position.x) < 1 and abs(pose.position.y - p.position.y) < 1:
+                        valid = False
+                        print(f'{Fore.RED}Collision with another object{Style.RESET_ALL}')
+                        break
+                if valid == False:
+                    continue
+                # If everything is ok, add the object to the list
+                final_pose = p
+                final_pose.orientation.x = 0
+                final_pose.orientation.y = 0
+                final_pose.orientation.w = 1
+                p1_xyz = np.array([p.position.x, p.position.y, p.position.z])
+                p2_xyz = np.array([final_pose.position.x, final_pose.position.y, final_pose.position.z-5])
 
-                    orientation = p2_xyz - p1_xyz
-                    norm_orientation = np.linalg.norm(orientation)
-                    orientation = orientation / norm_orientation
+                orientation = p2_xyz - p1_xyz
+                norm_orientation = np.linalg.norm(orientation)
+                orientation = orientation / norm_orientation
 
-                    ray_origins = np.array([p1_xyz])
-                    ray_directions = np.array([orientation])
+                ray_origins = np.array([p1_xyz])
+                ray_directions = np.array([orientation])
 
-                    collisions, _, _ = self.mesh_collision.ray.intersects_location(
-                        ray_origins=ray_origins,
-                        ray_directions=ray_directions)
+                collisions, _, _ = self.mesh_collision.ray.intersects_location(
+                    ray_origins=ray_origins,
+                    ray_directions=ray_directions)
 
-                    closest_collision_to_p1 = self.getClosestCollision(collisions, p1_xyz)
-                    final_pose.position.z = final_pose.position.z - closest_collision_to_p1
-                    final_poses.append(final_pose)
-                    object_names.append(object['name'])
-                    break
-        
+                closest_collision_to_p1 = self.getClosestCollision(collisions, p1_xyz)
+                final_pose.position.z = final_pose.position.z - closest_collision_to_p1
+                final_poses.append(final_pose)
+                object_names.append(object['name'])
+                break # Goes to the next object
+
         return final_poses , object_names
 
     def generatePath(self, model_name , final_pose=None):
