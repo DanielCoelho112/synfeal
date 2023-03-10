@@ -40,6 +40,12 @@ objects:
   -   name: 'MaleVisitorOnPhone'
       mesh_name: 'MaleVisitorStatic.obj'
 
+  -   name: 'OpScrubs'
+      mesh_name: 'OpScrubs.obj'
+
+  -   name: 'PatientWheelChair'
+      mesh_name: 'PatientWheelChair.obj'
+
 
 lights:
   -   name: 'user_point_light_0'

@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/pytorch:20.06-py3
+FROM nvcr.io/nvidia/pytorch:22.12-py3
 RUN mkdir /root/datasets
 RUN mkdir /root/datasets/localbot
 RUN mkdir /root/models

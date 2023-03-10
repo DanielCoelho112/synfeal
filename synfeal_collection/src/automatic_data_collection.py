@@ -165,14 +165,14 @@ class AutomaticDataCollection():
                 translation = np.array([p.position.x, p.position.y, p.position.z])
                 object_mesh = object['mesh'].copy()
                 # TODO perform this transformation in the convex hull
-                rotation_matrix = trimesh.transformations.quaternion_matrix([0, 0, p.orientation.z, 1])
+                rotation_matrix = trimesh.transformations.quaternion_matrix([0, 0, p.orientation.z, p.orientation.w])
                 object_mesh.apply_transform(rotation_matrix)
                 object_mesh.apply_translation(translation)
                 points = trimesh.convex.hull_points(object_mesh)
                 del object_mesh # this variable lead to a memory leak
                 is_inside = self.checkInsideMesh(points) # Check if the object is inside the mesh
                 # If the object is not inside the mesh, try again
-                if not is_inside.all():
+                if not is_inside:
                     continue
                 # Check if the object collides with the camera
                 if abs(p.position.x - camera_pose.position.x) < 1 and abs(p.position.y - camera_pose.position.y) < 1:
@@ -190,7 +190,6 @@ class AutomaticDataCollection():
                 final_pose = p
                 final_pose.orientation.x = 0
                 final_pose.orientation.y = 0
-                final_pose.orientation.w = 1
                 p1_xyz = np.array([p.position.x, p.position.y, p.position.z])
                 p2_xyz = np.array([final_pose.position.x, final_pose.position.y, final_pose.position.z-5])
 
@@ -450,7 +449,7 @@ class AutomaticDataCollection():
             
     def checkInsideMesh(self,points):
         result = self.mesh_collision.contains(points)
-        return result
+        return result.all()
 
     def checkCollisionVis(self, initial_pose, final_pose):
         if self.use_collision is False:
