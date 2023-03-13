@@ -28,14 +28,14 @@ objects:
   -   name: 'foldable_chair'
       mesh_name: 'foldable_chair.dae'
 
+  -   name: 'TrashBin'
+      mesh_name: 'TrashBin.obj'
+
   -   name: 'person_standing'
       mesh_name: 'standing.dae'
 
   -   name: 'casual_female'
       mesh_name: 'casual_female.dae'
-
-  -   name: 'TrashBin'
-      mesh_name: 'TrashBin.obj'
 
   -   name: 'MaleVisitorOnPhone'
       mesh_name: 'MaleVisitorStatic.obj'
@@ -45,6 +45,45 @@ objects:
 
   -   name: 'PatientWheelChair'
       mesh_name: 'PatientWheelChair.obj'
+
+  -   name: 'Human1'
+      mesh_name: 'human1.dae'
+
+  -   name: 'Human2'
+      mesh_name: 'human2.dae'
+
+  -   name: 'Human3'
+      mesh_name: 'human3.dae'
+
+  -   name: 'Human4'
+      mesh_name: 'human4.dae'
+
+  -   name: 'Human5'
+      mesh_name: 'human5.dae'
+
+  -   name: 'Human6'
+      mesh_name: 'human6.dae'
+
+  -   name: 'Human7'
+      mesh_name: 'human7.dae'
+
+  -   name: 'Human8'
+      mesh_name: 'human8.dae'
+
+  -   name: 'Human9'
+      mesh_name: 'human9.dae'
+
+  -   name: 'Human10'
+      mesh_name: 'human10.dae'
+    
+  -   name: 'Human11'
+      mesh_name: 'human11.dae'
+
+  -   name: 'Human12'
+      mesh_name: 'human12.dae'
+
+  -   name: 'Human13'
+      mesh_name: 'human13.dae'
 
 
 lights:

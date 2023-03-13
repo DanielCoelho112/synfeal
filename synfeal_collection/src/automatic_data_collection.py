@@ -86,31 +86,19 @@ class AutomaticDataCollection():
         self.use_collision = model3d_config['collision']['use']
         self.min_cam_dist = model3d_config['collision']['min_camera_distance']
 
-        path=os.environ.get("SYNFEAL_DATASET")
+        self.path=os.environ.get("SYNFEAL_DATASET")
 
         # Load meshes
         if self.use_collision:
             self.mesh_collision = trimesh.load(
-                f'{path}/models_3d/localbot/{name_model3d_config}/{name_model3d_config}_collision.dae', force='mesh')
+                f'{self.path}/models_3d/localbot/{name_model3d_config}/{name_model3d_config}_collision.dae', force='mesh')
         else:
             self.mesh_collision = False
 
         if use_objects:
             # Loads the mesh of the model
             for object in self.objects:
-                object['mesh'] = trimesh.load(f'{path}/models_3d/localbot/Objects/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
-
-            # Gets an initial pose inside the mesh for the objects
-            initial_positions , object_names =self.generateRandomPoseInsideMesh()
-
-        # Spawns the model in gazebo
-            for idx , object in enumerate(self.objects):
-                spawn_model = SpawnModelRequest()
-                spawn_model.model_name = object['name']
-                spawn_model.model_xml = open(f'{path}/models_3d/localbot/Objects/{object["name"]}/model.sdf', 'r').read()
-                spawn_model.robot_namespace = ''
-                spawn_model.initial_pose = initial_positions[idx]
-                self.spawn_model_service(spawn_model)
+                object['mesh'] = trimesh.load(f'{self.path}/models_3d/localbot/Objects/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
 
         # set initial pose
         print('setting initial pose...')
@@ -159,7 +147,9 @@ class AutomaticDataCollection():
     def generateRandomPoseInsideMesh(self , camera_pose = Pose()):
         final_poses = []
         object_names = []
-        for object in self.objects:
+        objects_sampled = random.sample(self.objects,10)
+
+        for object in objects_sampled:
             while True:
                 p = self.generateRandomPose()
                 translation = np.array([p.position.x, p.position.y, p.position.z])
@@ -291,8 +281,19 @@ class AutomaticDataCollection():
         req.model_state.reference_frame = 'world'
         try:
             response = self.set_state_service(req.model_state)
+            if response.status_message == "SetModelState: model does not exist":
+                self.spawnModel(model_name, pose)
+  
         except rospy.ServiceException as e:
             print("Service call failed: %s" % e)
+     
+    def spawnModel(self,object_name,object_position):
+        spawn_model = SpawnModelRequest()
+        spawn_model.model_name = object_name
+        spawn_model.model_xml = open(f'{self.path}/models_3d/localbot/Objects/{object_name}/model.sdf', 'r').read()
+        spawn_model.robot_namespace = ''
+        spawn_model.initial_pose = object_position
+        self.spawn_model_service(spawn_model)
 
     def generateLights(self, n_steps, random):
         lights = []
