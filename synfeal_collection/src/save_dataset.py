@@ -24,7 +24,7 @@ class SaveDataset():
         if os.path.exists(self.output_folder):
             print(Fore.YELLOW + f'Dataset already exists! Do you want to overwrite?' + Style.RESET_ALL)
             ans = input(Fore.YELLOW + "Y" + Style.RESET_ALL + "ES/" + Fore.YELLOW + "n" + Style.RESET_ALL + "o: ") # Asks the user if they want to resume training
-        
+            
         if not os.path.exists(self.output_folder):
             print(f'Creating folder {self.output_folder}')
             os.makedirs(self.output_folder)  # Create the new folder

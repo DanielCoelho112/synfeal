@@ -17,7 +17,7 @@ from geometry_msgs.msg import Pose , Quaternion , Point , Vector3
 #from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 from gazebo_msgs.srv import SetModelState, GetModelState, SetModelStateRequest
-from gazebo_msgs.srv import SetLightProperties , SetLightPropertiesRequest , SpawnModel , SpawnModelRequest
+from gazebo_msgs.srv import SetLightProperties , SetLightPropertiesRequest , SpawnModel , SpawnModelRequest , DeleteModel , DeleteModelRequest
 from colorama import Fore, Style
 from scipy.spatial.transform import Rotation as R
 import pvlib
@@ -46,6 +46,9 @@ class AutomaticDataCollection():
 
         rospy.wait_for_service('/gazebo/spawn_sdf_model')
         self.spawn_model_service = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
+
+        rospy.wait_for_service('/gazebo/delete_model')
+        self.delete_model_service = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
 
         # create instance to save dataset
         if save_dataset:
@@ -144,7 +147,7 @@ class AutomaticDataCollection():
 
         return p
     
-    def generateRandomPoseInsideMesh(self , camera_pose = Pose()):
+    def generateRandomPoseInsideMesh(self , camera_poses = [Pose()], manager = []):
         final_poses = []
         object_names = []
         objects_sampled = random.sample(self.objects,10)
@@ -165,7 +168,13 @@ class AutomaticDataCollection():
                 if not is_inside:
                     continue
                 # Check if the object collides with the camera
-                if abs(p.position.x - camera_pose.position.x) < 1 and abs(p.position.y - camera_pose.position.y) < 1:
+                valid = True
+                for camera_pose in camera_poses:
+                    if abs(p.position.x - camera_pose.position.x) < 1 and abs(p.position.y - camera_pose.position.y) < 1:
+                        valid = False
+                        print(f'{Fore.RED}Collision with camera{Style.RESET_ALL}')
+                        break
+                if valid == False:
                     continue
                 # Check if the object collides with previous objects
                 valid = True
@@ -189,18 +198,21 @@ class AutomaticDataCollection():
 
                 ray_origins = np.array([p1_xyz])
                 ray_directions = np.array([orientation])
-
+                # Check the collision with the mesh
                 collisions, _, _ = self.mesh_collision.ray.intersects_location(
                     ray_origins=ray_origins,
                     ray_directions=ray_directions)
-
+                # If there is a collision, move the object to the closest collision, floor.
                 closest_collision_to_p1 = self.getClosestCollision(collisions, p1_xyz)
                 final_pose.position.z = final_pose.position.z - closest_collision_to_p1
                 final_poses.append(final_pose)
                 object_names.append(object['name'])
                 break # Goes to the next object
+        
+        manager.append(final_poses)
+        manager.append(object_names)
 
-        return final_poses , object_names
+        return manager
 
     def generatePath(self, model_name , final_pose=None):
         initial_pose = self.getPose(model_name).pose
@@ -294,6 +306,11 @@ class AutomaticDataCollection():
         spawn_model.robot_namespace = ''
         spawn_model.initial_pose = object_position
         self.spawn_model_service(spawn_model)
+
+    def deleteModel(self,object_name):
+        delete_model = DeleteModelRequest()
+        delete_model.model_name = object_name
+        self.delete_model_service(delete_model)
 
     def generateLights(self, n_steps, random):
         lights = []
