@@ -78,13 +78,29 @@ def main():
         data_collector = AutomaticDataCollection(
             model_name='localbot', seq=seq, uvl=args['use_variable_lights'], use_objects=args['use_objects'] , model3d_config=model3d_config, fast=args['fast'], mode=mode)
         while not rospy.is_shutdown():
-            pose = data_collector.generateRandomPose()
-             # Objects
+            # Objects with multiprocessing
             if args['use_objects']:
-                objects_pose , objects_name = data_collector.generateRandomPoseInsideMesh(pose)
-
+                if first_time: # The first time the code runs create the camera poses and object poses
+                    pose = data_collector.generateRandomPose()
+                    objects_pose , objects_name = data_collector.generateRandomPoseInsideMesh([pose])
+                    first_time = False
+                else: # Rest of the program get the objects from multi precessing and the camera position from previous computation
+                    proc.join()
+                    pose = pose_next
+                    objects_pose , objects_name = manager_array[0] , manager_array[1]
+                # Set the objects pose
                 for idx,pose in enumerate(objects_pose):
                     data_collector.setPose(objects_name[idx] , pose)
+                
+                pose_next = data_collector.generateRandomPose() # Generate the next camera poses for the next loop
+                manager = multiprocessing.Manager()
+                manager_array = manager.list()
+                proc = Process(target=data_collector.generateRandomPoseInsideMesh, args=([pose],manager_array))
+                proc.start()
+            
+            else:
+                pose = data_collector.generateRandomPose()
+
             if args['use_variable_lights']:
                 light = data_collector.generateLights(n_steps=1, random=True)
                 data_collector.setLight(light)
@@ -130,6 +146,9 @@ def main():
                 manager_array = manager.list()
                 proc = Process(target=data_collector.generateRandomPoseInsideMesh, args=(step_poses_next,manager_array))
                 proc.start()
+            
+            else:
+                step_poses = data_collector.generatePath(model_name='localbot')
 
             if args['use_variable_lights']:
                 step_lights = data_collector.generateLights(n_steps=len(step_poses), random=args['random_lights'])
