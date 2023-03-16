@@ -153,6 +153,7 @@ class AutomaticDataCollection():
         objects_sampled = random.sample(self.objects,10)
 
         for object in objects_sampled:
+            print(f'Generating pose for {object["name"]}')
             while True:
                 p = self.generateRandomPose()
                 translation = np.array([p.position.x, p.position.y, p.position.z])
@@ -172,7 +173,7 @@ class AutomaticDataCollection():
                 for camera_pose in camera_poses:
                     if abs(p.position.x - camera_pose.position.x) < 1 and abs(p.position.y - camera_pose.position.y) < 1:
                         valid = False
-                        print(f'{Fore.RED}Collision with camera{Style.RESET_ALL}')
+                        print(f'{Fore.RED}Collision with camera{Style.RESET_ALL} Generating new pose...')
                         break
                 if valid == False:
                     continue
@@ -181,7 +182,7 @@ class AutomaticDataCollection():
                 for pose in final_poses:
                     if abs(pose.position.x - p.position.x) < 1 and abs(pose.position.y - p.position.y) < 1:
                         valid = False
-                        print(f'{Fore.RED}Collision with another object{Style.RESET_ALL}')
+                        print(f'{Fore.RED}Collision with another object{Style.RESET_ALL} Generating new pose...')
                         break
                 if valid == False:
                     continue
@@ -209,13 +210,17 @@ class AutomaticDataCollection():
                 object_names.append(object['name'])
                 break # Goes to the next object
         
+        print(f'{Fore.GREEN}Generated poses for {len(final_poses)} objects{Style.RESET_ALL}')
         manager.append(final_poses)
         manager.append(object_names)
 
         return manager
 
-    def generatePath(self, model_name , final_pose=None):
-        initial_pose = self.getPose(model_name).pose
+    def generatePath(self, model_name , final_pose=None, init_pose=None):
+        if init_pose == None:
+            initial_pose = self.getPose(model_name).pose
+        else:
+            initial_pose = init_pose
 
         if final_pose == None:
             final_pose = self.generateRandomPose()

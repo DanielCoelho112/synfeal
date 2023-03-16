@@ -22,11 +22,38 @@ volume:
     rzmax: 6.28
 
 objects: 
+  -   name: 'vase_blue'
+      mesh_name: 'vase.dae'
+
+  -   name: 'vase_glass'
+      mesh_name: 'vase4.dae'
+
+  -   name: 'vase_large_2'
+      mesh_name: 'vase3_1.dae'
+
+  -   name: 'vase_large_3'
+      mesh_name: 'vase6.dae'
+
+  -   name: 'vase_small'
+      mesh_name: 'vase2.dae'
+
+#   -   name: 'vase_violet'
+#       mesh_name: 'vase5.dae'
+
   -   name: 'VisitorChair'
       mesh_name: 'VisitorChair.obj'
-  
-  -   name: 'foldable_chair'
-      mesh_name: 'foldable_chair.dae'
+
+  -   name: 'ParkingTrolleyMax'
+      mesh_name: 'ParkingTrolleyMax.obj'
+
+  -   name: 'MopCart2'
+      mesh_name: 'MopCart2.obj'
+
+  -   name: 'MopCart4'
+      mesh_name: 'MopCart4.obj'
+
+  -   name: 'Drawer'
+      mesh_name: 'Drawer.obj'
 
   -   name: 'TrashBin'
       mesh_name: 'TrashBin.obj'

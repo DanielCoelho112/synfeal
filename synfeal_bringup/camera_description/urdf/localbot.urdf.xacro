@@ -25,6 +25,10 @@
   <xacro:include filename="$(find synfeal_bringup)/camera_description/urdf/localbot.gazebo.macro.xacro"/>
   <xacro:gazebo_macro color="$(arg color)" laser_visual="false" camera_visual="false" imu_visual="true"/>
 
+  <material name="marker_orange">
+    <color rgba= "0 0 1 1"/>
+  </material>
+
 
   <link name="base_footprint"/>
 
@@ -35,6 +39,28 @@
   </joint>
 
   <link name="base_link">
+  </link>
+
+  <joint name="base_join" type="fixed">
+    <parent link="base_link"/>
+    <child link="marker_link" />
+    <origin xyz="0.00 0.00 0.20" rpy="0 0 0"/>
+  </joint>
+
+  <link name="marker_link">
+    <visual name="visual">
+      <geometry>
+        <box size="0.1 0.1 0.1" />
+      </geometry>
+      <material name="marker_orange"/>
+    </visual>
+    <visual name="visual">
+      <origin xyz="0.00 0.00 0.4" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.1 0.1 0.4" />
+      </geometry>
+      <material name="marker_orange"/>
+    </visual>
   </link>
 
   <xacro:kinect_camera name='kinect' parent="base_link">

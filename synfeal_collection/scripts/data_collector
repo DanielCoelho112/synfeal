@@ -141,7 +141,7 @@ def main():
                 for idx,pose in enumerate(objects_pose):
                     data_collector.setPose(objects_name[idx] , pose)
                 
-                step_poses_next = data_collector.generatePath(model_name='localbot') # Generate the next camera poses for the next loop
+                step_poses_next = data_collector.generatePath(model_name='localbot',init_pose = step_poses[-1]) # Generate the next camera poses for the next loop
                 manager = multiprocessing.Manager()
                 manager_array = manager.list()
                 proc = Process(target=data_collector.generateRandomPoseInsideMesh, args=(step_poses_next,manager_array))
