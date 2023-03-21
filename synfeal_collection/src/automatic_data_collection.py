@@ -150,7 +150,11 @@ class AutomaticDataCollection():
     def generateRandomPoseInsideMesh(self , camera_poses = [Pose()], manager = []):
         final_poses = []
         object_names = []
-        objects_sampled = random.sample(self.objects,10)
+        # Checks if there are more than 10 objects available if so only choose 10
+        if len(self.objects)>10:
+            objects_sampled = random.sample(self.objects,10)
+        else:
+            objects_sampled = self.objects
 
         for object in objects_sampled:
             print(f'Generating pose for {object["name"]}')
@@ -287,7 +291,6 @@ class AutomaticDataCollection():
     def setPose(self, model_name , pose):
         req = SetModelStateRequest()  # Create an object of type SetModelStateRequest
         req.model_state.model_name = model_name
-
         req.model_state.pose.position.x = pose.position.x
         req.model_state.pose.position.y = pose.position.y
         req.model_state.pose.position.z = pose.position.z

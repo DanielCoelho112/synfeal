@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
+import math
+from tf.transformations import decompose_matrix , quaternion_from_euler , euler_from_matrix
+import glob
 import multiprocessing
+import os
 import sys
 import argparse
 import numpy as np
@@ -10,7 +14,7 @@ import rospkg
 import yaml
 from os.path import exists
 from yaml.loader import SafeLoader
-from colorama import Fore
+from colorama import Fore , Style
 from multiprocessing import Process
 
 from synfeal_collection.src.interactive_data_collection import InteractiveDataCollection
@@ -20,9 +24,11 @@ from synfeal_collection.src.automatic_data_collection import AutomaticDataCollec
 def main():
     parser = argparse.ArgumentParser(description='Data Collector')
     parser.add_argument('-m', '--mode', type=str, default='path',
-                        help='interactive/random/path')
+                        help='interactive/random/path/repeat')
     parser.add_argument('-s', '--seq', type=str,
                         required=True, help='name of the dataset to be created')
+    parser.add_argument('-s_prev', '--seq_previous', type=str,
+                        required=False, help='name of the dataset to be created')
     parser.add_argument('-nf', '--number_of_frames', type=int,
                         required=True, help='number of frames')
     parser.add_argument('-dbf', '--distance_between_frames',
@@ -140,6 +146,7 @@ def main():
                 # Set the objects pose
                 for idx,pose in enumerate(objects_pose):
                     data_collector.setPose(objects_name[idx] , pose)
+                rospy.sleep(0.4)
                 
                 step_poses_next = data_collector.generatePath(model_name='localbot',init_pose = step_poses[-1]) # Generate the next camera poses for the next loop
                 manager = multiprocessing.Manager()
@@ -171,10 +178,61 @@ def main():
                     data_collector.deleteModel(objects_name[idx])
             print('final destination arrived')
             if data_collector.getFrameIdx() >= args['number_of_frames']:
+                print(f'{Fore.GREEN}Finished generating dataset{Style.RESET_ALL}')
+                proc.join()
                 break
+    elif mode == 'repeat':
+        if args['fast']:
+            rate = rospy.Rate(3)
+        else:
+            rate = rospy.Rate(0.4)
+        data_collector = AutomaticDataCollection(
+            model_name='localbot', seq=seq, dbf=distance_between_frames, uvl=args['use_variable_lights'], use_objects=args['use_objects'], model3d_config=model3d_config, fast=args['fast'], mode=mode)
+        
+        path=os.environ.get("SYNFEAL_DATASET")
+        previous_dataset_folder = f'{path}/datasets/localbot/{args["seq_previous"]}'
+        rospy.sleep(1)
+        while not rospy.is_shutdown():
+            poses = sorted(glob.glob(f'{previous_dataset_folder}/*pose.txt'))
+            for pose_path in poses:
+                with open(pose_path) as f:
+                    pose_yaml = yaml.load(f, Loader=SafeLoader)
+                    # important to associate with the dataset to be created.
+                    pose_yaml_line = pose_yaml.split(' ')
+                    transformation_matrix = np.array([])
+                    for line in pose_yaml_line:
+                        line_matrix = np.array([float(value) for value in line.split(',')])
+                        
+                        transformation_matrix = np.concatenate((transformation_matrix,line_matrix),axis=0)
+
+                    transformation_matrix = np.reshape(transformation_matrix , (4,4))
+                    transformation_matrix[2,3] = transformation_matrix[2,3] + 0.0125
+                    scale , shear , angles , translate , perspective = decompose_matrix(transformation_matrix)
+
+                quaternion = quaternion_from_euler(angles[1],angles[0]+math.pi/2,angles[2]+math.pi/2)
+
+                pose = data_collector.generateRandomPose()
+
+                pose.position.x = translate[0]
+                pose.position.y = translate[1] 
+                pose.position.z = translate[2] 
+
+                pose.orientation.x = quaternion[0]
+                pose.orientation.y = quaternion[1]
+                pose.orientation.z = quaternion[2]
+                pose.orientation.w = quaternion[3]
+                data_collector.setPose('localbot' , pose)
+
+                if not args['fast']:
+                    rospy.sleep(0.4)
+                else:
+                    rospy.sleep(0.001)
+                data_collector.saveFrame()
+                rate.sleep()
+            print('final destination arrived')
+            break
     else:
         print('invalid mode')
-
 
 if __name__ == "__main__":
     main()
