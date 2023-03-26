@@ -146,7 +146,8 @@ def main():
                 # Set the objects pose
                 for idx,pose in enumerate(objects_pose):
                     data_collector.setPose(objects_name[idx] , pose)
-                rospy.sleep(0.4)
+                    rospy.sleep(0.4)
+                rospy.sleep(2)
                 
                 step_poses_next = data_collector.generatePath(model_name='localbot',init_pose = step_poses[-1]) # Generate the next camera poses for the next loop
                 manager = multiprocessing.Manager()
@@ -175,12 +176,15 @@ def main():
                 rate.sleep()
             if args['use_objects']:
                 for idx,pose in enumerate(objects_pose):
-                    data_collector.deleteModel(objects_name[idx])
+                    data_collector.setPose(objects_name[idx])
+                    rospy.sleep(0.4)
+                rospy.sleep(2)
             print('final destination arrived')
             if data_collector.getFrameIdx() >= args['number_of_frames']:
                 print(f'{Fore.GREEN}Finished generating dataset{Style.RESET_ALL}')
                 proc.join()
                 break
+
     elif mode == 'repeat':
         if args['fast']:
             rate = rospy.Rate(3)

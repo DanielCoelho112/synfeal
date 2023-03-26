@@ -31,8 +31,7 @@ class SaveDataset():
         elif os.path.exists(self.output_folder) and ans.lower() in ['' , 'y' , 'yes']:
             print(f'Overwriting folder {self.output_folder}')
             os.system(f'rm -r {self.output_folder}')
-            os.makedirs(self.output_folder)
-        
+            os.makedirs(self.output_folder)  
         else:
             print(f'{Fore.RED} {self.output_folder} already exists... Aborting SaveDataset initialization! {Fore.RESET}')
             exit(0)

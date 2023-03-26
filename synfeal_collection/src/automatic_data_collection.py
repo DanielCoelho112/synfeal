@@ -99,6 +99,11 @@ class AutomaticDataCollection():
             self.mesh_collision = False
 
         if use_objects:
+            # Stores the resting pose for the objects when not in use
+            self.resting_pose = Pose()
+            self.resting_pose.position.x = model3d_config['objects_resting_pose']['x']
+            self.resting_pose.position.y = model3d_config['objects_resting_pose']['y']
+            self.resting_pose.position.z = model3d_config['objects_resting_pose']['z']
             # Loads the mesh of the model
             for object in self.objects:
                 object['mesh'] = trimesh.load(f'{self.path}/models_3d/localbot/Objects/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
@@ -288,7 +293,10 @@ class AutomaticDataCollection():
     def getPose(self , model_name):
         return self.get_model_state_service(model_name, 'world')
 
-    def setPose(self, model_name , pose):
+    def setPose(self, model_name , pose = None):
+        # If no pose is given, set the pose to the resting pose
+        if pose == None:
+            pose = self.resting_pose
         req = SetModelStateRequest()  # Create an object of type SetModelStateRequest
         req.model_state.model_name = model_name
         req.model_state.pose.position.x = pose.position.x
