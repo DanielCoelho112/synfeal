@@ -1,6 +1,26 @@
 <sdf version='1.7'>
   <world name='santuario'>
-    <shadowTechnique>textureAdditive</shadowTechnique>
+    <gravity>0 0 0</gravity>
+
+    <physics type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>2000</real_time_update_rate>
+      <ode>
+          <solver>
+              <type>quick</type>
+              <iters>0</iters> <!-- 0 iterations to stop physics -->
+              <sor>1.4</sor>
+          </solver>
+          <constraints>
+              <cfm>0</cfm>
+              <erp>1</erp>
+              <contact_max_correcting_vel>0</contact_max_correcting_vel>
+              <contact_surface_layer>0</contact_surface_layer>
+          </constraints>
+      </ode>
+  </physics>
+
     <scene>
       <ambient>0.4 0.4 0.4 1</ambient>
       <background>1 1 1 1</background>

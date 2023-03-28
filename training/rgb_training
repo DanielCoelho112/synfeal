@@ -47,6 +47,8 @@ def main():
                         help='Initial model choose between [PoseNetGoogleNet(), PoseNetResNet(), PoseLSTM(), HourglassBatch()]')
     parser.add_argument('-cs', '--crop_size', type=int, default=299,
                         help='Size of the random and center crop. For PoseNet/LSTM use 299, for Hourglass use 224')
+    parser.add_argument('-augm', '--augmentation', action='store_true', 
+                        help='Performs Data Augmentation on the dataset')
     parser.add_argument('-nw', '--num_workers', type=int, default=4, 
                         help='How many subprocesses to use for data loading. 0 means that the data will be loaded in the main process.')
     parser.add_argument('-pff', '--prefetch_factor', type=int, default=2, 
@@ -72,13 +74,21 @@ def main():
 
     # rgb_mean = [0.485, 0.456, 0.406]
     # rgb_std = [0.229, 0.224, 0.225]
-        
-    rgb_transform_train = transforms.Compose([
-        transforms.Resize(args['crop_size'] + 1),
-        transforms.RandomCrop(args['crop_size']),
-        transforms.ToTensor(),
-        transforms.Normalize(rgb_mean, rgb_std)
-    ])
+    if args['augmentation']:    
+        rgb_transform_train = transforms.Compose([
+            transforms.Resize(args['crop_size'] + 1),
+            transforms.RandomCrop(args['crop_size']),
+            transforms.ToTensor(),
+            transforms.Normalize(rgb_mean, rgb_std),
+            transforms.RandomErasing()
+        ])
+    else:
+        rgb_transform_train = transforms.Compose([
+            transforms.Resize(args['crop_size'] + 1),
+            transforms.CenterCrop(args['crop_size']),
+            transforms.ToTensor(),
+            transforms.Normalize(rgb_mean, rgb_std)
+        ])
     
     rgb_transform_test = transforms.Compose([
         transforms.Resize(args['crop_size'] + 1),
