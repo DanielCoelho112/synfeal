@@ -133,6 +133,7 @@ sun:
   roll_initial: 0.785
   pitch_initial: 0.0
   yaw_initial: 0.0
+  
 collision:
   use: True
   min_camera_distance: 1.2

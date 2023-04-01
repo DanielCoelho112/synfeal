@@ -89,11 +89,34 @@
                 </mesh>
               </geometry>
             </visual>
+            <collision name='santuario_collision'>
+              <geometry>
+                <mesh>
+                  <uri>model://santuario/santuario_collision.dae</uri>
+                </mesh>
+              </geometry>
+              <max_contacts>10</max_contacts>
+              <surface>
+                <contact>
+                  <ode/>
+                </contact>
+                <bounce/>
+                <friction>
+                  <torsional>
+                    <ode>
+                    <mu>100</mu>
+                    <mu2>50</mu2>
+                    </ode>
+                  </torsional>
+                </friction>
+              </surface>
+      </collision>
             <self_collide>0</self_collide>
             <enable_wind>0</enable_wind>
             <kinematic>0</kinematic>
           </link>
           <pose>0 0 0 0 0 0 0</pose>
-        </model>
+    </model>
+
   </world>
 </sdf>

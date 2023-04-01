@@ -288,6 +288,7 @@ def main():
                         'date': dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
                         'train_set': args['training_set'],
                         'test_set': args['testing_set'],
+                        'Augmentation' : args['augmentation'],
                         'max_n_epochs': args['n_epochs'],
                         'epoch': epoch+1,
                         'batch_size': args['batch_size'],
