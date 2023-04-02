@@ -182,7 +182,8 @@ def main():
             print('final destination arrived')
             if data_collector.getFrameIdx() >= args['number_of_frames']:
                 print(f'{Fore.GREEN}Finished generating dataset{Style.RESET_ALL}')
-                proc.join()
+                if args['use_objects']:
+                    proc.join()
                 break
 
     elif mode == 'repeat':
@@ -213,7 +214,8 @@ def main():
                     transformation_matrix[2,3] = transformation_matrix[2,3] + 0.0125
                     scale , shear , angles , translate , perspective = decompose_matrix(transformation_matrix)
 
-                quaternion = quaternion_from_euler(angles[1],angles[0]+math.pi/2,angles[2]+math.pi/2)
+                quaternion = quaternion_from_euler(angles[1],-(angles[0]+math.pi/2),angles[2]+math.pi/2)
+                #quaternion = quaternion_from_euler(angles[0]+math.pi*1/2,angles[1],angles[2]+math.pi/2)
 
                 pose = data_collector.generateRandomPose()
 
