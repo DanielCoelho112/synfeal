@@ -109,14 +109,37 @@ class AutomaticDataCollection():
                 object['mesh'] = trimesh.load(f'{self.path}/models_3d/localbot/Objects/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
 
         # set initial pose
-        print('setting initial pose...')
-        x = model3d_config['initial_pose']['x']
-        y = model3d_config['initial_pose']['y']
-        z = model3d_config['initial_pose']['z']
-        rx = model3d_config['initial_pose']['rx']
-        ry = model3d_config['initial_pose']['ry']
-        rz = model3d_config['initial_pose']['rz']
-        quaternion = tf.transformations.quaternion_from_euler(rx, ry, rz)
+        if not self.save_dataset.continue_dataset:
+            print('Setting initial pose...')
+            x = model3d_config['initial_pose']['x']
+            y = model3d_config['initial_pose']['y']
+            z = model3d_config['initial_pose']['z']
+            rx = model3d_config['initial_pose']['rx']
+            ry = model3d_config['initial_pose']['ry']
+            rz = model3d_config['initial_pose']['rz']
+            quaternion = tf.transformations.quaternion_from_euler(rx, ry, rz)
+        else:
+            print('Continuing from last pose...')
+            pose_path = f'{self.path}/datasets/localbot/{seq}/frame-{(self.save_dataset.frame_idx-1):05d}.pose.txt'
+            with open(pose_path) as f:
+                pose_yaml = yaml.load(f, Loader=SafeLoader)
+                # important to associate with the dataset to be created.
+                pose_yaml_line = pose_yaml.split(' ')
+                transformation_matrix = np.array([])
+                for line in pose_yaml_line:
+                    line_matrix = np.array([float(value) for value in line.split(',')])
+                    
+                    transformation_matrix = np.concatenate((transformation_matrix,line_matrix),axis=0)
+
+                transformation_matrix = np.reshape(transformation_matrix , (4,4))
+                transformation_matrix[2,3] = transformation_matrix[2,3] + 0.0125
+                _ , _ , angles , translate , _ = tf.transformations.decompose_matrix(transformation_matrix)
+                x = translate[0]
+                y = translate[1]
+                z = translate[2]
+
+            quaternion = tf.transformations.quaternion_from_euler(angles[1],-(angles[0]+math.pi/2),angles[2]+math.pi/2)
+
         p = Pose()
         p.position.x = x
         p.position.y = y
@@ -156,8 +179,8 @@ class AutomaticDataCollection():
         final_poses = []
         object_names = []
         # Checks if there are more than 10 objects available if so only choose 10
-        if len(self.objects)>10:
-            objects_sampled = random.sample(self.objects,10)
+        if len(self.objects)>20:
+            objects_sampled = random.sample(self.objects,20)
         else:
             objects_sampled = self.objects
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import glob
 import rospy
 import os
 from visualization_msgs.msg import *
@@ -22,16 +23,21 @@ class SaveDataset():
 
         ans = ''
         if os.path.exists(self.output_folder):
-            print(Fore.YELLOW + f'Dataset already exists! Do you want to overwrite?' + Style.RESET_ALL)
-            ans = input(Fore.YELLOW + "Y" + Style.RESET_ALL + "ES/" + Fore.YELLOW + "n" + Style.RESET_ALL + "o: ") # Asks the user if they want to resume training
+            print(Fore.YELLOW + f'Dataset already exists! Do you want to continue?' + Style.RESET_ALL)
+            ans = input(Fore.YELLOW + "Y" + Style.RESET_ALL + "es/" + Fore.YELLOW + "N" + Style.RESET_ALL + "o/" + Fore.YELLOW +'O' + Style.RESET_ALL + 'verwrite: ') # Asks the user if they want to resume training
             
         if not os.path.exists(self.output_folder):
             print(f'Creating folder {self.output_folder}')
             os.makedirs(self.output_folder)  # Create the new folder
-        elif os.path.exists(self.output_folder) and ans.lower() in ['' , 'y' , 'yes']:
+        elif os.path.exists(self.output_folder) and ans.lower() in ['o' , 'overwrite']:
             print(f'Overwriting folder {self.output_folder}')
             os.system(f'rm -r {self.output_folder}')
-            os.makedirs(self.output_folder)  
+            os.makedirs(self.output_folder) 
+        elif os.path.exists(self.output_folder) and ans.lower() in ['' , 'y' , 'yes']:
+            print(f'Continuing with folder {self.output_folder}')
+            images = glob.glob(f'{self.output_folder}/*.rgb.png')
+            self.continue_dataset = True
+            frame_idx = len(images)
         else:
             print(f'{Fore.RED} {self.output_folder} already exists... Aborting SaveDataset initialization! {Fore.RESET}')
             exit(0)
@@ -52,7 +58,10 @@ class SaveDataset():
                   'fast' : fast}
         
         self.fast = fast
-        self.frame_idx = 0 
+        if self.continue_dataset:
+            self.frame_idx = frame_idx 
+        else:
+            self.frame_idx = 0
         self.world_link = 'world'
         self.depth_frame = 'kinect_depth_optical_frame'
         self.rgb_frame = 'kinect_rgb_optical_frame'
