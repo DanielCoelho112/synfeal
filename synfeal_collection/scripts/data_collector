@@ -177,8 +177,8 @@ def main():
                     rospy.sleep(0.001)
                 data_collector.saveFrame()
                 rate.sleep()
-            if args['use_objects'] and path_cycle % args['object_change'] == 0:
-                path_cycle = 0
+            if args['use_objects'] and path_cycle+1 % args['object_change'] == 0:
+                path_cycle += 1
                 for idx,pose in enumerate(objects_pose):
                     data_collector.setPose(objects_name[idx])
                     rospy.sleep(0.4)
