@@ -41,8 +41,6 @@ def main():
                         required=True, help='model3d config to use')
     parser.add_argument('-obj', '--use_objects',
                         action='store_true', help='spawn random objects in scene')
-    parser.add_argument('-obj_change', '--object_change', type=int, default=1,
-                        help='Choose after how many cycle paths it changes objects location')
     parser.add_argument('-f', '--fast', action='store_true',
                         help='fast data collection. Only rgb images and pose are captured.')
 
@@ -54,7 +52,6 @@ def main():
     seq = args['seq']
     distance_between_frames = args['distance_between_frames']
     first_time = True
-    path_cycle = 0
 
     # check if model3d file exists.
     # get absolute path of localbot_core.
@@ -137,7 +134,7 @@ def main():
         rospy.sleep(1)
         while not rospy.is_shutdown():
             # Objects with multiprocessing
-            if args['use_objects'] and path_cycle % args['object_change'] == 0:
+            if args['use_objects']:
                 if first_time: # The first time the code runs create the camera poses and object poses
                     step_poses = data_collector.generatePath(model_name='localbot')
                     objects_pose , objects_name = data_collector.generateRandomPoseInsideMesh(step_poses)
@@ -152,7 +149,7 @@ def main():
                     rospy.sleep(0.4)
                 rospy.sleep(2)
                 
-                step_poses_next = data_collector.generatePath(model_name='localbot',init_pose = step_poses[-1]) # Generate the next camera poses for the next loop
+                step_poses_next = data_collector.generatePath(model_name='localbot',init_pose = step_poses[-1])
                 manager = multiprocessing.Manager()
                 manager_array = manager.list()
                 proc = Process(target=data_collector.generateRandomPoseInsideMesh, args=(step_poses_next,manager_array))
@@ -160,7 +157,7 @@ def main():
             
             else:
                 step_poses = data_collector.generatePath(model_name='localbot')
-
+                
             if args['use_variable_lights']:
                 step_lights = data_collector.generateLights(n_steps=len(step_poses), random=args['random_lights'])
                 yaw , pitch , times = data_collector.getSunAzimuth(n_steps=len(step_poses), random=args['random_lights'])
@@ -177,8 +174,7 @@ def main():
                     rospy.sleep(0.001)
                 data_collector.saveFrame()
                 rate.sleep()
-            if args['use_objects'] and path_cycle+1 % args['object_change'] == 0:
-                path_cycle += 1
+            if args['use_objects']:
                 for idx,pose in enumerate(objects_pose):
                     data_collector.setPose(objects_name[idx])
                     rospy.sleep(0.4)

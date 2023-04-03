@@ -22,6 +22,7 @@ class SaveDataset():
         self.output_folder = f'{path}/datasets/localbot/{output}'
 
         ans = ''
+        self.continue_dataset = False
         if os.path.exists(self.output_folder):
             print(Fore.YELLOW + f'Dataset already exists! Do you want to continue?' + Style.RESET_ALL)
             ans = input(Fore.YELLOW + "Y" + Style.RESET_ALL + "es/" + Fore.YELLOW + "N" + Style.RESET_ALL + "o/" + Fore.YELLOW +'O' + Style.RESET_ALL + 'verwrite: ') # Asks the user if they want to resume training
