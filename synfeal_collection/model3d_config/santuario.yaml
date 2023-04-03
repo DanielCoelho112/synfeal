@@ -27,91 +27,133 @@ objects_resting_pose:
     z : -30
 
 objects: 
-  -   name: 'vase_blue'
-      mesh_name: 'vase.dae'
+#   -   name: 'vase_blue'
+#       mesh_name: 'vase.dae'
 
-  -   name: 'vase_glass'
-      mesh_name: 'vase4.dae'
+#   -   name: 'vase_glass'
+#       mesh_name: 'vase4.dae'
 
-  -   name: 'vase_large_2'
-      mesh_name: 'vase3_1.dae'
+#   -   name: 'vase_large_2'
+#       mesh_name: 'vase3_1.dae'
 
-  -   name: 'vase_small'
-      mesh_name: 'vase2.dae'
+#   -   name: 'vase_small'
+#       mesh_name: 'vase2.dae'
 
-  -   name: 'VisitorChair'
-      mesh_name: 'VisitorChair.obj'
+#   -   name: 'VisitorChair'
+#       mesh_name: 'VisitorChair.obj'
 
-  -   name: 'ParkingTrolleyMax'
-      mesh_name: 'ParkingTrolleyMax.obj'
+#   -   name: 'ParkingTrolleyMax'
+#       mesh_name: 'ParkingTrolleyMax.obj'
 
-  -   name: 'MopCart2'
-      mesh_name: 'MopCart2.obj'
+#   -   name: 'MopCart2'
+#       mesh_name: 'MopCart2.obj'
 
-  -   name: 'Drawer'
-      mesh_name: 'Drawer.obj'
+#   -   name: 'Drawer'
+#       mesh_name: 'Drawer.obj'
 
-  -   name: 'TrashBin'
-      mesh_name: 'TrashBin.obj'
+#   -   name: 'TrashBin'
+#       mesh_name: 'TrashBin.obj'
 
-  -   name: 'person_standing'
-      mesh_name: 'standing.dae'
+#   -   name: 'person_standing'
+#       mesh_name: 'standing.dae'
 
-  -   name: 'casual_female'
-      mesh_name: 'casual_female.dae'
+#   -   name: 'casual_female'
+#       mesh_name: 'casual_female.dae'
 
-  -   name: 'MaleVisitorOnPhone'
-      mesh_name: 'MaleVisitorStatic.obj'
+#   -   name: 'MaleVisitorOnPhone'
+#       mesh_name: 'MaleVisitorStatic.obj'
 
-  -   name: 'OpScrubs'
-      mesh_name: 'OpScrubs.obj'
+#   -   name: 'OpScrubs'
+#       mesh_name: 'OpScrubs.obj'
 
-  -   name: 'PatientWheelChair'
-      mesh_name: 'PatientWheelChair.obj'
+#   -   name: 'PatientWheelChair'
+#       mesh_name: 'PatientWheelChair.obj'
 
-  -   name: 'Human1'
-      mesh_name: 'human1.dae'
+#   -   name: 'Human1'
+#       mesh_name: 'human1.dae'
 
-  -   name: 'Human2'
-      mesh_name: 'human2.dae'
+#   -   name: 'Human2'
+#       mesh_name: 'human2.dae'
 
-  -   name: 'Human3'
-      mesh_name: 'human3.dae'
+#   -   name: 'Human3'
+#       mesh_name: 'human3.dae'
 
-  -   name: 'Human4'
-      mesh_name: 'human4.dae'
+#   -   name: 'Human4'
+#       mesh_name: 'human4.dae'
 
-  -   name: 'Human5'
-      mesh_name: 'human5.dae'
+#   -   name: 'Human5'
+#       mesh_name: 'human5.dae'
 
-  -   name: 'Human7'
-      mesh_name: 'human7.dae'
+#   -   name: 'Human7'
+#       mesh_name: 'human7.dae'
 
-  -   name: 'Human8'
-      mesh_name: 'human8.dae'
+#   -   name: 'Human8'
+#       mesh_name: 'human8.dae'
 
-  -   name: 'Human9'
-      mesh_name: 'human9.dae'
+#   -   name: 'Human9'
+#       mesh_name: 'human9.dae'
 
     #   TEST 
 
-  # -   name: 'MopCart4'
-  #     mesh_name: 'MopCart4.obj'
+  -   name: 'MopCart4'
+      mesh_name: 'MopCart4.obj'
 
-  # -   name: 'vase_large_3'
-  #     mesh_name: 'vase6.dae'
+  -   name: 'vase_large_3'
+      mesh_name: 'vase6.dae'
 
-  # -   name: 'Human10'
-  #     mesh_name: 'human10.dae'
+  -   name: 'Human10'
+      mesh_name: 'human10.dae'
     
-  # -   name: 'Human11'
-  #     mesh_name: 'human11.dae'
+  -   name: 'Human11'
+      mesh_name: 'human11.dae'
 
-  # -   name: 'Human12'
-  #     mesh_name: 'human12.dae'
+  -   name: 'Human12'
+      mesh_name: 'human12.dae'
 
-  # -   name: 'Human13'
-  #     mesh_name: 'human13.dae'
+  -   name: 'Human13'
+      mesh_name: 'human13.dae'
+
+  -   name: 'Human14'
+      mesh_name: 'human14.dae'
+
+  -   name: 'Human15'
+      mesh_name: 'human15.dae'
+
+  -   name: 'Human16'
+      mesh_name: 'human16.dae'
+
+  -   name: 'Human17'
+      mesh_name: 'human17.dae'
+
+  -   name: 'Human18'
+      mesh_name: 'human18.dae'
+
+  -   name: 'Human19'
+      mesh_name: 'human19.dae'
+
+  -   name: 'Human20'
+      mesh_name: 'human20.dae'
+
+  -   name: 'Human21'
+      mesh_name: 'human21.dae'
+
+  -   name: 'Human22'
+      mesh_name: 'human22.dae'
+
+  -   name: 'Human23'
+      mesh_name: 'human23.dae'
+
+  -   name: 'Human24'
+      mesh_name: 'human24.dae'
+
+  -   name: 'Human25'
+      mesh_name: 'human25.dae'
+
+  -   name: 'Human26'
+      mesh_name: 'human26.dae'
+
+  -   name: 'Human27'
+      mesh_name: 'human27.dae'
 
 
 
