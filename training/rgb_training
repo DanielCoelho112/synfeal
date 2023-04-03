@@ -219,8 +219,6 @@ def main():
 
             train_losses_per_batch.append(loss.item())
 
-        del rgb_image, target_pose  # free memory
-
         train_loss_epoch = float(np.mean(train_losses_per_batch))
 
         test_losses_per_batch = []
@@ -243,7 +241,6 @@ def main():
             if args['visualize']:
                 test_visualizer.draw(rgb_image, target_pose, predicted_pose)
 
-        del rgb_image, target_pose  # free memory
         test_loss_epoch = float(np.mean(test_losses_per_batch))
 
         # save losses
