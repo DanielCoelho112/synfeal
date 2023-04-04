@@ -184,7 +184,7 @@ def main():
         model.cuda()  # Send model to GPU
         criterion.cuda()  # Send criterion to GPU
         
-    for epoch in range(start_epoch, n_epochs):
+    for epoch in range(start_epoch, n_epochs+1):
         t0 = datetime.now()
         train_losses_per_batch = []
         model.train()
