@@ -78,6 +78,8 @@ class AutomaticDataCollection():
 
         self.lights = model3d_config['lights']
 
+        self.max_objects = model3d_config['max_objects']
+
         self.objects = model3d_config['objects']
 
         self.roll_initial = model3d_config['sun']['roll_initial']
@@ -179,8 +181,8 @@ class AutomaticDataCollection():
         final_poses = []
         object_names = []
         # Checks if there are more than 10 objects available if so only choose 10
-        if len(self.objects)>20:
-            objects_sampled = random.sample(self.objects,20)
+        if len(self.objects)>self.max_objects:
+            objects_sampled = random.sample(self.objects,self.max_objects)
         else:
             objects_sampled = self.objects
 

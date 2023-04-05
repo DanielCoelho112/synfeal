@@ -26,6 +26,8 @@ objects_resting_pose:
     y : 0
     z : -30
 
+max_objects: 20
+
 objects: 
 #   -   name: 'vase_blue'
 #       mesh_name: 'vase.dae'
