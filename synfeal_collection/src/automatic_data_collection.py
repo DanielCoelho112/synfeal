@@ -347,6 +347,7 @@ class AutomaticDataCollection():
         spawn_model.robot_namespace = ''
         spawn_model.initial_pose = object_position
         self.spawn_model_service(spawn_model)
+        rospy.sleep(8)
 
     def deleteModel(self,object_name):
         delete_model = DeleteModelRequest()
