@@ -4,11 +4,13 @@
 
 import random
 import os
+from os.path import exists
 from xml.parsers.expat import model
 
 import pandas as pd
 # 3rd-party
 import rospy
+import rospkg
 import tf
 import numpy as np
 import trimesh
@@ -31,7 +33,7 @@ from utils_ros import *
 
 class AutomaticDataCollection():
     
-    def __init__(self, model_name, seq, dbf=None, uvl=None, use_objects = None , model3d_config=None, fast=None, save_dataset=True, mode=None):
+    def __init__(self, model_name, seq, dbf=None, uvl=None, use_objects = None , random_objects = None , model3d_config=None, fast=None, save_dataset=True, mode=None):
         self.model_name = model_name  # model_name = 'localbot'
         self.dbf = dbf
     
@@ -101,6 +103,13 @@ class AutomaticDataCollection():
             self.mesh_collision = False
 
         if use_objects:
+            self.random_objects = random_objects
+            synfeal_collection_path = rospkg.RosPack().get_path('synfeal_collection')
+            poses_config_path = f'{synfeal_collection_path}/model3d_config/santuario_poses.yaml'
+            if exists(poses_config_path):
+                with open(poses_config_path) as f:
+                    poses_config = yaml.load(f, Loader=SafeLoader)
+                self.object_poses = poses_config['object_poses']
             # Stores the resting pose for the objects when not in use
             self.resting_pose = Pose()
             self.resting_pose.position.x = model3d_config['objects_resting_pose']['x']
@@ -180,28 +189,35 @@ class AutomaticDataCollection():
     def generateRandomPoseInsideMesh(self , camera_poses = [Pose()], manager = []):
         final_poses = []
         object_names = []
-        # Checks if there are more than 10 objects available if so only choose 10
+        # Checks if there are more than 10 objects available if so only choose total number of objects
         if len(self.objects)>self.max_objects:
             objects_sampled = random.sample(self.objects,self.max_objects)
         else:
             objects_sampled = self.objects
 
+        poses = self.object_poses.copy()
         for object in objects_sampled:
             print(f'Generating pose for {object["name"]}')
             while True:
                 p = self.generateRandomPose()
-                translation = np.array([p.position.x, p.position.y, p.position.z])
-                object_mesh = object['mesh'].copy()
-                # TODO perform this transformation in the convex hull
-                rotation_matrix = trimesh.transformations.quaternion_matrix([0, 0, p.orientation.z, p.orientation.w])
-                object_mesh.apply_transform(rotation_matrix)
-                object_mesh.apply_translation(translation)
-                points = trimesh.convex.hull_points(object_mesh)
-                del object_mesh # this variable lead to a memory leak
-                is_inside = self.checkInsideMesh(points) # Check if the object is inside the mesh
-                # If the object is not inside the mesh, try again
-                if not is_inside:
-                    continue
+                if self.random_objects or len(poses)<=0:
+                    translation = np.array([p.position.x, p.position.y, p.position.z])
+                    object_mesh = object['mesh'].copy()
+                    rotation_matrix = trimesh.transformations.quaternion_matrix([0, 0, p.orientation.z, p.orientation.w])
+                    object_mesh.apply_transform(rotation_matrix)
+                    object_mesh.apply_translation(translation)
+                    points = trimesh.convex.hull_points(object_mesh)
+                    del object_mesh # this variable lead to a memory leak
+                    is_inside = self.checkInsideMesh(points) # Check if the object is inside the mesh
+                    # If the object is not inside the mesh, try again
+                    if not is_inside:
+                        continue
+                else:
+                    pose = random.sample(poses,1)
+                    p.position.x = pose[0]['pose'][0]
+                    p.position.y = pose[0]['pose'][1]
+                    p.position.z = pose[0]['pose'][2]
+                    poses.pop(poses.index(pose[0]))
                 # Check if the object collides with the camera
                 valid = True
                 for camera_pose in camera_poses:
@@ -244,6 +260,7 @@ class AutomaticDataCollection():
                 object_names.append(object['name'])
                 break # Goes to the next object
         
+        del poses
         print(f'{Fore.GREEN}Generated poses for {len(final_poses)} objects{Style.RESET_ALL}')
         manager.append(final_poses)
         manager.append(object_names)

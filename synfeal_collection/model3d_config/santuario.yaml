@@ -158,7 +158,6 @@ objects:
       mesh_name: 'human27.dae'
 
 
-
 lights:
   -   name: 'user_point_light_0'
       pose: [1.673773, -1.662100, 2.459146, 0, -0, 0]
