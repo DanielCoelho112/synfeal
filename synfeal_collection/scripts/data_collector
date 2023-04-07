@@ -148,7 +148,7 @@ def main():
                 # Set the objects pose
                 for idx,pose in enumerate(objects_pose):
                     data_collector.setPose(objects_name[idx] , pose)
-                    objects_poses.append({'pose': [pose.position.x, pose.position.y, float(pose.position.z+0.2), 0, 0, 0]})
+                    # objects_poses.append({'pose': [pose.position.x, pose.position.y, float(pose.position.z+0.2), 0, 0, 0]})
                     rospy.sleep(0.4)
                 rospy.sleep(2)
                 
@@ -184,8 +184,8 @@ def main():
                 rospy.sleep(2)
             print('final destination arrived')
             if data_collector.getFrameIdx() >= args['number_of_frames']:
-                with open(f'{synfeal_collection_path}/model3d_config/poses.yaml', 'w') as file:
-                    yaml.dump(objects_poses, file)
+                # with open(f'{synfeal_collection_path}/model3d_config/poses.yaml', 'w') as file:
+                #     yaml.dump(objects_poses, file)
                 print(f'{Fore.GREEN}Finished generating dataset{Style.RESET_ALL}')
                 if args['use_objects']:
                     proc.join()
