@@ -105,7 +105,7 @@ class AutomaticDataCollection():
         if use_objects:
             self.random_objects = random_objects
             synfeal_collection_path = rospkg.RosPack().get_path('synfeal_collection')
-            poses_config_path = f'{synfeal_collection_path}/model3d_config/santuario_poses.yaml'
+            poses_config_path = f'{synfeal_collection_path}/model3d_config/{name_model3d_config}_poses.yaml'
             if exists(poses_config_path):
                 with open(poses_config_path) as f:
                     poses_config = yaml.load(f, Loader=SafeLoader)
