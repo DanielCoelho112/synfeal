@@ -461,7 +461,7 @@ class AutomaticDataCollection():
             self.setSunLight(roll, pitch, yaw ,cast_shadows=False)
         else:
             attenuation_quadratic = 1000
-            self.setSunLight(roll, pitch, yaw , cast_shadows=False)
+            self.setSunLight(roll, pitch, yaw , cast_shadows=True)
 
         self.setLight(attenuation_quadratic)
 
