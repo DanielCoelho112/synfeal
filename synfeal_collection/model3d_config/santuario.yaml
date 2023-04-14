@@ -169,9 +169,9 @@ lights:
       pose: [-2.822533, 4.270349, -0.034578, 0, -0, 0]
 
 light:
-  att_initial: 0.01
-  att_min: 0.0
-  att_max: 0.1
+  att_initial: 1.0
+  att_min: 0.1
+  att_max: 1.0
 sun:
   roll_initial: 0.785
   pitch_initial: 0.0

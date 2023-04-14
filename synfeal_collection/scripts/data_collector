@@ -171,8 +171,9 @@ def main():
                 data_collector.setPose('localbot' , pose)
                 # Lights
                 if args['use_variable_lights']:
-                    data_collector.setLight(step_lights[idx])
-                    data_collector.setSunLight(pitch=pitch[idx] , yaw=yaw[idx]  , time = times[idx])
+                    # data_collector.setLight(step_lights[idx])
+                    # data_collector.setSunLight(pitch=pitch[idx] , yaw=yaw[idx]  , time = times[idx])
+                    data_collector.changeLights(step_lights[idx] , pitch=pitch[idx] , yaw=yaw[idx]  , time = times[idx])
                 if not args['fast']:
                     rospy.sleep(0.4) 
                 else:

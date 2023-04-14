@@ -19,7 +19,7 @@ from geometry_msgs.msg import Pose , Quaternion , Point , Vector3
 #from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 from gazebo_msgs.srv import SetModelState, GetModelState, SetModelStateRequest
-from gazebo_msgs.srv import SetLightProperties , SetLightPropertiesRequest , SpawnModel , SpawnModelRequest , DeleteModel , DeleteModelRequest
+from gazebo_msgs.srv import SetLightProperties , SetLightPropertiesRequest , DeleteLight , DeleteLightRequest , SpawnModel , SpawnModelRequest , DeleteModel , DeleteModelRequest
 from colorama import Fore, Style
 from scipy.spatial.transform import Rotation as R
 import pvlib
@@ -51,6 +51,9 @@ class AutomaticDataCollection():
 
         rospy.wait_for_service('/gazebo/delete_model')
         self.delete_model_service = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
+
+        rospy.wait_for_service('/gazebo/delete_light')
+        self.delete_light_service = rospy.ServiceProxy('/gazebo/delete_light', DeleteLight)
 
         # create instance to save dataset
         if save_dataset:
@@ -409,7 +412,6 @@ class AutomaticDataCollection():
             light_msg.direction = Vector3(1e-6,1e-6,-1)
             self.modify_light(light_msg) 
 
-
     def getSunAzimuth(self , n_steps , random): 
         # Definition of a time range of simulation
         time_change = datetime.timedelta(minutes=20*n_steps)
@@ -425,12 +427,7 @@ class AutomaticDataCollection():
         return solpos_nrel['azimuth'], solpos_nrel['zenith'] , times
 
     
-    def setSunLight(self, roll = 0, pitch = 0, yaw = 0 , time=0):
-        if time.hour > 18  or time.hour < 6:
-            roll = 0
-            pitch = 0
-            yaw = 0
-
+    def setSunLight(self, roll = 0, pitch = 0, yaw = 0 , cast_shadows = True):
         # Required to make the service call to gazebo
         pose = Pose()
         pose.position = Point(0,0,5)
@@ -444,7 +441,7 @@ class AutomaticDataCollection():
         # Creates the light message to be sent to the gazebo service
         light = SetLightPropertiesRequest()
         light.light_name = 'sun'
-        light.cast_shadows = True
+        light.cast_shadows = cast_shadows
         light.diffuse = ColorRGBA(0.8,0.8,0.8,1)
         light.specular = ColorRGBA(0.2,0.2,0.2,1)
         light.attenuation_constant = 0.9
@@ -455,6 +452,18 @@ class AutomaticDataCollection():
 
         # Creates the service and sends the light message
         self.modify_light(light)
+
+    def changeLights(self, attenuation_quadratic ,  roll = 0, pitch = 0, yaw = 0 , time=0):
+        if time.hour > 19  or time.hour < 8:
+            roll = 0
+            pitch = 0
+            yaw = 0
+            self.setSunLight(roll, pitch, yaw ,cast_shadows=False)
+        else:
+            attenuation_quadratic = 1000
+            self.setSunLight(roll, pitch, yaw , cast_shadows=False)
+
+        self.setLight(attenuation_quadratic)
 
 
     def checkCollision(self, initial_pose, final_pose):
