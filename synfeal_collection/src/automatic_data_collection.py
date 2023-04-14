@@ -4,11 +4,13 @@
 
 import random
 import os
+from os.path import exists
 from xml.parsers.expat import model
 
 import pandas as pd
 # 3rd-party
 import rospy
+import rospkg
 import tf
 import numpy as np
 import trimesh
@@ -17,8 +19,8 @@ from geometry_msgs.msg import Pose , Quaternion , Point , Vector3
 #from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 from gazebo_msgs.srv import SetModelState, GetModelState, SetModelStateRequest
-from gazebo_msgs.srv import SetLightProperties , GetLightProperties , SetLightPropertiesRequest , GetLightPropertiesRequest 
-from colorama import Fore
+from gazebo_msgs.srv import SetLightProperties , SetLightPropertiesRequest , SpawnModel , SpawnModelRequest , DeleteModel , DeleteModelRequest
+from colorama import Fore, Style
 from scipy.spatial.transform import Rotation as R
 import pvlib
 from pvlib.location import Location
@@ -30,20 +32,25 @@ from utils_ros import *
 
 
 class AutomaticDataCollection():
-
-    def __init__(self, model_name, seq, dbf=None, uvl=None, model3d_config=None, fast=None, save_dataset=True, mode=None):
-        rospy.wait_for_service('/gazebo/set_model_state')
-        self.set_state_service = rospy.ServiceProxy(
-            '/gazebo/set_model_state', SetModelState)
+    
+    def __init__(self, model_name, seq, dbf=None, uvl=None, use_objects = None , random_objects = None , model3d_config=None, fast=None, save_dataset=True, mode=None):
         self.model_name = model_name  # model_name = 'localbot'
         self.dbf = dbf
+    
+        rospy.wait_for_service('/gazebo/set_model_state')
+        self.set_state_service = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
 
         rospy.wait_for_service('/gazebo/get_model_state')
-        self.get_model_state_service = rospy.ServiceProxy(
-            '/gazebo/get_model_state', GetModelState)
+        self.get_model_state_service = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
         
         rospy.wait_for_service('/gazebo/set_light_properties')
         self.modify_light = rospy.ServiceProxy('/gazebo/set_light_properties', SetLightProperties)
+
+        rospy.wait_for_service('/gazebo/spawn_sdf_model')
+        self.spawn_model_service = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
+
+        rospy.wait_for_service('/gazebo/delete_model')
+        self.delete_model_service = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
 
         # create instance to save dataset
         if save_dataset:
@@ -73,6 +80,10 @@ class AutomaticDataCollection():
 
         self.lights = model3d_config['lights']
 
+        self.max_objects = model3d_config['max_objects']
+
+        self.objects = model3d_config['objects']
+
         self.roll_initial = model3d_config['sun']['roll_initial']
         self.pitch_initial = model3d_config['sun']['pitch_initial']
         self.yaw_initial = model3d_config['sun']['yaw_initial']
@@ -82,23 +93,64 @@ class AutomaticDataCollection():
         self.use_collision = model3d_config['collision']['use']
         self.min_cam_dist = model3d_config['collision']['min_camera_distance']
 
+        self.path=os.environ.get("SYNFEAL_DATASET")
 
+        # Load meshes
         if self.use_collision:
-            path=os.environ.get("SYNFEAL_DATASET")
             self.mesh_collision = trimesh.load(
-                f'{path}/models_3d/localbot/{name_model3d_config}/{name_model3d_config}_collision.dae', force='mesh')
+                f'{self.path}/models_3d/localbot/{name_model3d_config}/{name_model3d_config}_collision.dae', force='mesh')
         else:
             self.mesh_collision = False
 
+        if use_objects:
+            self.random_objects = random_objects
+            synfeal_collection_path = rospkg.RosPack().get_path('synfeal_collection')
+            poses_config_path = f'{synfeal_collection_path}/model3d_config/{name_model3d_config}_poses.yaml'
+            if exists(poses_config_path):
+                with open(poses_config_path) as f:
+                    poses_config = yaml.load(f, Loader=SafeLoader)
+                self.object_poses = poses_config['object_poses']
+            # Stores the resting pose for the objects when not in use
+            self.resting_pose = Pose()
+            self.resting_pose.position.x = model3d_config['objects_resting_pose']['x']
+            self.resting_pose.position.y = model3d_config['objects_resting_pose']['y']
+            self.resting_pose.position.z = model3d_config['objects_resting_pose']['z']
+            # Loads the mesh of the model
+            for object in self.objects:
+                object['mesh'] = trimesh.load(f'{self.path}/models_3d/localbot/Objects/{object["name"]}/meshes/{object["mesh_name"]}', force='mesh')
+
         # set initial pose
-        print('setting initial pose...')
-        x = model3d_config['initial_pose']['x']
-        y = model3d_config['initial_pose']['y']
-        z = model3d_config['initial_pose']['z']
-        rx = model3d_config['initial_pose']['rx']
-        ry = model3d_config['initial_pose']['ry']
-        rz = model3d_config['initial_pose']['rz']
-        quaternion = tf.transformations.quaternion_from_euler(rx, ry, rz)
+        if not self.save_dataset.continue_dataset:
+            print('Setting initial pose...')
+            x = model3d_config['initial_pose']['x']
+            y = model3d_config['initial_pose']['y']
+            z = model3d_config['initial_pose']['z']
+            rx = model3d_config['initial_pose']['rx']
+            ry = model3d_config['initial_pose']['ry']
+            rz = model3d_config['initial_pose']['rz']
+            quaternion = tf.transformations.quaternion_from_euler(rx, ry, rz)
+        else:
+            print('Continuing from last pose...')
+            pose_path = f'{self.path}/datasets/localbot/{seq}/frame-{(self.save_dataset.frame_idx-1):05d}.pose.txt'
+            with open(pose_path) as f:
+                pose_yaml = yaml.load(f, Loader=SafeLoader)
+                # important to associate with the dataset to be created.
+                pose_yaml_line = pose_yaml.split(' ')
+                transformation_matrix = np.array([])
+                for line in pose_yaml_line:
+                    line_matrix = np.array([float(value) for value in line.split(',')])
+                    
+                    transformation_matrix = np.concatenate((transformation_matrix,line_matrix),axis=0)
+
+                transformation_matrix = np.reshape(transformation_matrix , (4,4))
+                transformation_matrix[2,3] = transformation_matrix[2,3] + 0.0125
+                _ , _ , angles , translate , _ = tf.transformations.decompose_matrix(transformation_matrix)
+                x = translate[0]
+                y = translate[1]
+                z = translate[2]
+
+            quaternion = tf.transformations.quaternion_from_euler(angles[1],-(angles[0]+math.pi/2),angles[2]+math.pi/2)
+
         p = Pose()
         p.position.x = x
         p.position.y = y
@@ -107,7 +159,7 @@ class AutomaticDataCollection():
         p.orientation.y = quaternion[1]
         p.orientation.z = quaternion[2]
         p.orientation.w = quaternion[3]
-        self.setPose(p)
+        self.setPose(model_name , p)
         rospy.sleep(1)
 
     def generateRandomPose(self):
@@ -133,10 +185,93 @@ class AutomaticDataCollection():
         p.orientation.w = quaternion[3]
 
         return p
+    
+    def generateRandomPoseInsideMesh(self , camera_poses = [Pose()], manager = []):
+        final_poses = []
+        object_names = []
+        # Checks if there are more than 10 objects available if so only choose total number of objects
+        if len(self.objects)>self.max_objects:
+            objects_sampled = random.sample(self.objects,self.max_objects)
+        else:
+            objects_sampled = self.objects
 
-    def generatePath(self, final_pose=None):
+        poses = self.object_poses.copy()
+        for object in objects_sampled:
+            print(f'Generating pose for {object["name"]}')
+            while True:
+                p = self.generateRandomPose()
+                if self.random_objects or len(poses)<=0:
+                    translation = np.array([p.position.x, p.position.y, p.position.z])
+                    object_mesh = object['mesh'].copy()
+                    rotation_matrix = trimesh.transformations.quaternion_matrix([0, 0, p.orientation.z, p.orientation.w])
+                    object_mesh.apply_transform(rotation_matrix)
+                    object_mesh.apply_translation(translation)
+                    points = trimesh.convex.hull_points(object_mesh)
+                    del object_mesh # this variable lead to a memory leak
+                    is_inside = self.checkInsideMesh(points) # Check if the object is inside the mesh
+                    # If the object is not inside the mesh, try again
+                    if not is_inside:
+                        continue
+                else:
+                    pose = random.sample(poses,1)
+                    p.position.x = pose[0]['pose'][0]
+                    p.position.y = pose[0]['pose'][1]
+                    p.position.z = pose[0]['pose'][2]
+                    poses.pop(poses.index(pose[0]))
+                # Check if the object collides with the camera
+                valid = True
+                for camera_pose in camera_poses:
+                    if abs(p.position.x - camera_pose.position.x) < 1 and abs(p.position.y - camera_pose.position.y) < 1:
+                        valid = False
+                        print(f'{Fore.RED}Collision with camera{Style.RESET_ALL} Generating new pose...')
+                        break
+                if valid == False:
+                    continue
+                # Check if the object collides with previous objects
+                valid = True
+                for pose in final_poses:
+                    if abs(pose.position.x - p.position.x) < 1 and abs(pose.position.y - p.position.y) < 1:
+                        valid = False
+                        print(f'{Fore.RED}Collision with another object{Style.RESET_ALL} Generating new pose...')
+                        break
+                if valid == False:
+                    continue
+                # If everything is ok, add the object to the list
+                final_pose = p
+                final_pose.orientation.x = 0
+                final_pose.orientation.y = 0
+                p1_xyz = np.array([p.position.x, p.position.y, p.position.z])
+                p2_xyz = np.array([final_pose.position.x, final_pose.position.y, final_pose.position.z-5])
 
-        initial_pose = self.getPose().pose
+                orientation = p2_xyz - p1_xyz
+                norm_orientation = np.linalg.norm(orientation)
+                orientation = orientation / norm_orientation
+
+                ray_origins = np.array([p1_xyz])
+                ray_directions = np.array([orientation])
+                # Check the collision with the mesh
+                collisions, _, _ = self.mesh_collision.ray.intersects_location(
+                    ray_origins=ray_origins,
+                    ray_directions=ray_directions)
+                # If there is a collision, move the object to the closest collision, floor.
+                closest_collision_to_p1 = self.getClosestCollision(collisions, p1_xyz)
+                final_pose.position.z = final_pose.position.z - closest_collision_to_p1
+                final_poses.append(final_pose)
+                object_names.append(object['name'])
+                break # Goes to the next object
+        
+        del poses
+        print(f'{Fore.GREEN}Generated poses for {len(final_poses)} objects{Style.RESET_ALL}')
+        manager.append(final_poses)
+        manager.append(object_names)
+
+        return manager
+
+    def generatePath(self, model_name , final_pose=None, init_pose=None):
+        if init_pose == None:
+            initial_pose = self.getPose(model_name).pose
+        else:
+            initial_pose = init_pose
 
         if final_pose == None:
             final_pose = self.generateRandomPose()
@@ -197,14 +332,15 @@ class AutomaticDataCollection():
 
         return step_poses
 
-    def getPose(self):
-        return self.get_model_state_service(self.model_name, 'world')
+    def getPose(self , model_name):
+        return self.get_model_state_service(model_name, 'world')
 
-    def setPose(self, pose):
-
+    def setPose(self, model_name , pose = None):
+        # If no pose is given, set the pose to the resting pose
+        if pose == None:
+            pose = self.resting_pose
         req = SetModelStateRequest()  # Create an object of type SetModelStateRequest
-        req.model_state.model_name = self.model_name
-
+        req.model_state.model_name = model_name
         req.model_state.pose.position.x = pose.position.x
         req.model_state.pose.position.y = pose.position.y
         req.model_state.pose.position.z = pose.position.z
@@ -213,8 +349,27 @@ class AutomaticDataCollection():
         req.model_state.pose.orientation.z = pose.orientation.z
         req.model_state.pose.orientation.w = pose.orientation.w
         req.model_state.reference_frame = 'world'
+        try:
+            response = self.set_state_service(req.model_state)
+            if response.status_message == "SetModelState: model does not exist":
+                self.spawnModel(model_name, pose)
+  
+        except rospy.ServiceException as e:
+            print("Service call failed: %s" % e)
+     
+    def spawnModel(self,object_name,object_position):
+        spawn_model = SpawnModelRequest()
+        spawn_model.model_name = object_name
+        spawn_model.model_xml = open(f'{self.path}/models_3d/localbot/Objects/{object_name}/model.sdf', 'r').read()
+        spawn_model.robot_namespace = ''
+        spawn_model.initial_pose = object_position
+        self.spawn_model_service(spawn_model)
+        rospy.sleep(8)
 
-        self.set_state_service(req.model_state)
+    def deleteModel(self,object_name):
+        delete_model = DeleteModelRequest()
+        delete_model.model_name = object_name
+        self.delete_model_service(delete_model)
 
     def generateLights(self, n_steps, random):
         lights = []
@@ -254,13 +409,6 @@ class AutomaticDataCollection():
             light_msg.direction = Vector3(1e-6,1e-6,-1)
             self.modify_light(light_msg) 
 
-            # my_str = f'name: "{name}" \nattenuation_quadratic: {light}'
-
-            # with open('/tmp/set_light.txt', 'w') as f:
-            #     f.write(my_str)
-
-            # os.system(
-            #     f'gz topic -p /gazebo/santuario/light/modify -f /tmp/set_light.txt')
 
     def getSunAzimuth(self , n_steps , random): 
         # Definition of a time range of simulation
@@ -375,6 +523,10 @@ class AutomaticDataCollection():
             else:
                 print(f'{Fore.GREEN} NO Collision Detected {Fore.RESET}')
                 return False
+            
+    def checkInsideMesh(self,points):
+        result = self.mesh_collision.contains(points)
+        return result.all()
 
     def checkCollisionVis(self, initial_pose, final_pose):
         if self.use_collision is False:

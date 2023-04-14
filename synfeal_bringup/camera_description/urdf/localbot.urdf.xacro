@@ -25,6 +25,10 @@
   <xacro:include filename="$(find synfeal_bringup)/camera_description/urdf/localbot.gazebo.macro.xacro"/>
   <xacro:gazebo_macro color="$(arg color)" laser_visual="false" camera_visual="false" imu_visual="true"/>
 
+  <material name="marker_orange">
+    <color rgba="0.76 0.92 0.81 1"/>
+  </material>
+
 
   <link name="base_footprint"/>
 
@@ -36,6 +40,44 @@
 
   <link name="base_link">
   </link>
+
+  <joint name="marker_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="marker_link" />
+    <origin xyz="0.01 0.00 0.00" rpy="1.57 0 -1.57"/>
+  </joint>
+
+  <link name="marker_link">
+    <visual>
+      <transparency>1</transparency>
+      <geometry>
+        <mesh filename="package://synfeal_bringup/camera_description/meshes/cameraicon/frustrum_frame.obj"/> 
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="marker_inside_joint" type="fixed">
+    <parent link="marker_link"/>
+    <child link="marker_inside_link" />
+    <origin xyz="0.00 0.00 0.00" rpy="0 0 0"/>
+  </joint> 
+
+  <link name="marker_inside_link">
+    <visual>
+      <transparency>1</transparency>
+      <geometry>
+        <mesh filename="package://synfeal_bringup/camera_description/meshes/cameraicon/frustrum.obj"/> 
+      </geometry>
+    </visual>
+  </link>
+
+  <gazebo reference="marker_link">
+    <material>Gazebo/BlackTransparent</material>
+  </gazebo>
+
+  <gazebo reference="marker_inside_link">
+    <material>Gazebo/GreyTransparent</material>
+  </gazebo>
 
   <xacro:kinect_camera name='kinect' parent="base_link">
     <origin xyz="0.00 0.00 0.00" rpy="0 0.0 0" />

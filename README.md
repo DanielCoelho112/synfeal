@@ -35,7 +35,7 @@ For a demonstration of the data collection procedure, see the following video:
 
 Add to zsh or bash file:
 
-    export GAZEBO_MODEL_PATH="`rospack find synfeal_bringup`/models:${GAZEBO_MODEL_PATH}":${HOME}
+    export GAZEBO_MODEL_PATH="`rospack find synfeal_bringup`/models:${GAZEBO_MODEL_PATH}":${HOME}/models_3d/localbot
     export SYNFEAL_DATASET=${HOME}
     export PYTHONPATH="$PYTHONPATH:/home/user/catkin_ws/src/synfeal"
 Where /home/user/catkin_ws/src/synfeal is the location of synfeal. 
