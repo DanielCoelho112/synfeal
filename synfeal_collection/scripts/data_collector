@@ -98,6 +98,8 @@ def main():
                 # Set the objects pose
                 for idx,pose in enumerate(objects_pose):
                     data_collector.setPose(objects_name[idx] , pose)
+                    rospy.sleep(0.4)
+                rospy.sleep(2)
                 
                 pose_next = data_collector.generateRandomPose() # Generate the next camera poses for the next loop
                 manager = multiprocessing.Manager()
