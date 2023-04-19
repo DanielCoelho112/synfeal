@@ -42,6 +42,7 @@ def main():
         print(f'Processed {filename}...')
         rgb_image.save(f'{dataset_path}/{filename}.rgb.png')
 
-
+    print(f'{Fore.GREEN} Finished processing dataset! {Fore.RESET} Dataset path: {dataset_path}')
+    
 if __name__ == "__main__":
     main()
