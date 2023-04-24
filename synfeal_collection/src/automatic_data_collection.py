@@ -5,7 +5,6 @@
 import random
 import os
 from os.path import exists
-from xml.parsers.expat import model
 
 import pandas as pd
 # 3rd-party
@@ -19,7 +18,7 @@ from geometry_msgs.msg import Pose , Quaternion , Point , Vector3
 #from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 from gazebo_msgs.srv import SetModelState, GetModelState, SetModelStateRequest
-from gazebo_msgs.srv import SetLightProperties , SetLightPropertiesRequest , DeleteLight , DeleteLightRequest , SpawnModel , SpawnModelRequest , DeleteModel , DeleteModelRequest
+from gazebo_msgs.srv import SetLightProperties , SetLightPropertiesRequest , DeleteLight , SpawnModel , SpawnModelRequest , DeleteModel , DeleteModelRequest
 from colorama import Fore, Style
 from scipy.spatial.transform import Rotation as R
 import pvlib

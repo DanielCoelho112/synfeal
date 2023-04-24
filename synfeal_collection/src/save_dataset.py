@@ -3,6 +3,8 @@
 import glob
 import rospy
 import os
+from torchvision import transforms
+from PIL import Image as PILImage
 from visualization_msgs.msg import *
 from cv_bridge import CvBridge
 from tf.listener import TransformListener
@@ -42,7 +44,12 @@ class SaveDataset():
         else:
             print(f'{Fore.RED} {self.output_folder} already exists... Aborting SaveDataset initialization! {Fore.RESET}')
             exit(0)
+
+        self.rgb_transform = transforms.Compose([
+            transforms.Resize(400),
+        ])
         
+        self.resize_image = model3d_config['resize_image'] if model3d_config is not None else False
         name_model3d_config = model3d_config if model3d_config is not None else None 
          
         dt_now = datetime.now() # current date and time
@@ -121,6 +128,10 @@ class SaveDataset():
         
         transformation = self.getTransformation()
         image = self.getImage()
+
+        if self.resize_image:
+            image = self.rgb_transform(PILImage.fromarray(image))
+            image = np.array(image)
         
         
         filename = f'frame-{self.frame_idx:05d}'

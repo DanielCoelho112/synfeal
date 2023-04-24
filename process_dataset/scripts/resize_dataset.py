@@ -13,7 +13,7 @@ import yaml
 def main():
     parser = argparse.ArgumentParser(description='Create video from dataset')
     parser.add_argument('-d', '--dataset', type=str, required=True, help='Name of the dataset')
-    parser.add_argument('-cs', '--crop_size', type=int, default=300,
+    parser.add_argument('-cs', '--crop_size', type=int, default=400,
                         help='Size of the random and center crop.')
 
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
