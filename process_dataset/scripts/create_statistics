@@ -3,14 +3,11 @@
 # stdlib
 import sys
 import argparse
-import copy
 
 # 3rd-party
-import rospy
 from colorama import Fore, Style
 from dataset import Dataset
 from process_dataset.src.validate_dataset import ValidateDataset
-import numpy as np
 
 def main():    
     parser = argparse.ArgumentParser(description='Validate dataset')
