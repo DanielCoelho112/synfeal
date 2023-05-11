@@ -80,7 +80,7 @@ def main():
             transforms.RandomCrop(args['crop_size']),
             transforms.ToTensor(),
             transforms.Normalize(rgb_mean, rgb_std),
-            #transforms.RandomErasing()
+            transforms.RandomErasing(),
             transforms.ColorJitter(brightness=.5, hue=0)
         ])
     else:

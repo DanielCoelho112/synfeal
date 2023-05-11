@@ -46,7 +46,7 @@ class SaveDataset():
             exit(0)
 
         self.rgb_transform = transforms.Compose([
-            transforms.Resize(400),
+            transforms.Resize(350),
         ])
         
         self.resize_image = model3d_config['resize_image'] if model3d_config is not None else False
