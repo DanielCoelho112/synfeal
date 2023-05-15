@@ -25,7 +25,7 @@ def main():
     rgb_transform = transforms.Compose([
         transforms.ToTensor(),
         #transforms.RandomErasing(),
-        transforms.ColorJitter(brightness=.2, hue=0)
+        transforms.ColorJitter(brightness=[0.5,2], hue=0)
     ])
 
     tensor_to_pil = transforms.ToPILImage()

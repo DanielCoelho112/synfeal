@@ -43,15 +43,18 @@ def main():
 
     frame = cv2.imread(dataset[0])
     height, width, layers = frame.shape
+    print(f'Creating video with {len(dataset)} frames, at {args["fps"]} fps and resolution {width}x{height}')
 
-    video = cv2.VideoWriter(f'{output_path}/{args["output"]}.avi', 0, args['fps'], (width,height))
+    video = cv2.VideoWriter(f'{output_path}/{args["output"]}.avi', cv2.VideoWriter_fourcc(*'DIVX'), args['fps'], (width,height))
 
     for idx ,image in enumerate(dataset):
         print(f'Adding image {idx} to video')
         video.write(cv2.imread(image))
+        cv2.imshow('Video', cv2.imread(image))
+        cv2.waitKey(1)
 
-    cv2.destroyAllWindows()
     video.release()
+    cv2.destroyAllWindows()
     print(f'{Fore.GREEN}Video Saved{Style.RESET_ALL}, at {output_path}')
 
 
