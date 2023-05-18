@@ -79,9 +79,9 @@ def main():
             transforms.Resize(args['crop_size'] + 1),
             transforms.RandomCrop(args['crop_size']),
             transforms.ToTensor(),
+            transforms.ColorJitter(brightness=[0.5,2], hue=0),
+            #transforms.RandomErasing(),
             transforms.Normalize(rgb_mean, rgb_std),
-            transforms.RandomErasing(),
-            transforms.ColorJitter(brightness=[0.5,2], hue=0)
         ])
     else:
         rgb_transform_train = transforms.Compose([
