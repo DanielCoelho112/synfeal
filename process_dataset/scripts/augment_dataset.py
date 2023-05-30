@@ -24,7 +24,7 @@ def main():
   
     rgb_transform = transforms.Compose([
         transforms.ToTensor(),
-        #transforms.RandomErasing(),
+        transforms.RandomErasing(),
         transforms.ColorJitter(brightness=[0.5,2], hue=0)
     ])
 
@@ -84,17 +84,17 @@ def main():
     dataset = sorted(glob.glob(f'{dataset_path}/*.png'))
 
     for idx ,image in enumerate(dataset):
-        rgb_image = Image.open(image)
-        rgb_image = rgb_transform(rgb_image)
-        rgb_image = tensor_to_pil(rgb_image)
-        filename = f'frame-{idx:05d}'
-        print(f'Processed {filename}...')
-        rgb_image.save(f'{output_path}/{filename}.rgb.png')
-        with open(f'{dataset_path}/{filename}.pose.txt','r') as firstfile, open(f'{output_path}/{filename}.pose.txt','a') as secondfile:
-            # read content from first file
-            for line in firstfile:
-                # append content to second file
-                secondfile.write(line)
+        with Image.open(image) as rgb_image:
+            rgb_image = rgb_transform(rgb_image)
+            rgb_image = tensor_to_pil(rgb_image)
+            filename = f'frame-{idx:05d}'
+            print(f'Processed {filename}...')
+            rgb_image.save(f'{output_path}/{filename}.rgb.png')
+            with open(f'{dataset_path}/{filename}.pose.txt','r') as firstfile, open(f'{output_path}/{filename}.pose.txt','a') as secondfile:
+                # read content from first file
+                for line in firstfile:
+                    # append content to second file
+                    secondfile.write(line)
 
 
 if __name__ == "__main__":
