@@ -80,7 +80,7 @@ def main():
             transforms.RandomCrop(args['crop_size']),
             transforms.ToTensor(),
             transforms.ColorJitter(brightness=[0.5,2], hue=0),
-            # transforms.RandomErasing(),
+            transforms.RandomErasing(),
             transforms.Normalize(rgb_mean, rgb_std),
         ])
     else:
@@ -114,11 +114,7 @@ def main():
         exit(0)
 
     batch_size = args['batch_size']
-    if not 'PoseLSTM' in args['init_model']:
-        train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True , num_workers=args['num_workers'])
-    else:
-        print(f'{Fore.YELLOW} PoseLSTM() is used, so shuffle is set to False {Fore.RESET}')
-        train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=False , num_workers=args['num_workers'])
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=False , num_workers=args['num_workers'])
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False , num_workers=args['num_workers'])
 
     # start training, resume training, or abandon training?
