@@ -60,8 +60,17 @@ where mode can be one option of the following: **interactive**, **random**, **pa
 
 Adapt the yaml file according to your needs.
 
-Activate the flag -f just to collect the RGB image and the corresponding pose.
+Activate the flag **-f** just to collect the RGB image and the corresponding pose.
 
+In case you want to add objects moving through the scene add the flag **-obj**. If no object database is available or if you want to place the objects randomly add the flag **-ro**.
+
+If you want to add variations in the light conditions add the flag -uvl and in case the variations in the light's conditions use the flag **-rl**.
+
+In case you want to replicate the camera movement of a previous dataset, run:
+
+```
+ rosrun synfeal_collection data_collector -nf 100000 -m repeat -mc 'santuario.yaml' -s name_of_the_dataset -s_prev name_of_the_previous_dataset
+```
 
 ## How to process the dataset?
 
@@ -69,7 +78,7 @@ Run:
 
     cd synfeal/process_dataset/scripts && ./process_dataset -d name_of_the_dataset -s '_processed' -fi 0.5 -pts 1000
 
-Or, in the case of when -f is activated, run:
+Or, in the case of when **-f** is activated, run:
 
     cd synfeal/process_dataset/scripts && ./create_statistics -d name_of_the_dataset
 
@@ -85,6 +94,8 @@ If you want to use the PoseNet with Beta Loss run:
     ./rgb_training -fn posenet_beta_lab024_50k -mn posenetgooglenet -train_set seq41 -test_set seq42 -n_epochs 300 -batch_size 45  -loss 'BetaLoss(100)' -c -im 'PoseNetGoogleNet(True,0.8)' -lr_step_size 60 -lr 1e-4 -lr_gamma 0.5 -wd 1e-2 -gpu 2
 
 For informations on how to use other models, see https://github.com/DanielCoelho112/synfeal/blob/main/models/readme.md#L5
+
+If you want to add data augmentation containing Random Erasing and Color Jitter add the flag **-augm**.
 
 
 ## How to produce the results?
