@@ -3,7 +3,7 @@ colorama==0.4.3
 opencv_contrib_python==4.5.4.60
 torchvision==0.7.0
 pandas==0.25.3
-torch_summary==1.4.5
+torchinfo
 rospy==1.15.14
 scipy==1.3.3
 numpy==1.17.4

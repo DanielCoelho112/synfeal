@@ -5,6 +5,25 @@
       <background>1 1 1 1</background>
       <shadows>0</shadows>
     </scene>
+    <gravity>0 0 0</gravity>
+    <physics type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>2000</real_time_update_rate>
+      <ode>
+          <solver>
+              <type>quick</type>
+              <iters>0</iters> <!-- 0 iterations to stop physics -->
+              <sor>1.4</sor>
+          </solver>
+          <constraints>
+              <cfm>0</cfm>
+              <erp>1</erp>
+              <contact_max_correcting_vel>0</contact_max_correcting_vel>
+              <contact_surface_layer>0</contact_surface_layer>
+          </constraints>
+      </ode>
+  </physics>
     <light name='sun' type='directional'>
       <cast_shadows>1</cast_shadows>
       <pose>0 0 10 0 -0 0</pose>
@@ -58,17 +77,6 @@
       </camera>
     </gui>
 
-     <!-- <model name='boiler'>
-        <pose>0 0 0 0 0 0</pose>
-        <scale>1 1 1</scale>
-        <link name='boiler_link'>
-          <pose>0 0 0 0 0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model> -->
-
     <model name='santuario'>
           <static>1</static>
           <link name='santuario_link'>
@@ -77,15 +85,14 @@
             <visual name='santuario_visual'>
               <geometry>
                 <mesh>
-                  <!-- <uri>file:///home/danc/models_3d/santuario/santuario.dae</uri> -->
-                  <uri>model:///models_3d/localbot/santuario/santuario.dae</uri>
+                  <uri>model:///santuario/santuario.dae</uri>
                 </mesh>
               </geometry>
             </visual>
-            <!-- <collision name='room_024_collision'>
+            <collision name='santuario_collision'>
               <geometry>
                 <mesh>
-                  <uri>model://room_024/room_024.dae</uri>
+                  <uri>model://santuario/santuario_collision.dae</uri>
                 </mesh>
               </geometry>
               <max_contacts>10</max_contacts>
@@ -103,12 +110,13 @@
                   </torsional>
                 </friction>
               </surface>
-            </collision> -->
+      </collision>
             <self_collide>0</self_collide>
             <enable_wind>0</enable_wind>
             <kinematic>0</kinematic>
           </link>
           <pose>0 0 0 0 0 0 0</pose>
-        </model>
+    </model>
+
   </world>
 </sdf>

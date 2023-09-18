@@ -6,14 +6,16 @@ import matplotlib.pyplot as plt
 import argparse
 import sys
 import os
+from tqdm import tqdm
 import yaml
 import pickle
 
-from colorama import Fore
+from colorama import Fore, Style
 from datetime import datetime  # to track the time each epoch takes
 from torchvision import transforms
 
 from dataset import Dataset
+from visualization import Visualizer
 from models.loss_functions import BetaLoss, DynamicLoss
 from models.posenet import PoseNetGoogleNet, PoseNetResNet
 from models.poselstm import PoseLSTM
@@ -42,9 +44,15 @@ def main():
                         help='Decay of the learning rate after step size')
     parser.add_argument('-wd', '--weight_decay', type=float, default=0, help='L2 regularizer')
     parser.add_argument('-im', '--init_model', type=str, default='CNNDepth()',
-                        help='Decay of the learning rate after step size')
+                        help='Initial model choose between [PoseNetGoogleNet(), PoseNetResNet(), PoseLSTM(), HourglassBatch()]')
     parser.add_argument('-cs', '--crop_size', type=int, default=299,
                         help='Size of the random and center crop. For PoseNet/LSTM use 299, for Hourglass use 224')
+    parser.add_argument('-augm', '--augmentation', action='store_true', 
+                        help='Performs Data Augmentation on the dataset')
+    parser.add_argument('-nw', '--num_workers', type=int, default=4, 
+                        help='How many subprocesses to use for data loading. 0 means that the data will be loaded in the main process.')
+    parser.add_argument('-pff', '--prefetch_factor', type=int, default=2, 
+                        help='Number of batches loaded in advance by each worker')
 
     arglist = [x for x in sys.argv[1:] if not x.startswith('__')]
     args = vars(parser.parse_args(args=arglist))
@@ -63,13 +71,25 @@ def main():
     config_stats = Dataset(path_seq=args['training_set']).getConfig()['statistics']
     rgb_mean = [config_stats['R']['mean'], config_stats['G']['mean'], config_stats['B']['mean']]
     rgb_std = [config_stats['R']['std'], config_stats['G']['std'], config_stats['B']['std']]
-        
-    rgb_transform_train = transforms.Compose([
-        transforms.Resize(args['crop_size'] + 1),
-        transforms.RandomCrop(args['crop_size']),
-        transforms.ToTensor(),
-        transforms.Normalize(rgb_mean, rgb_std)
-    ])
+
+    # rgb_mean = [0.485, 0.456, 0.406]
+    # rgb_std = [0.229, 0.224, 0.225]
+    if args['augmentation']:    
+        rgb_transform_train = transforms.Compose([
+            transforms.Resize(args['crop_size'] + 1),
+            transforms.RandomCrop(args['crop_size']),
+            transforms.ToTensor(),
+            transforms.ColorJitter(brightness=[0.5,2], hue=0),
+            transforms.RandomErasing(),
+            transforms.Normalize(rgb_mean, rgb_std),
+        ])
+    else:
+        rgb_transform_train = transforms.Compose([
+            transforms.Resize(args['crop_size'] + 1),
+            transforms.CenterCrop(args['crop_size']),
+            transforms.ToTensor(),
+            transforms.Normalize(rgb_mean, rgb_std)
+        ])
     
     rgb_transform_test = transforms.Compose([
         transforms.Resize(args['crop_size'] + 1),
@@ -94,21 +114,30 @@ def main():
         exit(0)
 
     batch_size = args['batch_size']
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=False , num_workers=args['num_workers'])
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False , num_workers=args['num_workers'])
 
     # start training, resume training, or abandon training?
     if os.path.exists(folder_name):
-        print(f'Folder already exists! Do you want to resume training?')
-        ans = input("YES/no")
+        print(Fore.YELLOW + f'Folder already exists! Do you want to resume training?' + Style.RESET_ALL)
+        ans = input(Fore.YELLOW + "Y" + Style.RESET_ALL + "ES/" + Fore.YELLOW + "n" + Style.RESET_ALL + "o/"+ Fore.YELLOW + "o" + Style.RESET_ALL + "verwrite: ") # Asks the user if they want to resume training
         
         if ans.lower() in ['', 'yes','y']:
-            start_epoch, train_losses, test_losses, model = resumeTraining(folder_name)
-        else:
+            try:
+                torch.load(model_name)
+            except FileNotFoundError:
+                print(Fore.YELLOW + 'Folder empty' + Style.RESET_ALL)
+                ans = 'o'
+            else:
+                start_epoch, train_losses, test_losses, model = resumeTraining(folder_name)
+        if ans.lower() in ['overwrite', 'o']:
+            print(Fore.YELLOW + 'Overwriting.' + Style.RESET_ALL)
+            os.system('rm -rf ' + folder_name)
+        if ans.lower() not in ['', 'yes', 'y', 'overwrite', 'o']: # If the user does not want to resume training
             print(f'{Fore.RED} Terminating training... {Fore.RESET}')
             exit(0)
-    else:
-        print(f'Model Folder not found: {folder_name}. Starting from sratch.')
+    if not os.path.exists(folder_name) or ans.lower() in ['overwrite', 'o']: # If the model does not exist
+        print(f'Model Folder not found: {folder_name}. {Fore.YELLOW} Starting from sratch.{Style.RESET_ALL}')
         os.makedirs(folder_name)
         model = eval(args['init_model'])
         train_losses = []
@@ -123,7 +152,7 @@ def main():
     
     
     if args['summarize_model']:
-        summarizeModel(model, train_dataset[0][1])
+        summarizeModel(model, (args['batch_size'],3, args['crop_size'], args['crop_size']))
         
     # ----------------------------------
     # Define loss function
@@ -150,23 +179,22 @@ def main():
 
     first_time = True
     save_step = args['save_step'] # when to store the model
+    last_saved_epoch = 0
 
     if args['cuda']:
         model.cuda()  # Send model to GPU
         criterion.cuda()  # Send criterion to GPU
         
-    for epoch in range(start_epoch, n_epochs):
+    for epoch in range(start_epoch, n_epochs+1):
         t0 = datetime.now()
         train_losses_per_batch = []
-
-        for rgb_image, target_pose in train_loader:  # iterate batches
+        model.train()
+        for (rgb_image, target_pose) in tqdm(train_loader, total=len(train_loader), desc=Fore.GREEN + 'Training batches for Epoch ' + str(epoch) +  Style.RESET_ALL):  # iterate batches
             
             if args['cuda']:
-                rgb_image, target_pose = rgb_image.cuda(), target_pose.cuda()  # move data into GPU
-                
-            optimizer.zero_grad()  # Clears the gradients of all optimized tensors (always needed in the beginning of the training loop)
+                rgb_image, target_pose = rgb_image.cuda(), target_pose.cuda()  # move data into GP
 
-            model = model.train()  # Sets the module in training mode. For example, the dropout module can only be use in training mode.
+            #model = model.train()  # Sets the module in training mode. For example, the dropout module can only be use in training mode.
 
             if model.aux_logits:
             
@@ -186,7 +214,7 @@ def main():
                 pose = model(rgb_image)
                 pose = process_pose(pose)
                 loss = criterion(pose, target_pose)
-                
+            optimizer.zero_grad()  # Clears the gradients of all optimized tensors (always needed in the beginning of the training loop)
             loss.backward()  # Computes the gradient of current tensor w.r.t. graph leaves.
             optimizer.step()  # Performs a single optimization step (parameter update).
 
@@ -195,11 +223,12 @@ def main():
         train_loss_epoch = float(np.mean(train_losses_per_batch))
 
         test_losses_per_batch = []
-        for rgb_image, target_pose in test_loader:
+        model.eval()
+        for (rgb_image, target_pose) in tqdm(test_loader, total=len(test_loader), desc=Fore.GREEN + 'Testing batches for Epoch ' + str(epoch) +  Style.RESET_ALL):
             if args['cuda']:
                 rgb_image, target_pose = rgb_image.cuda(), target_pose.cuda()  # move data into GPU
 
-            model = model.eval()  # Sets the module in evaluation mode.
+            #model = model.eval()  # Sets the module in evaluation mode.
 
             predicted_pose = model(rgb_image)  # our model outputs the pose, and the transformations used
             predicted_pose = process_pose(predicted_pose)
@@ -207,6 +236,11 @@ def main():
             loss = criterion(predicted_pose, target_pose)
 
             test_losses_per_batch.append(loss.item())
+
+            if first_time: # Checks if the user wants to visualize the loss
+                test_visualizer = Visualizer('Test Images')
+            if args['visualize']:
+                test_visualizer.draw(rgb_image, target_pose, predicted_pose)
 
         test_loss_epoch = float(np.mean(test_losses_per_batch))
 
@@ -216,7 +250,7 @@ def main():
         
         dt = datetime.now() - t0
         print(
-            f'epoch {epoch + 1}/{n_epochs}, train_loss: {train_loss_epoch:.4f}, test_loss: {test_loss_epoch:.4f}, duration: {dt}')
+            f'epoch {epoch}/{n_epochs}, train_loss: {train_loss_epoch:.4f}, test_loss: {test_loss_epoch:.4f}, duration: {dt}')
         
         
         scheduler.step()
@@ -225,6 +259,7 @@ def main():
         # Visualization
         # ----------------------
         if args['visualize']:
+            plt.figure('Losses')
             if first_time:
                 hanle_train_plot = plt.plot(train_losses, label='train loss')
                 hanle_test_plot = plt.plot(test_losses, label='test loss')
@@ -242,16 +277,10 @@ def main():
         # ------------------
         # Saving of Model
         # ------------------
-        if (epoch+1)%save_step == 0:
-            
+        if (epoch)%save_step == 0:            
             # only save if test loss is lower than the previous saved!
             if test_loss_epoch < stored_test_loss_epoch:
-                
-                plt.figure()
-                plt.plot(train_losses, label='train loss')
-                plt.plot(test_losses, label='test loss')
-                plt.legend()
-                plt.savefig(f'{folder_name}/losses.png')
+                last_saved_epoch = epoch
                 # todo: in addition to save the state_dict of the model, we should also save the state_dict of the optimizer.
                 torch.save(model.state_dict(), model_name)
             
@@ -260,8 +289,9 @@ def main():
                         'date': dt_now.strftime("%d/%m/%Y, %H:%M:%S"),
                         'train_set': args['training_set'],
                         'test_set': args['testing_set'],
+                        'Augmentation' : args['augmentation'],
                         'max_n_epochs': args['n_epochs'],
-                        'epoch': epoch +1,
+                        'epoch': epoch+1,
                         'batch_size': args['batch_size'],
                         'loss': args['loss_function'],
                         'learning_rate': args['learning_rate'],
@@ -275,11 +305,21 @@ def main():
                 with open(f'{folder_name}/config.yaml', 'w') as file:
                     yaml.dump(config, file)
 
-                print(f'Saved model at epoch {epoch+1}')
+                print(f'Saved model at epoch {epoch}')
                 stored_test_loss_epoch = test_loss_epoch
             else:
                 print('Current model is no better than the stored model. Ignoring saving.')
         
+            plt.figure()
+            plt.plot(train_losses, label='train loss')
+            plt.plot(test_losses, label='test loss')
+            plt.axvline(x = last_saved_epoch, color = 'b', label = 'last saved epoch')
+            plt.xlabel("Epoch")    
+            plt.ylabel("Loss")   
+            #plt.xticks(np.arange(0, n_epochs, 1.0)
+            plt.legend()
+            plt.savefig(f'{folder_name}/losses.png')
+            
 
 if __name__ == "__main__":
     main()

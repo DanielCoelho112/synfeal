@@ -5,7 +5,7 @@ import torch
 import os
 import yaml
 
-from PIL import Image
+from PIL import Image, ImageFile
 from yaml.loader import SafeLoader
 
 from utils import read_pcd, matrixToXYZ, matrixToQuaternion, normalize_quat
@@ -19,6 +19,7 @@ class Dataset(data.Dataset):
         self.path_seq = f'{self.root}/{path_seq}'
         self.rgb_transform = rgb_transform
         self.depth_transform = depth_transform
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
         if inputs == None:
             self.inputs = ['point_cloud', 'depth_image', 'rgb_image']
         else:

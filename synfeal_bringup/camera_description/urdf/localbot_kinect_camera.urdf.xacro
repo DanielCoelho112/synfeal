@@ -4,6 +4,10 @@
     <xacro:include filename="$(find hector_xacro_tools)/urdf/inertia_tensors.urdf.xacro"/>
     <xacro:property name="M_PI" value="3.1415926535897931" />
 
+    <material name="orange">
+      <color rgba="0.8 0.4 0.0 1.0"/>
+    </material>
+
     <xacro:macro name="kinect_camera_model" params="name parent *origin">
       <joint name="${name}_joint" type="fixed">
         <xacro:insert_block name="origin" />
@@ -18,6 +22,7 @@
           <geometry>
             <mesh filename="package://hector_sensors_description/meshes/kinect_camera/kinect_camera_simple.dae"/>
           </geometry>
+          <material name="orange"/>
         </visual>
         <collision>
           <origin xyz="0 0 0" rpy="0 0 0" />

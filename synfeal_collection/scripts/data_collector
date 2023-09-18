@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 
+import math
+from tf.transformations import decompose_matrix , quaternion_from_euler , euler_from_matrix
+import glob
+import multiprocessing
+import os
 import sys
 import argparse
+import numpy as np
 import rospkg
 import rospy
-import rospkg
 import yaml
 from os.path import exists
 from yaml.loader import SafeLoader
-from colorama import Fore
+from colorama import Fore , Style
+from multiprocessing import Process
 
 from synfeal_collection.src.interactive_data_collection import InteractiveDataCollection
 from synfeal_collection.src.automatic_data_collection import AutomaticDataCollection
@@ -17,9 +23,11 @@ from synfeal_collection.src.automatic_data_collection import AutomaticDataCollec
 def main():
     parser = argparse.ArgumentParser(description='Data Collector')
     parser.add_argument('-m', '--mode', type=str, default='path',
-                        help='interactive/random/path')
+                        help='interactive/random/path/repeat')
     parser.add_argument('-s', '--seq', type=str,
                         required=True, help='name of the dataset to be created')
+    parser.add_argument('-s_prev', '--seq_previous', type=str,
+                        required=False, help='name of the dataset to be created')
     parser.add_argument('-nf', '--number_of_frames', type=int,
                         required=True, help='number of frames')
     parser.add_argument('-dbf', '--distance_between_frames',
@@ -30,6 +38,10 @@ def main():
                         action='store_true', help='use random lights')
     parser.add_argument('-mc', '--model3d_config', type=str,
                         required=True, help='model3d config to use')
+    parser.add_argument('-obj', '--use_objects',
+                        action='store_true', help='spawn objects in scene')
+    parser.add_argument('-ro', '--random_objects',
+                        action='store_true', help='spawn random objects in scene')
     parser.add_argument('-f', '--fast', action='store_true',
                         help='fast data collection. Only rgb images and pose are captured.')
 
@@ -40,6 +52,7 @@ def main():
     mode = args['mode']
     seq = args['seq']
     distance_between_frames = args['distance_between_frames']
+    first_time = True
 
     # check if model3d file exists.
     # get absolute path of localbot_core.
@@ -70,12 +83,38 @@ def main():
     elif mode == 'random':
         rate = rospy.Rate(0.6)
         data_collector = AutomaticDataCollection(
-            model_name='localbot', seq=seq, uvl=args['use_variable_lights'], model3d_config=model3d_config, fast=args['fast'], mode=mode)
+            model_name='localbot', seq=seq, uvl=args['use_variable_lights'], use_objects=args['use_objects'] , random_objects=args['random_objects'] , model3d_config=model3d_config, fast=args['fast'], mode=mode)
         while not rospy.is_shutdown():
-            pose = data_collector.generateRandomPose()
+            # Objects with multiprocessing
+            if args['use_objects']:
+                if first_time: # The first time the code runs create the camera poses and object poses
+                    pose = data_collector.generateRandomPose()
+                    objects_pose , objects_name = data_collector.generateRandomPoseInsideMesh([pose])
+                    first_time = False
+                else: # Rest of the program get the objects from multi precessing and the camera position from previous computation
+                    proc.join()
+                    pose = pose_next
+                    objects_pose , objects_name = manager_array[0] , manager_array[1]
+                # Set the objects pose
+                for idx,pose in enumerate(objects_pose):
+                    data_collector.setPose(objects_name[idx] , pose)
+                    rospy.sleep(0.4)
+                rospy.sleep(2)
+                
+                pose_next = data_collector.generateRandomPose() # Generate the next camera poses for the next loop
+                manager = multiprocessing.Manager()
+                manager_array = manager.list()
+                proc = Process(target=data_collector.generateRandomPoseInsideMesh, args=([pose],manager_array))
+                proc.start()
+            
+            else:
+                pose = data_collector.generateRandomPose()
+
             if args['use_variable_lights']:
                 light = data_collector.generateLights(n_steps=1, random=True)
                 data_collector.setLight(light)
+                roll , pitch , yaw = data_collector.generateSunLight()
+                data_collector.setSunLight(roll , pitch , yaw)
             data_collector.setPose(pose)
             # todo: use getmodelstate from gazebo instead of waiting...
             rospy.sleep(0.6)
@@ -94,17 +133,110 @@ def main():
         else:
             rate = rospy.Rate(0.4)
         data_collector = AutomaticDataCollection(
-            model_name='localbot', seq=seq, dbf=distance_between_frames, uvl=args['use_variable_lights'], model3d_config=model3d_config, fast=args['fast'], mode=mode)
+            model_name='localbot', seq=seq, dbf=distance_between_frames, uvl=args['use_variable_lights'], use_objects=args['use_objects'] , random_objects=args['random_objects'] , model3d_config=model3d_config, fast=args['fast'], mode=mode)
+        rospy.sleep(1)
+        objects_poses = []
+        while not rospy.is_shutdown():
+            # Objects with multiprocessing
+            if args['use_objects']:
+                if first_time: # The first time the code runs create the camera poses and object poses
+                    step_poses = data_collector.generatePath(model_name='localbot')
+                    objects_pose , objects_name = data_collector.generateRandomPoseInsideMesh(step_poses)
+                    first_time = False
+                else: # Rest of the program get the objects from multi precessing and the camera position from previous computation
+                    proc.join()
+                    step_poses = step_poses_next
+                    objects_pose , objects_name = manager_array[0] , manager_array[1]
+                # Set the objects pose
+                for idx,pose in enumerate(objects_pose):
+                    data_collector.setPose(objects_name[idx] , pose)
+                    # objects_poses.append({'pose': [pose.position.x, pose.position.y, float(pose.position.z+0.2), 0, 0, 0]})
+                    rospy.sleep(0.4)
+                rospy.sleep(2)
+                
+                step_poses_next = data_collector.generatePath(model_name='localbot',init_pose = step_poses[-1])
+                manager = multiprocessing.Manager()
+                manager_array = manager.list()
+                proc = Process(target=data_collector.generateRandomPoseInsideMesh, args=(step_poses_next,manager_array))
+                proc.start()
+            
+            else:
+                step_poses = data_collector.generatePath(model_name='localbot')
+                
+            if args['use_variable_lights']:
+                step_lights = data_collector.generateLights(n_steps=len(step_poses), random=args['random_lights'])
+                yaw , pitch , times = data_collector.getSunAzimuth(n_steps=len(step_poses), random=args['random_lights'])
+            for idx, pose in enumerate(step_poses):
+                # Camera
+                data_collector.setPose('localbot' , pose)
+                # Lights
+                if args['use_variable_lights']:
+                    # data_collector.setLight(step_lights[idx])
+                    # data_collector.setSunLight(pitch=pitch[idx] , yaw=yaw[idx]  , time = times[idx])
+                    data_collector.changeLights(step_lights[idx] , pitch=pitch[idx] , yaw=yaw[idx]  , time = times[idx])
+                    rospy.sleep(0.4) 
+                if not args['fast']:
+                    rospy.sleep(0.4) 
+                else:
+                    rospy.sleep(0.001)
+                data_collector.saveFrame()
+                rate.sleep()
+            if args['use_objects']:
+                for idx,pose in enumerate(objects_pose):
+                    data_collector.setPose(objects_name[idx])
+                    rospy.sleep(0.4)
+                rospy.sleep(2)
+            print('final destination arrived')
+            if data_collector.getFrameIdx() >= args['number_of_frames']:
+                # with open(f'{synfeal_collection_path}/model3d_config/poses.yaml', 'w') as file:
+                #     yaml.dump(objects_poses, file)
+                print(f'{Fore.GREEN}Finished generating dataset{Style.RESET_ALL}')
+                if args['use_objects']:
+                    proc.join()
+                break
+
+    elif mode == 'repeat':
+        if args['fast']:
+            rate = rospy.Rate(3)
+        else:
+            rate = rospy.Rate(0.4)
+        data_collector = AutomaticDataCollection(
+            model_name='localbot', seq=seq, dbf=distance_between_frames, uvl=args['use_variable_lights'], use_objects=args['use_objects'] , random_objects=args['random_objects'] , model3d_config=model3d_config, fast=args['fast'], mode=mode)
+        
+        path=os.environ.get("SYNFEAL_DATASET")
+        previous_dataset_folder = f'{path}/datasets/localbot/{args["seq_previous"]}'
         rospy.sleep(1)
         while not rospy.is_shutdown():
-            step_poses = data_collector.generatePath()
-            if args['use_variable_lights']:
-                step_lights = data_collector.generateLights(
-                    n_steps=len(step_poses), random=args['random_lights'])
-            for idx, pose in enumerate(step_poses):
-                data_collector.setPose(pose)
-                if args['use_variable_lights']:
-                    data_collector.setLight(step_lights[idx])
+            poses = sorted(glob.glob(f'{previous_dataset_folder}/*pose.txt'))
+            for pose_path in poses:
+                with open(pose_path) as f:
+                    pose_yaml = yaml.load(f, Loader=SafeLoader)
+                    # important to associate with the dataset to be created.
+                    pose_yaml_line = pose_yaml.split(' ')
+                    transformation_matrix = np.array([])
+                    for line in pose_yaml_line:
+                        line_matrix = np.array([float(value) for value in line.split(',')])
+                        
+                        transformation_matrix = np.concatenate((transformation_matrix,line_matrix),axis=0)
+
+                    transformation_matrix = np.reshape(transformation_matrix , (4,4))
+                    transformation_matrix[2,3] = transformation_matrix[2,3] + 0.0125
+                    _ , _ , angles , translate , _ = decompose_matrix(transformation_matrix)
+
+                quaternion = quaternion_from_euler(angles[1],-(angles[0]+math.pi/2),angles[2]+math.pi/2)
+
+                pose = data_collector.generateRandomPose()
+
+                pose.position.x = translate[0]
+                pose.position.y = translate[1] 
+                pose.position.z = translate[2] 
+
+                pose.orientation.x = quaternion[0]
+                pose.orientation.y = quaternion[1]
+                pose.orientation.z = quaternion[2]
+                pose.orientation.w = quaternion[3]
+                data_collector.setPose('localbot' , pose)
+
                 if not args['fast']:
                     rospy.sleep(0.4)
                 else:
@@ -112,11 +244,9 @@ def main():
                 data_collector.saveFrame()
                 rate.sleep()
             print('final destination arrived')
-            if data_collector.getFrameIdx() >= args['number_of_frames']:
-                break
+            break
     else:
         print('invalid mode')
-
 
 if __name__ == "__main__":
     main()

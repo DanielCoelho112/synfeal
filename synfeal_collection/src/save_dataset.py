@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 
+import glob
 import rospy
 import os
+from torchvision import transforms
+from PIL import Image as PILImage
 from visualization_msgs.msg import *
 from cv_bridge import CvBridge
 from tf.listener import TransformListener
 from utils import write_intrinsic, write_img, write_transformation
 from utils_ros import read_pcd, write_pcd
 from sensor_msgs.msg import PointCloud2, Image, PointField, CameraInfo
-from colorama import Fore
+from colorama import Fore , Style
 from datetime import datetime
 import yaml
 import sensor_msgs.point_cloud2 as pc2
@@ -19,15 +22,34 @@ class SaveDataset():
         
         path=os.environ.get("SYNFEAL_DATASET")
         self.output_folder = f'{path}/datasets/localbot/{output}'
-        
+
+        ans = ''
+        self.continue_dataset = False
+        if os.path.exists(self.output_folder):
+            print(Fore.YELLOW + f'Dataset already exists! Do you want to continue?' + Style.RESET_ALL)
+            ans = input(Fore.YELLOW + "Y" + Style.RESET_ALL + "es/" + Fore.YELLOW + "N" + Style.RESET_ALL + "o/" + Fore.YELLOW +'O' + Style.RESET_ALL + 'verwrite: ') # Asks the user if they want to resume training
+            
         if not os.path.exists(self.output_folder):
             print(f'Creating folder {self.output_folder}')
             os.makedirs(self.output_folder)  # Create the new folder
-        
+        elif os.path.exists(self.output_folder) and ans.lower() in ['o' , 'overwrite']:
+            print(f'Overwriting folder {self.output_folder}')
+            os.system(f'rm -r {self.output_folder}')
+            os.makedirs(self.output_folder) 
+        elif os.path.exists(self.output_folder) and ans.lower() in ['' , 'y' , 'yes']:
+            print(f'Continuing with folder {self.output_folder}')
+            images = glob.glob(f'{self.output_folder}/*.rgb.png')
+            self.continue_dataset = True
+            frame_idx = len(images)
         else:
             print(f'{Fore.RED} {self.output_folder} already exists... Aborting SaveDataset initialization! {Fore.RESET}')
             exit(0)
+
+        self.rgb_transform = transforms.Compose([
+            transforms.Resize(350),
+        ])
         
+        self.resize_image = model3d_config['resize_image'] if model3d_config is not None else False
         name_model3d_config = model3d_config if model3d_config is not None else None 
          
         dt_now = datetime.now() # current date and time
@@ -44,7 +66,10 @@ class SaveDataset():
                   'fast' : fast}
         
         self.fast = fast
-        self.frame_idx = 0 
+        if self.continue_dataset:
+            self.frame_idx = frame_idx 
+        else:
+            self.frame_idx = 0
         self.world_link = 'world'
         self.depth_frame = 'kinect_depth_optical_frame'
         self.rgb_frame = 'kinect_rgb_optical_frame'
@@ -103,6 +128,10 @@ class SaveDataset():
         
         transformation = self.getTransformation()
         image = self.getImage()
+
+        if self.resize_image:
+            image = self.rgb_transform(PILImage.fromarray(image))
+            image = np.array(image)
         
         
         filename = f'frame-{self.frame_idx:05d}'
