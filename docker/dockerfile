@@ -1,19 +1,21 @@
 FROM nvcr.io/nvidia/pytorch:22.11-py3
+
+COPY requirements.txt /tmp/
+RUN pip install --requirement /tmp/requirements.txt
+
+WORKDIR /root
+
+
 RUN mkdir /root/datasets
-RUN mkdir /root/datasets/localbot
+RUN mkdir /root/datasets/synfeal
 RUN mkdir /root/models
-RUN mkdir /root/models/localbot
+RUN mkdir /root/models/synfeal
 
-RUN pip install colorama
-RUN pip install Pillow
-RUN pip install torchinfo
-RUN pip install scipy==1.5.4
 
-RUN git clone https://github.com/DanielCoelho112/synfeal
-
-ENV PYTHONPATH="/workspace/synfeal"
+ENV PYTHONPATH="/root/synfeal"
 ENV USER="deep"
 ENV SYNFEAL_DATASET="/root"
-CMD ["sh", "-c", "cd synfeal && git pull"]
+
+
 
 

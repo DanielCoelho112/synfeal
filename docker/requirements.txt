@@ -1,0 +1,4 @@
+colorama
+Pillow
+torchinfo
+scipy==1.5.4
