@@ -9,6 +9,6 @@
     <arg name="P_pos" default="0"/>
     <arg name="Y_pos" default="0"/>
 
-        <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -model $(arg name) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -R $(arg R_pos) -P $(arg P_pos) -Y $(arg Y_pos) -param robot_description" output='screen'/>
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -model $(arg name) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -R $(arg R_pos) -P $(arg P_pos) -Y $(arg Y_pos) -param robot_description" output='screen'/>
     
 </launch>

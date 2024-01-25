@@ -104,7 +104,8 @@
                 <update_rate>20.0</update_rate>
                 <camera>
                     <!--                    <pose>0 0 0 ${M_PI/2} ${-M_PI/2} 0</pose>-->
-                    <horizontal_fov>${60.0*pi/180.0}</horizontal_fov>
+                    <horizontal_fov>${60*pi/180.0}</horizontal_fov>
+                    <!-- <horizontal_fov>${61.81143268730981*pi/180.0}</horizontal_fov> -->
                     <image>
                         <format>B8G8R8</format>
                         <!--                      <format>RGB_INT8</format>-->
@@ -117,11 +118,13 @@
                     </clip>
                     <lens>
                       <intrinsics>
-                        <fx>1069.12</fx>
-                        <!-- <fx>500</fx> DEBUG -->
-                        <fy>1069.6</fy>
+                        <!-- <fx>1069.12</fx> -->
+                        <fx>1108.509382</fx>
+                        <!-- <fy>1069.6</fy> -->
+                        <fy>1108.509382</fy>
                         <cx>629.037</cx>
-                        <cy>502.572</cy>
+                        <!-- <cy>502.572</cy> -->
+                        <cy>520.428</cy>
                         <s>0</s>
                       </intrinsics>
                     </lens>
@@ -151,9 +154,10 @@
                     <distortionK3>0.242359</distortionK3>
                     <distortionT1>0.00037144</distortionT1>
                     <distortionT2>-0.00051121</distortionT2>
-                    <Cx>777</Cx>
-                    <Cy>300</Cy>
-                    <focalLength>1069.12</focalLength>
+                    <Cx>629.037</Cx>
+                    <Cy>520.428</Cy>
+                    <!-- <focalLength>1069.12</focalLength> -->
+                    <focalLength>1108.509382</focalLength>
                     <!-- ^^^ https://github.com/ros-simulation/gazebo_ros_pkgs/blob/noetic-devel/gazebo_plugins/src/gazebo_ros_camera_utils.cpp#L517 -->
 
                     <!--                    <pointCloudCutoff>0.4</pointCloudCutoff>-->
