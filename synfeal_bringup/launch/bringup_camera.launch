@@ -1,4 +1,5 @@
 <launch>
+    <!-- <arg name="name" default="localbot"/> -->
     <arg name="name" default="localbot"/>
     <arg name="color" default="Grey"/>
     <arg name="x_pos" default="0.0"/>
@@ -12,6 +13,9 @@
     <!--Load robot xacro into robot_description ros parameter.-->
     <param name="robot_description" command="$(find xacro)/xacro '$(find synfeal_bringup)/camera_description/urdf/localbot.urdf.xacro'
                                                  name:=$(arg name) color:=$(arg color)"/>
+
+    <!-- <param name="robot_description" command="$(find xacro)/xacro '$(find synfeal_bringup)/camera_description/urdf/axes.urdf.xacro'
+                                                 name:=$(arg name) color:=$(arg color)"/> -->
 
 
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>

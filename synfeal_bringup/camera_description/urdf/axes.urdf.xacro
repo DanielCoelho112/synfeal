@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="axes">
+
+<xacro:property name="cylinder_radius" value="0.05"/>
+<xacro:property name="cylinder_length" value="1"/>
+
+<!-- COLORS -->
+<material name="red">
+    <color rgba="1 0 0 1"/>
+</material>
+
+<material name="green">
+    <color rgba="0 1 0 1"/>
+</material>
+
+<material name="blue">
+    <color rgba="0 0 1 1"/>
+</material>
+
+<link name="world"/>
+<link name="base_link"/>
+<joint name="world_to_base" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+</joint>
+
+
+<!-- X AXIS -->
+<link name="x_link">
+    <visual>
+            <geometry>
+                <cylinder length="${cylinder_length}" radius="${cylinder_radius}"/>
+            </geometry>
+            <material name = "red"/>
+            <origin xyz = "0 0 ${cylinder_length/2}" rpy = "0 0 0"/>
+    </visual>
+</link>
+
+<!-- roll: rot(x) | pitch: rot(y) | yaw: rot(z) -->
+<joint name="base_to_x" type="fixed">
+    <parent link="base_link"/>
+    <child link="x_link"/>
+    <origin xyz = "0 0 0" rpy = "0 ${pi/2} 0"/>
+</joint>
+
+<!-- Y AXIS -->
+<link name="y_link">
+    <visual>
+            <geometry>
+                <cylinder length="${cylinder_length}" radius="${cylinder_radius}"/>
+            </geometry>
+            <material name = "green"/>
+            <origin xyz = "0 0 ${cylinder_length/2}" rpy = "0 0 0"/>
+    </visual>
+</link>
+
+<!-- roll: rot(x) | pitch: rot(y) | yaw: rot(z) -->
+<joint name="base_to_y" type="fixed">
+    <parent link="base_link"/>
+    <child link="y_link"/>
+    <origin xyz = "0 0 0" rpy = "${-pi/2} 0 0"/>
+</joint>
+
+
+<!-- Z AXIS -->
+<link name="z_link">
+    <visual>
+            <geometry>
+                <cylinder length="${cylinder_length}" radius="${cylinder_radius}"/>
+            </geometry>
+            <material name = "blue"/>
+            <origin xyz = "0 0 ${cylinder_length/2}" rpy = "0 0 0"/>
+    </visual>
+</link>
+
+<!-- roll: rot(x) | pitch: rot(y) | yaw: rot(z) -->
+<joint name="base_to_z" type="fixed">
+    <parent link="base_link"/>
+    <child link="z_link"/>
+    <origin xyz = "0 0 0" rpy = "0 0 0"/>
+</joint>
+
+
+<gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+        <robotNamespace>/</robotNamespace>
+    </plugin>
+</gazebo>
+
+
+</robot>
